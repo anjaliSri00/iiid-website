@@ -15,7 +15,7 @@ export default function ScholarshipSection() {
   };
 
   return (
-    <section className="py-16 bg-gradient-to-r from-red-50 to-orange-50">
+    <section className="py-16 bg-linear-to-r from-red-50 to-orange-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
@@ -59,6 +59,7 @@ export default function ScholarshipSection() {
                 required
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-red-600"
               />
+
               <button
                 type="submit"
                 className="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 transition font-semibold whitespace-nowrap"

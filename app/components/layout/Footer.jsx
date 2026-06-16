@@ -5,9 +5,9 @@ import {  Mail, Phone, MapPin, ChevronRight, PhoneCall, MailIcon, MapPinIcon } f
 
 export default function Footer() {
   return (
-    <footer className="">
+    <footer className="max-w-screen-3xl w-full">
       {/* Main Footer */}
-      <div className="py-12 md:py-16 px-4">
+      <div className="py-12 md:py-16 px-4 ">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
           
           {/* Column 1 - Brand Info */}
@@ -112,22 +112,22 @@ export default function Footer() {
               Contact Us
             </h4>
             <div className="space-y-3">
-              <div className="flex items-start space-x-3 group">
-                <MapPinIcon size={18} className="text-accent mt-0.5 flex-shrink-0" />
+              {/* <div className="flex items-start space-x-3 group">
+                <MapPinIcon size={18} className="text-accent mt-0.5 shrink-0" />
                 <p className="text-gray-600 text-sm">
                   C-153, Block C, Sushant Lok2, Gurugram, Haryana  
                 </p>
-              </div>
+              </div> */}
               
               <div className="flex items-center space-x-3 group">
-                <MailIcon size={18} className="text-accent flex-shrink-0" />
+                <MailIcon size={18} className="text-accent shrink-0" />
                 <Link href="mailto:support@iiid.institute" className="text-gray-600 hover:text-accent transition-colors text-sm">      
 support@iiid.institute
                 </Link>
               </div>
               
               <div className="flex items-center space-x-3 group">
-                <PhoneCall size={18} className="text-accent flex-shrink-0" />
+                <PhoneCall size={18} className="text-accent shrink-0" />
                 <Link href="tel:+15551234567" className="text-gray-600 hover:text-accent transition-colors text-sm">
                   +1 (555) 123-4567
                 </Link>

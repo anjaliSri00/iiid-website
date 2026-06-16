@@ -104,7 +104,7 @@ export default function CoursesSection() {
                   <div className="grid grid-cols-2 gap-2">
                     {course.features.map((feature, idx) => (
                       <div key={idx} className="flex items-center gap-1 text-sm text-gray-600">
-                        <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                        <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />
                         <span>{feature}</span>
                       </div>
                     ))}

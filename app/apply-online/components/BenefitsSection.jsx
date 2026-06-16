@@ -4,11 +4,11 @@ import { Monitor, Clock, BookOpen, Users, Award, Headphones } from 'lucide-react
 import { motion } from 'framer-motion';
 
 const benefits = [
-  {
-    icon: <Monitor className="w-6 h-6" />,
-    title: "Live Interactive Classes",
-    description: "Learn from industry experts in real-time with Q&A sessions"
-  },
+  // {
+  //   icon: <Monitor className="w-6 h-6" />,
+  //   title: "Live Interactive Classes",
+  //   description: "Learn from industry experts in real-time with Q&A sessions"
+  // },
   {
     icon: <Clock className="w-6 h-6" />,
     title: "Flexible Schedule",
@@ -29,11 +29,11 @@ const benefits = [
     title: "Industry Recognition",
     description: "Globally recognized IIID certification"
   },
-  {
-    icon: <Headphones className="w-6 h-6" />,
-    title: "24/7 Support",
-    description: "Dedicated student support team"
-  }
+  // {
+  //   icon: <Headphones className="w-6 h-6" />,
+  //   title: "24/7 Support",
+  //   description: "Dedicated student support team"
+  // }
 ];
 
 const containerVariants = {
@@ -69,7 +69,7 @@ export default function BenefitsSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {benefits.map((benefit, index) => (
             <motion.div

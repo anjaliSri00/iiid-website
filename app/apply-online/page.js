@@ -8,6 +8,8 @@ import FAQSection from './components/FAQSection';
 import CTASection from './components/CTASection';
 import ScholarshipSection from './components/ScholarshipSection';
 import HeroSection from './components/HeroSection';
+import ProgramGrid from '../components/sections/ProgramGrid';
+import Programs from '../components/sections/Programs';
 
 // SEO Metadata
 export const metadata = {
@@ -94,11 +96,23 @@ export default function ApplyOnline() {
         <HeroSection />
       </Suspense>
 
-      {/* <Suspense fallback={<div className="h-32 bg-gray-50 animate-pulse"></div>}>
+      <Suspense fallback={<div className="h-32 bg-gray-50 animate-pulse"></div>}>
         <BenefitsSection />
       </Suspense>
 
-      <Suspense fallback={<div className="h-96 bg-white animate-pulse"></div>}>
+       <Suspense className="bg-gray-50 animate-pulse max-w-screen-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 lg:py-10" fallback={<Loading />}>
+        <Programs />
+      </Suspense>
+      {/* <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
+        <HowItWorksSection />
+      </Suspense> */}
+
+      <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
+        <FAQSection />
+      </Suspense>
+
+
+      {/* <Suspense fallback={<div className="h-96 bg-white animate-pulse"></div>}>
         <CoursesSection />
       </Suspense>
 
@@ -116,7 +130,7 @@ export default function ApplyOnline() {
 
       <Suspense fallback={<div className="h-32 bg-red-600 animate-pulse"></div>}>
         <CTASection />
-      </Suspense> */}
-    </div>
+      </Suspense>  */}
+          </div>
   );
 }

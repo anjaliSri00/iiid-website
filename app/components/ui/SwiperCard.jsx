@@ -8,6 +8,7 @@ import { Pagination, Autoplay, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import { home1_Section1, home2_Section1, home3_Section1 } from '@/public/img';
 
 export default function SwiperCard({ onSlideChange }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -21,8 +22,8 @@ export default function SwiperCard({ onSlideChange }) {
       mainTitle: "Professional Certification for Interior Designers",
       mainDescription: "Get certified and recognized for your expertise in residential, commercial, and hospitality design.",
       ctaText: "Explore Programs",
-      image: "/images/slide1.jpg",
-      bgColor: "bg-gradient-to-r from-blue-900 to-purple-900"
+      image: home1_Section1.src,
+      // bgColor: "bg-gradient-to-r from-blue-900 to-purple-900"
     },
     {
       id: 2,
@@ -31,8 +32,8 @@ export default function SwiperCard({ onSlideChange }) {
       mainTitle: "Internationally Recognized Certification",
       mainDescription: "Join a global community of certified interior design professionals and stand out in your career.",
       ctaText: "Learn More",
-      image: "/images/slide2.jpg",
-      bgColor: "bg-gradient-to-r from-green-900 to-teal-900"
+      image: home2_Section1.src,
+      // bgColor: "bg-gradient-to-r from-green-900 to-teal-900"
     },
     {
       id: 3,
@@ -41,29 +42,9 @@ export default function SwiperCard({ onSlideChange }) {
       mainTitle: "Flexible Online Learning",
       mainDescription: "Study at your own pace with our 30-day online programs designed for working professionals.",
       ctaText: "Apply Now",
-      image: "/images/slide3.jpg",
-      bgColor: "bg-gradient-to-r from-red-900 to-orange-900"
+      image: home3_Section1.src,
+      // bgColor: "bg-gradient-to-r from-red-900 to-orange-900"
     },
-    {
-      id: 4,
-      title: "Expert Faculty",
-      description: "Learn from industry leaders",
-      mainTitle: "Learn from Industry Experts",
-      mainDescription: "Get mentored by leading interior designers and industry professionals with years of experience.",
-      ctaText: "View Courses",
-      image: "/images/slide4.jpg",
-      bgColor: "bg-gradient-to-r from-indigo-900 to-pink-900"
-    },
-    {
-      id: 5,
-      title: "Global Community",
-      description: "Join designers worldwide",
-      mainTitle: "Join a Global Community",
-      mainDescription: "Connect with interior designers from around the world and expand your professional network.",
-      ctaText: "Join Now",
-      image: "/images/slide5.jpg",
-      bgColor: "bg-gradient-to-r from-yellow-900 to-amber-900"
-    }
   ];
 
   const handleSlideChange = (swiper) => {
@@ -101,19 +82,19 @@ export default function SwiperCard({ onSlideChange }) {
           <div className={`relative w-full h-full ${slide.bgColor} flex items-center justify-center`}>
             {slide.image && (
               <div 
-                className="absolute inset-0 bg-cover bg-center opacity-40"
+                className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: `url(${slide.image})` }}
               />
             )}
             
-            <div className="relative z-10 text-center text-white px-4">
+            {/* <div className="relative z-10 text-center text-white px-4">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
                 {slide.title}
               </h2>
               <p className="text-lg md:text-xl text-gray-200">
                 {slide.description}
               </p>
-            </div>
+            </div> */}
           </div>
         </SwiperSlide>
       ))}

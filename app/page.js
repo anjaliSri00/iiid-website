@@ -10,7 +10,6 @@ export default function page() {
       <Hero />
       <Programs />
       <About />
-      {/* <Certification /> */}
       </div>
     </>
   )

@@ -40,7 +40,7 @@ export default function HeroSection() {
           >
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 inline-flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              <span className="font-semibold">Next batch: June 15, 2026</span>
+              <span className="font-semibold">Next batch: June    15, 2026</span>
             </div>
           </motion.div>
         </div>

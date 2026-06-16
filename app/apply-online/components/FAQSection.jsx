@@ -4,30 +4,30 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const faqs = [
-  {
-    q: "Are the classes really live?",
-    a: "Yes, all classes are conducted live by industry experts. You can interact with instructors in real-time, ask questions, and participate in discussions."
-  },
-  {
-    q: "What if I miss a live session?",
-    a: "All sessions are recorded and available in your dashboard for 6 months. You can watch them anytime at your convenience."
-  },
-  {
-    q: "Will I get a certificate?",
-    a: "Yes, you'll receive an IIID certificate upon successful completion of the program. The certificate is internationally recognized."
-  },
-  {
-    q: "Are there any prerequisites?",
-    a: "Basic understanding of design concepts is helpful but not mandatory. Our courses are designed for beginners and professionals alike."
-  },
-  {
-    q: "How long will I have access to the course?",
-    a: "You'll have access to the course materials, recordings, and resources for 6 months from the course start date."
-  },
-  {
-    q: "Is there any placement assistance?",
-    a: "Yes, we provide career guidance and connect you with our network of industry partners for job opportunities."
-  }
+  // {
+  //   q: "Are the classes really live?",
+  //   a: "Yes, all classes are conducted live by industry experts. You can interact with instructors in real-time, ask questions, and participate in discussions."
+  // },
+  // {
+  //   q: "What if I miss a live session?",
+  //   a: "All sessions are recorded and available in your dashboard for 6 months. You can watch them anytime at your convenience."
+  // },
+  // {
+  //   q: "Will I get a certificate?",
+  //   a: "Yes, you'll receive an IIID certificate upon successful completion of the program. The certificate is internationally recognized."
+  // },
+  // {
+  //   q: "Are there any prerequisites?",
+  //   a: "Basic understanding of design concepts is helpful but not mandatory. Our courses are designed for beginners and professionals alike."
+  // },
+  // {
+  //   q: "How long will I have access to the course?",
+  //   a: "You'll have access to the course materials, recordings, and resources for 6 months from the course start date."
+  // },
+  // {
+  //   q: "Is there any placement assistance?",
+  //   a: "Yes, we provide career guidance and connect you with our network of industry partners for job opportunities."
+  // }
 ];
 
 export default function FAQSection() {
@@ -61,9 +61,9 @@ export default function FAQSection() {
               >
                 <h3 className="text-lg font-semibold text-gray-900">{faq.q}</h3>
                 {openIndex === index ? (
-                  <ChevronUp className="w-5 h-5 text-red-600 flex-shrink-0" />
+                  <ChevronUp className="w-5 h-5 text-red-600 shrink-0" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
                 )}
               </button>
               
@@ -75,8 +75,6 @@ export default function FAQSection() {
             </div>
           ))}
         </div>
-
-        {/* Schema Markup for FAQ */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

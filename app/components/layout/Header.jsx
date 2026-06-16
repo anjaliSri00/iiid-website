@@ -20,31 +20,43 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  const handleApplyNow = () => {
+    // Close mobile menu if open
+    setIsOpen(false)
+    // Close dropdown if open
+    setIsDropdownOpen(false)
+    // Scroll to programs section
+    const programsSection = document.getElementById('programs')
+    if (programsSection) {
+      programsSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
     <>
       <header className="bg-white sticky max-w-screen-3xl w-full px-4 top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4 md:py-5">
             {/* Logo */}
-            <div className="flex items-center">
+            <Link href="/" className="flex items-center">
               <h1 className="text-2xl md:text-3xl font-serif font-bold text-gray-900">
                 IIID
               </h1>
-            </div>
+            </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8 lg:space-x-10">
-              <Link href="#home" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
+              <Link href="/" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
                 Home
               </Link>
               <Link href="/apply-online" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
                 Apply Online
               </Link>
-              <Link href="#about" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
+              <Link href="/#about" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
                 About
               </Link>
-              <Link href="#shop" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
-                Shop
+              <Link href="/#programs" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
+                Programs
               </Link>
             </nav>
 
@@ -65,7 +77,7 @@ export default function Header() {
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
                     <Link
-                      href="#login"
+                      href="/login"
                       className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors"
                       onClick={() => setIsDropdownOpen(false)}
                     >
@@ -73,7 +85,7 @@ export default function Header() {
                       <span>Login</span>
                     </Link>
                     <Link
-                      href="#register"
+                      href="/register"
                       className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors"
                       onClick={() => setIsDropdownOpen(false)}
                     >
@@ -85,7 +97,10 @@ export default function Header() {
               </div>
 
               {/* Apply Now Button */}
-              <button className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition shadow-sm hover:shadow-md">
+              <button 
+                onClick={handleApplyNow}
+                className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition shadow-sm hover:shadow-md"
+              >
                 Apply Now
               </button>
             </div>
@@ -104,7 +119,7 @@ export default function Header() {
             <nav className="md:hidden py-6 border-t border-gray-100">
               <div className="flex flex-col space-y-5">
                 <Link
-                  href="#home" 
+                  href="/" 
                   className="text-gray-600 hover:text-red-600 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
@@ -125,17 +140,17 @@ export default function Header() {
                   About
                 </Link>
                 <Link 
-                  href="#shop" 
+                  href="/#programs" 
                   className="text-gray-600 hover:text-red-600 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
-                  Shop
+                  Programs
                 </Link>
                 
                 {/* Mobile Login/Register */}
                 <div className="pt-4 border-t border-gray-100">
                   <Link
-                    href="#login" 
+                    href="/login" 
                     className="flex items-center space-x-3 text-gray-600 hover:text-red-600 transition-colors py-2"
                     onClick={() => setIsOpen(false)}
                   >
@@ -143,7 +158,7 @@ export default function Header() {
                     <span>Login</span>
                   </Link>
                   <Link
-                    href="#register" 
+                    href="/register" 
                     className="flex items-center space-x-3 text-gray-600 hover:text-red-600 transition-colors py-2"
                     onClick={() => setIsOpen(false)}
                   >
@@ -152,7 +167,11 @@ export default function Header() {
                   </Link>
                 </div>
                 
-                <button className="text-white bg-red-600 px-6 py-2 rounded-md w-full mt-2 hover:bg-red-700 transition">
+                {/* Mobile Apply Now Button */}
+                <button 
+                  onClick={handleApplyNow}
+                  className="text-white bg-red-600 px-6 py-2 rounded-md w-full mt-2 hover:bg-red-700 transition"
+                >
                   Apply Now
                 </button>
               </div>

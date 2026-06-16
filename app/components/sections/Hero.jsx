@@ -30,14 +30,14 @@ export default function Hero() {
 
       {/* Dynamic Content Overlay */}
       <div className="absolute inset-0 z-20 flex items-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md md:max-w-lg lg:max-w-xl bg-black/40 backdrop-blur-sm p-6 md:p-8 rounded-lg transition-all duration-500">
+        <div className="max-w-sm md:max-w-md lg:max-w-lg bg-red-100/70 text-black backdrop-blur-sm p-6 md:p-8 rounded-lg transition-all duration-500">
           <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 leading-tight">
             {activeSlide.mainTitle}
           </h1>
-          <p className="text-sm md:text-base text-gray-200 mb-6">
+          <p className="text-sm md:text-base text-gray-800 mb-6">
             {activeSlide.mainDescription}
           </p>
-          <button className="border-2 border-white text-white px-6 md:px-8 py-3 rounded-md hover:bg-white hover:text-gray-900 transition-all duration-300 font-medium">
+          <button className="border-2 border-black text-gray-800 px-6 md:px-8 py-3 rounded-md hover:text-gray-900 transition-all duration-300 font-medium">
             {activeSlide.ctaText}
           </button>
         </div>
