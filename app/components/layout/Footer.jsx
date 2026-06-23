@@ -112,12 +112,6 @@ export default function Footer() {
               Contact Us
             </h4>
             <div className="space-y-3">
-              {/* <div className="flex items-start space-x-3 group">
-                <MapPinIcon size={18} className="text-accent mt-0.5 shrink-0" />
-                <p className="text-gray-600 text-sm">
-                  C-153, Block C, Sushant Lok2, Gurugram, Haryana  
-                </p>
-              </div> */}
               
               <div className="flex items-center space-x-3 group">
                 <MailIcon size={18} className="text-accent shrink-0" />

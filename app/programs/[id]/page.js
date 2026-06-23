@@ -111,7 +111,7 @@ const ProgramDetailPage = () => {
 
             {/* Apply Button */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-                <Link href={`/programs/${program.id}/apply`}>
+                <Link href={`/programs/${program.id}/checkout`}>
               <button className="w-full md:w-auto bg-red-600 text-white px-8 py-3 rounded-md hover:bg-red-700 transition-colors font-semibold">
                 Apply Now
               </button>
