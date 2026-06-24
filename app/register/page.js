@@ -1186,13 +1186,13 @@ export default function RegisterPage() {
               <div className="ml-3 text-sm">
                 <label htmlFor="terms" className="text-gray-700">
                   I agree to the{' '}
-                  <a href="/terms" className="text-red-600 hover:text-red-700">
+                  <Link href="#" className="text-red-600 hover:text-red-700">
                     Terms and Conditions
-                  </a>{' '}
+                  </Link>{' '}
                   and{' '}
-                  <a href="/privacy" className="text-red-600 hover:text-red-700">
+                  <Link href="#" className="text-red-600 hover:text-red-700">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </label>
               </div>
             </div>

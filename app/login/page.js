@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
@@ -12,7 +12,7 @@ import { toast } from 'react-toastify';
 import fetchApiResponse from '@/helper/api_data_store';
 import sha256 from 'crypto-js/sha256';
 
-export default function LoginPage() {
+function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -388,6 +388,7 @@ export default function LoginPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 flex flex-col montserrat-600 justify-start py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
@@ -931,5 +932,16 @@ export default function LoginPage() {
         </div>
       )}
     </div>
+    </>
   );
+}
+
+export default function Login(){
+return (
+  <>
+  <Suspense>
+    <LoginPage/>
+  </Suspense>
+  </>
+);
 }
