@@ -8,7 +8,7 @@ import {
   User, Mail, Phone, MapPin, Briefcase, GraduationCap,
   Building, Calendar, Hash, Home, UserCheck, FileText,
   Image, Camera, Edit2, Save, X, AlertCircle, CheckCircle,
-  Loader2
+  Loader2, Upload, File, Trash2
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import fetchApiResponse from '@/helper/api_data_store';
@@ -21,9 +21,12 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState(null);
   const [editedData, setEditedData] = useState({});
+  const [originalData, setOriginalData] = useState({});
   const [errors, setErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState({});
+  const [deletingDocument, setDeletingDocument] = useState({});
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -53,8 +56,8 @@ export default function ProfilePage() {
         {
           method: 'GET',
           headers: {
-            'Access-Token':session?.accessToken,
-            'Refresh-Token':session?.refreshToken
+            'Access-Token': session?.accessToken,
+            'Refresh-Token': session?.refreshToken
           },
         }
       );
@@ -62,6 +65,7 @@ export default function ProfilePage() {
       if (response.meta?.status === 200 && response.data?.data) {
         setProfile(response.data.data);
         setEditedData(response.data.data);
+        setOriginalData(response.data.data);
       } else {
         toast.error(response.meta?.message || 'Failed to fetch profile');
       }
@@ -78,6 +82,7 @@ export default function ProfilePage() {
       // Cancel editing - reset to original data
       setEditedData(profile);
       setErrors({});
+      setAvatarPreview(null);
     }
     setIsEditing(!isEditing);
   };
@@ -94,9 +99,48 @@ export default function ProfilePage() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image size should be less than 2MB');
+    // Check for HEIC files
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type.toLowerCase();
+    const isHEIC =
+      fileName.endsWith(".heic") ||
+      fileName.endsWith(".heif") ||
+      fileType.includes("heic") ||
+      fileType.includes("heif");
+
+    if (isHEIC) {
+      toast.error(
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-red-600">
+            HEIC/HEIF Format Not Supported
+          </p>
+          <p className="text-sm text-gray-700">
+            Profile pictures must be in JPG or PNG format.
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Please convert your image before uploading.
+          </p>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          style: {
+            backgroundColor: "#FEF2F2",
+            border: "1px solid #FCA5A5",
+            borderRadius: "8px",
+          },
+        }
+      );
+      return;
+    }
+
+    // Validate file size (max 1MB for profile pic)
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error('File size too large. Maximum size is 1MB.');
       return;
     }
 
@@ -109,22 +153,31 @@ export default function ProfilePage() {
     setUploadingAvatar(true);
     const formData = new FormData();
     formData.append('image', file);
+    formData.append('type', 'profile_pic');
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
 
     try {
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
         {
           method: 'POST',
+          headers: {
+            'Access-Token': session?.accessToken,
+            'Refresh-Token': session?.refreshToken
+          },
           body: formData,
         }
       );
 
       if (response.meta?.status === 200) {
-        const imageUrl = response.data?.url || response.data?.imageUrl || response.data?.fileUrl;
+        const imageUrl = response.data?.image_url?.url || response.data?.url || response.data?.imageUrl || response.data?.fileUrl;
         if (imageUrl) {
-          setEditedData(prev => ({ ...prev, avatar_url: imageUrl }));
-          setAvatarPreview(URL.createObjectURL(file));
-          toast.success('Avatar uploaded successfully!');
+          const encodedUrl = encodeURI(imageUrl);
+          setEditedData(prev => ({ ...prev, avatar_url: encodedUrl }));
+          toast.success('Profile picture uploaded successfully!');
         } else {
           throw new Error('No URL returned from server');
         }
@@ -133,9 +186,151 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast.error('Failed to upload avatar');
+      // Revert preview on error
+      setAvatarPreview(null);
+      toast.error('Failed to upload profile picture');
     } finally {
       setUploadingAvatar(false);
+    }
+  };
+
+  const handleDocumentUpload = async (e, documentType) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check for HEIC files
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type.toLowerCase();
+    const isHEIC =
+      fileName.endsWith(".heic") ||
+      fileName.endsWith(".heif") ||
+      fileType.includes("heic") ||
+      fileType.includes("heif");
+
+    if (isHEIC) {
+      toast.error(
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-red-600">
+            HEIC/HEIF Format Not Supported
+          </p>
+          <p className="text-sm text-gray-700">
+            Documents must be in JPG, PNG, or PDF format.
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Please convert your image before uploading.
+          </p>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          style: {
+            backgroundColor: "#FEF2F2",
+            border: "1px solid #FCA5A5",
+            borderRadius: "8px",
+          },
+        }
+      );
+      return;
+    }
+
+    // Validate file size (max 2MB for documents)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File size too large. Maximum size is 2MB.');
+      return;
+    }
+
+    const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please upload a PDF, JPEG, or PNG file');
+      return;
+    }
+
+    setUploadingDocument(prev => ({ ...prev, [documentType]: true }));
+
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    // Set the type based on document type
+    const typeMap = {
+      'aadhaar': 'aadhaar_card',
+      'experience': 'experience_letter'
+    };
+    formData.append('type', typeMap[documentType]);
+
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
+        {
+          method: 'POST',
+          headers: {
+            'Access-Token': session?.accessToken,
+            'Refresh-Token': session?.refreshToken
+          },
+          body: formData,
+        }
+      );
+
+      if (response.meta?.status === 200) {
+        const documentUrl = response.data?.image_url?.url || response.data?.url || response.data?.documentUrl || response.data?.fileUrl;
+        if (documentUrl) {
+          const encodedUrl = encodeURI(documentUrl);
+          // Update the specific document field
+          const fieldName = documentType === 'aadhaar' ? 'aadhaar_card_url' : 'experience_letter_url';
+          setEditedData(prev => ({ ...prev, [fieldName]: encodedUrl }));
+          toast.success(`${documentType === 'aadhaar' ? 'Aadhaar' : 'Experience'} document uploaded successfully!`);
+        } else {
+          throw new Error('No URL returned from server');
+        }
+      } else {
+        throw new Error(response.meta?.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      toast.error(`Failed to upload ${documentType} document`);
+    } finally {
+      setUploadingDocument(prev => ({ ...prev, [documentType]: false }));
+    }
+  };
+
+  const handleDocumentRemove = async (documentType) => {
+    const fieldName = documentType === 'aadhaar' ? 'aadhaar_card_url' : 'experience_letter_url';
+    
+    if (!confirm(`Are you sure you want to remove your ${documentType} document?`)) {
+      return;
+    }
+
+    setDeletingDocument(prev => ({ ...prev, [documentType]: true }));
+
+    try {
+      // Call API to delete the document
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/remove-document`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Token': session?.accessToken,
+            'Refresh-Token': session?.refreshToken
+          },
+          body: JSON.stringify({ documentType }),
+        }
+      );
+
+      if (response.meta?.status === 200) {
+        setEditedData(prev => ({ ...prev, [fieldName]: null }));
+        toast.success(`${documentType} document removed successfully`);
+      } else {
+        throw new Error(response.meta?.message || 'Failed to remove document');
+      }
+    } catch (error) {
+      console.error('Error removing document:', error);
+      toast.error(`Failed to remove ${documentType} document`);
+    } finally {
+      setDeletingDocument(prev => ({ ...prev, [documentType]: false }));
     }
   };
 
@@ -151,35 +346,47 @@ export default function ProfilePage() {
         return;
       }
 
-      const payload = {
-        full_name: editedData.full_name,
-        city: editedData.city,
-        state: editedData.state,
-        pincode: editedData.pincode,
-        full_address: editedData.full_address,
-        highest_qualification: editedData.highest_qualification,
-        current_organization: editedData.current_organization,
-        years_of_experience: editedData.years_of_experience,
-        avatar_url: editedData.avatar_url,
-        // Add other fields that can be updated
-      };
+      // Compare editedData with originalData to find only changed fields
+      const changedFields = {};
+      const fieldsToCheck = [
+        'full_name', 'city', 'state', 'pincode', 'full_address',
+        'highest_qualification', 'current_organization', 'years_of_experience',
+        'avatar_url', 'aadhaar_card_url', 'experience_letter_url'
+      ];
+
+      fieldsToCheck.forEach(field => {
+        if (editedData[field] !== originalData[field]) {
+          changedFields[field] = editedData[field];
+        }
+      });
+
+      // If no changes were made
+      if (Object.keys(changedFields).length === 0) {
+        toast.info('No changes to save');
+        setIsEditing(false);
+        setSaving(false);
+        return;
+      }
 
       const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/update/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/profile/update`,
         {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.accessToken}`,
+            'Access-Token': session?.accessToken,
+            'Refresh-Token': session?.refreshToken
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(changedFields),
         }
       );
 
       if (response.meta?.status === 200) {
         toast.success('Profile updated successfully!');
         setProfile(editedData);
+        setOriginalData(editedData); // Update original data with new values
         setIsEditing(false);
+        setAvatarPreview(null);
         // Refresh profile data
         await fetchProfile();
       } else {
@@ -550,49 +757,133 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Documents */}
+              {/* Documents Section */}
               <div className="md:col-span-2 space-y-4">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider border-b pb-2">
                   Documents
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <FileText className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-xs text-gray-500">Aadhaar Card</p>
-                      {profile.aadhaar_card_url ? (
-                        <a
-                          href={profile.aadhaar_card_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-red-600 hover:underline"
-                        >
-                          View Document
-                        </a>
-                      ) : (
-                        <p className="text-sm text-gray-400">Not uploaded</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Aadhaar Card */}
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Aadhaar Card</p>
+                          {editedData.aadhaar_card_url ? (
+                            <a
+                              href={editedData.aadhaar_card_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-red-600 hover:underline flex items-center gap-1 mt-1"
+                            >
+                              <File className="w-3 h-3" />
+                              View Document
+                            </a>
+                          ) : (
+                            <p className="text-xs text-gray-400 mt-1">Not uploaded</p>
+                          )}
+                        </div>
+                      </div>
+                      {isEditing && (
+                        <div className="flex gap-2">
+                          {editedData.aadhaar_card_url && (
+                            <button
+                              onClick={() => handleDocumentRemove('aadhaar')}
+                              disabled={deletingDocument.aadhaar}
+                              className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                              title="Remove document"
+                            >
+                              {deletingDocument.aadhaar ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </button>
+                          )}
+                          <label className="cursor-pointer">
+                            <div className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors">
+                              <Upload className="w-4 h-4" />
+                            </div>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => handleDocumentUpload(e, 'aadhaar')}
+                              disabled={uploadingDocument.aadhaar}
+                            />
+                          </label>
+                        </div>
                       )}
                     </div>
+                    {uploadingDocument.aadhaar && (
+                      <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Uploading...
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <FileText className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-xs text-gray-500">Experience Letter</p>
-                      {profile.experience_letter_url ? (
-                        <a
-                          href={profile.experience_letter_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-red-600 hover:underline"
-                        >
-                          View Document
-                        </a>
-                      ) : (
-                        <p className="text-sm text-gray-400">Not uploaded</p>
+                  {/* Experience Letter */}
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Experience Letter</p>
+                          {editedData.experience_letter_url ? (
+                            <a
+                              href={editedData.experience_letter_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-red-600 hover:underline flex items-center gap-1 mt-1"
+                            >
+                              <File className="w-3 h-3" />
+                              View Document
+                            </a>
+                          ) : (
+                            <p className="text-xs text-gray-400 mt-1">Not uploaded</p>
+                          )}
+                        </div>
+                      </div>
+                      {isEditing && (
+                        <div className="flex gap-2">
+                          {editedData.experience_letter_url && (
+                            <button
+                              onClick={() => handleDocumentRemove('experience')}
+                              disabled={deletingDocument.experience}
+                              className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                              title="Remove document"
+                            >
+                              {deletingDocument.experience ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </button>
+                          )}
+                          <label className="cursor-pointer">
+                            <div className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors">
+                              <Upload className="w-4 h-4" />
+                            </div>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => handleDocumentUpload(e, 'experience')}
+                              disabled={uploadingDocument.experience}
+                            />
+                          </label>
+                        </div>
                       )}
                     </div>
+                    {uploadingDocument.experience && (
+                      <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Uploading...
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

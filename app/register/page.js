@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import fetchApiResponse from '@/helper/api_data_store';
+import md5 from 'blueimp-md5';
+import sha256 from 'crypto-js/sha256';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -295,12 +297,20 @@ export default function RegisterPage() {
     }
   };
 
-  // File upload handler
+  // File upload handler - UPDATED with type parameter
   const handleFileUpload = async (file, type) => {
     if (!file) return;
 
     const formData = new FormData();
     formData.append('image', file);
+    
+    // Add type parameter based on the document type
+    const typeMap = {
+      'aadhaar': 'aadhaar_card',
+      'experience': 'experience_letter',
+      'avatar': 'profile_pic'
+    };
+    formData.append('type', typeMap[type] || type);
 
     setUploading(true);
     setUploadProgress(prev => ({ ...prev, [type]: 10 }));
@@ -312,7 +322,7 @@ export default function RegisterPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
         {
           method: 'POST',
-           headers: {
+          headers: {
             "Access-Token": session?.accessToken,
             "Refresh-Token": session?.refreshToken,
           },
@@ -323,10 +333,15 @@ export default function RegisterPage() {
       setUploadProgress(prev => ({ ...prev, [type]: 80 }));
 
       if (response.meta?.status === 200) {
-        const imageUrl = response.data?.url || response.data?.imageUrl || response.data?.fileUrl;
+        // Handle different response structures
+        const imageUrl = response.data?.image_url?.url || 
+                        response.data?.url || 
+                        response.data?.imageUrl || 
+                        response.data?.fileUrl;
         
         if (imageUrl) {
-          setFileUrls(prev => ({ ...prev, [type]: imageUrl }));
+          const encodedUrl = encodeURI(imageUrl);
+          setFileUrls(prev => ({ ...prev, [type]: encodedUrl }));
           setUploadProgress(prev => ({ ...prev, [type]: 100 }));
           toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully!`);
           
@@ -431,9 +446,9 @@ export default function RegisterPage() {
       newErrors.highest_qualification = 'Highest qualification is required';
     }
     
-    // if (!formData.years_of_experience) {
-    //   newErrors.years_of_experience = 'Please select your experience level';
-    // }
+    if (!formData.years_of_experience) {
+      newErrors.years_of_experience = 'Please select your experience level';
+    }
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -448,12 +463,12 @@ export default function RegisterPage() {
     }
 
     // File validations
-    // if (!fileUrls.aadhaar) {
-    //   newErrors.aadhaar = 'Aadhaar card is required';
-    // }
-    // if (!fileUrls.experience) {
-    //   newErrors.experience = 'Experience letter is required';
-    // }
+    if (!fileUrls.aadhaar) {
+      newErrors.aadhaar = 'Aadhaar card is required';
+    }
+    if (!fileUrls.experience) {
+      newErrors.experience = 'Experience letter is required';
+    }
     
     return newErrors;
   };
@@ -486,20 +501,22 @@ export default function RegisterPage() {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error('Please fix all errors before submitting');
+      toast.error('Please filled all required feilds before submitting');
       return;
     }
 
     setLoading(true);
     try {
+        const passwordHash = sha256(formData.password).toString();
+        const cpasswordHash = sha256(formData.confirmPassword).toString();
       const payload = {
         email_verification_token: emailOtpData.verificationToken,
         mobile_verification_token: mobileOtpData.verificationToken,
         full_name: formData.full_name?.trim() || '',
         email: formData.email?.trim() || '',
         mobile: Number(formData.mobile?.trim()) || '',
-        password: formData.password || '',
-        confirm_password: formData.confirmPassword || '',
+        password: passwordHash,
+        confirm_password: cpasswordHash,
         city: formData.city?.trim() || '',
         state: formData.state?.trim() || '',
         pincode: Number(formData.pincode?.trim()) || '',
@@ -507,12 +524,12 @@ export default function RegisterPage() {
         highest_qualification: formData.highest_qualification?.trim() || '',
         current_organization: formData.current_organization?.trim() || '',
         years_of_experience: formData.years_of_experience || '',
-        // aadhaar_card_url: fileUrls.aadhaar,
-        // experience_letter_url: fileUrls.experience,
-        // avatar_url: fileUrls.avatar || '',
+        aadhaar_card_url: fileUrls.aadhaar,
+        experience_letter_url: fileUrls.experience,
+        avatar_url: fileUrls.avatar || '',
       };
 
-      console.log('Sending payload:', payload);
+      // console.log('Sending payload:', payload);
 
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/signup`,
@@ -1065,7 +1082,7 @@ export default function RegisterPage() {
               <p className="text-sm text-gray-500 mb-4">Upload the required documents (PNG, JPG, or PDF, max 5MB each)</p>
               
               {/* Avatar Upload (Optional) */}
-              {renderFileUpload('avatar', 'Profile Picture', false)}
+              {renderFileUpload('avatar', 'Profile Picture', true)}
 
               {/* Aadhaar Card Upload (Required) */}
               {renderFileUpload('aadhaar', 'Aadhaar Card', true)}

@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
-import { Mail, Lock, Eye, EyeOff, LogIn, X, Send, CheckCircle, Phone } from 'lucide-react';
+import { 
+  Mail, Lock, Eye, EyeOff, LogIn, X, Send, CheckCircle, Phone, 
+  AlertCircle, Loader2, Shield, Key, Copy, Check 
+} from 'lucide-react';
 import { toast } from 'react-toastify';
 import fetchApiResponse from '@/helper/api_data_store';
-import md5 from "blueimp-md5";
+import sha256 from 'crypto-js/sha256';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,6 +26,9 @@ export default function LoginPage() {
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [forgotError, setForgotError] = useState('');
+  const [sessionId, setSessionId] = useState('');
+  const [otpDisplay, setOtpDisplay] = useState('');
+  const [otpCopied, setOtpCopied] = useState(false);
   
   // Mobile OTP States
   const [mobileOtpData, setMobileOtpData] = useState({
@@ -41,6 +47,7 @@ export default function LoginPage() {
     password: ''
   });
   const [errors, setErrors] = useState({});
+  const [showSecurityTip, setShowSecurityTip] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -67,6 +74,8 @@ export default function LoginPage() {
       }
       if (!formData.password) {
         newErrors.password = 'Password is required';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
       }
     }
     return newErrors;
@@ -95,31 +104,36 @@ export default function LoginPage() {
     setOtpError('');
 
     try {
-      const response = await fetchApiResponse(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/mobile`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mobile: parseInt(mobileOtpData.mobile, 10),
-          action: 'generate',
-          purpose: 'login'
-        })
-      });
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/mobile`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mobile: parseInt(mobileOtpData.mobile, 10),
+            action: 'generate',
+            purpose: 'login'
+          })
+        }
+      );
 
-      if (response.meta.status === 200) {
+      if (response.meta?.status === 200) {
         setMobileOtpData(prev => ({
           ...prev,
           session_id: response.data.session_id,
           step: 'otp'
         }));
         setOtpTimer(120);
-        toast.success('OTP sent to your mobile');
+        toast.success('OTP sent to your mobile number');
         setOtpError('');
       } else {
-        setOtpError(response.meta.message || 'Failed to send OTP');
+        setOtpError(response.meta?.message || 'Failed to send OTP');
+        toast.error(response.meta?.message || 'Failed to send OTP');
       }
     } catch (error) {
       console.error('Error sending mobile OTP:', error);
       setOtpError('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsOtpSending(false);
     }
@@ -136,9 +150,12 @@ export default function LoginPage() {
     setOtpError('');
 
     try {
+      // Hash OTP with SHA-256 for security
+      const hashedOtp = sha256(mobileOtpData.otp).toString();
+      
       const result = await signIn('credentials', {
         mobile: mobileOtpData.mobile,
-        otp: mobileOtpData.otp,
+        otp: hashedOtp,
         action: 'verify',
         session_id: mobileOtpData.session_id,
         redirect: false,
@@ -148,12 +165,13 @@ export default function LoginPage() {
         toast.error(result.error || 'Invalid OTP. Please try again.');
         setOtpError(result.error || 'Invalid OTP');
       } else if (result?.ok) {
-        toast.success('Login successful!');
+        toast.success('Login successful! Welcome back.');
         router.push(redirect);
       }
     } catch (error) {
       console.error('Mobile login error:', error);
       toast.error('Something went wrong. Please try again.');
+      setOtpError('Something went wrong. Please try again.');
     } finally {
       setIsOtpVerifying(false);
     }
@@ -165,8 +183,8 @@ export default function LoginPage() {
     
     if (loginMethod === 'mobile') {
       // Handle mobile login
-      if (!mobileOtpData.mobile) {
-        setOtpError('Please enter your mobile number');
+      if (mobileOtpData.step === 'mobile') {
+        await handleGenerateMobileOtp();
         return;
       }
       if (!mobileOtpData.otp) {
@@ -180,27 +198,43 @@ export default function LoginPage() {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      toast.error('Please fix all errors before submitting');
       return;
     }
 
     setLoading(true);
+    setErrors({});
+
     try {
+      // Hash password with SHA-256 before sending
+      const passwordHash = sha256(formData.password).toString();
+      
       const result = await signIn('credentials', {
         email: formData.email,
-        password: formData.password,
+        password: passwordHash,
         redirect: false,
       });
 
       if (result?.error) {
-        toast.error(result.error || 'Login failed. Please check your credentials.');
-        setErrors({ general: result.error || 'Invalid email or password' });
+        let errorMessage = result.error;
+        // Customize error messages for better UX
+        if (errorMessage.includes('Invalid credentials')) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        } else if (errorMessage.includes('User not found')) {
+          errorMessage = 'No account found with this email. Please sign up.';
+        } else if (errorMessage.includes('Email not verified')) {
+          errorMessage = 'Please verify your email before logging in.';
+        }
+        toast.error(errorMessage);
+        setErrors({ general: errorMessage });
       } else if (result?.ok) {
-        toast.success('Login successful!');
+        toast.success('Login successful! Welcome back.');
         router.push(redirect);
       }
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Something went wrong. Please try again.');
+      setErrors({ general: 'Something went wrong. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -226,6 +260,13 @@ export default function LoginPage() {
     setOtpError('');
   };
 
+  // Resend OTP
+  const handleResendOtp = async () => {
+    if (otpTimer > 0) return;
+    await handleGenerateMobileOtp();
+  };
+
+  // Forgot Password - Show OTP
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     if (!forgotEmail) {
@@ -239,30 +280,89 @@ export default function LoginPage() {
 
     setResetLoading(true);
     setForgotError('');
+    setOtpCopied(false);
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail })
-      });
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/forgot-password`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: forgotEmail })
+        }
+      );
 
-      if (response.ok) {
-        setResetSent(true);
-        toast.success('Password reset link sent to your email');
-        setTimeout(() => {
-          setShowForgotPassword(false);
-          setForgotEmail('');
-          setResetSent(false);
-        }, 3000);
+      console.log('Forgot password response:', response); // Debug log
+
+      if (response.meta?.status === 200) {
+        // Extract OTP from various possible response structures
+        let otp = '';
+        let sessionIdFromResponse = '';
+        
+        // Debug: Log the response data structure
+        console.log('Response data structure:', JSON.stringify(response.data, null, 2));
+        
+        // Try to get session_id
+        if (response.data?.session_id) {
+          sessionIdFromResponse = response.data.session_id;
+        }
+        
+        // Try to get OTP from different possible locations
+        if (response.data?.otp) {
+          otp = response.data.otp;
+        } else if (response.data?.email_response?.otp) {
+          otp = response.data.email_response.otp;
+        } else if (response.data?.email_response?.message) {
+          // Try to extract OTP from message
+          const message = response.data.email_response.message;
+          const otpMatch = message.match(/\b\d{4}\b/);
+          if (otpMatch) {
+            otp = otpMatch[0];
+          }
+        } else if (response.data?.email_response?.success && response.data?.email_response?.message) {
+          // Another possible structure
+          const message = response.data.email_response.message;
+          const otpMatch = message.match(/\b\d{4}\b/);
+          if (otpMatch) {
+            otp = otpMatch[0];
+          }
+        }
+        
+        // If OTP is 4 digits, it's valid
+        if (otp && /^\d{4}$/.test(otp)) {
+          setSessionId(sessionIdFromResponse);
+          setOtpDisplay(otp);
+          setResetSent(true);
+          toast.success('Password reset OTP sent to your email');
+          // Don't auto-close the modal - let user close it manually
+        } else {
+          // If we couldn't extract OTP, still show success but without OTP
+          setSessionId(sessionIdFromResponse);
+          setResetSent(true);
+          toast.success('Password reset OTP sent to your email');
+          // Show a message that OTP is sent to email
+          setOtpDisplay(''); // Clear any invalid OTP
+        }
       } else {
-        const data = await response.json();
-        setForgotError(data.message || 'Failed to send reset link');
+        setForgotError(response.meta?.message || 'Failed to send reset link');
+        toast.error(response.meta?.message || 'Failed to send reset link');
       }
     } catch (error) {
+      console.error('Forgot password error:', error);
       setForgotError('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setResetLoading(false);
+    }
+  };
+
+  // Copy OTP to clipboard
+  const copyOtpToClipboard = () => {
+    if (otpDisplay) {
+      navigator.clipboard.writeText(otpDisplay);
+      setOtpCopied(true);
+      toast.success('OTP copied to clipboard!');
+      setTimeout(() => setOtpCopied(false), 3000);
     }
   };
 
@@ -271,6 +371,9 @@ export default function LoginPage() {
     setForgotEmail('');
     setForgotError('');
     setResetSent(false);
+    setOtpDisplay('');
+    setSessionId('');
+    setOtpCopied(false);
   };
 
   if (status === 'loading') {
@@ -288,6 +391,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col montserrat-600 justify-start py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
+          {/* Security Badge */}
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
+              <Shield className="w-4 h-4 text-green-600" />
+              <span className="text-xs text-green-700 font-medium">Secure Login</span>
+            </div>
+          </div>
           <h2 className="mt-6 text-2xl font-bold text-gray-900">
             Sign in to your account
           </h2>
@@ -302,6 +412,22 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* Security Tip */}
+          {showSecurityTip && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md relative">
+              <button
+                onClick={() => setShowSecurityTip(false)}
+                className="absolute top-1 right-1 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <p className="text-xs text-blue-700">
+                <Key className="w-3 h-3 inline mr-1" />
+                Your password is encrypted with SHA-256 before transmission for enhanced security.
+              </p>
+            </div>
+          )}
+
           {/* Login Method Toggle */}
           <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
             <button
@@ -343,7 +469,8 @@ export default function LoginPage() {
           </div>
 
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-red-600">{errors.general}</p>
             </div>
           )}
@@ -374,7 +501,9 @@ export default function LoginPage() {
                     />
                   </div>
                   {errors.email && (
-                    <p className="mt-2 text-sm text-red-600">{errors.email}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" /> {errors.email}
+                    </p>
                   )}
                 </div>
 
@@ -411,7 +540,9 @@ export default function LoginPage() {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="mt-2 text-sm text-red-600">{errors.password}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" /> {errors.password}
+                    </p>
                   )}
                 </div>
 
@@ -446,7 +577,7 @@ export default function LoginPage() {
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
                         <LogIn className="w-4 h-4 mr-2 mt-0.5" />
@@ -482,7 +613,9 @@ export default function LoginPage() {
                     />
                   </div>
                   {otpError && mobileOtpData.step === 'mobile' && (
-                    <p className="mt-2 text-sm text-red-600">{otpError}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" /> {otpError}
+                    </p>
                   )}
                 </div>
 
@@ -503,13 +636,17 @@ export default function LoginPage() {
                           otpError ? 'border-red-300' : 'border-gray-300'
                         } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                         placeholder="Enter 6-digit OTP"
+                        autoFocus
                       />
                     </div>
                     {otpError && (
-                      <p className="mt-2 text-sm text-red-600">{otpError}</p>
+                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" /> {otpError}
+                      </p>
                     )}
                     <div className="mt-2 flex items-center justify-between">
-                      <button                        type="button"
+                      <button
+                        type="button"
                         onClick={() => {
                           setMobileOtpData(prev => ({
                             ...prev,
@@ -525,26 +662,34 @@ export default function LoginPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={handleGenerateMobileOtp}
+                        onClick={handleResendOtp}
                         disabled={isOtpSending || otpTimer > 0}
-                        className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
+                        className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isOtpSending ? 'Sending...' : otpTimer > 0 ? `Resend in ${otpTimer}s` : 'Resend OTP'}
+                        {isOtpSending ? (
+                          <span className="flex items-center gap-1">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Sending...
+                          </span>
+                        ) : otpTimer > 0 ? (
+                          `Resend in ${otpTimer}s`
+                        ) : (
+                          'Resend OTP'
+                        )}
                       </button>
                     </div>
                   </div>
                 )}
 
-                {mobileOtpData.step === 'mobile' && (
+                {mobileOtpData.step === 'mobile' ? (
                   <div>
                     <button
-                      type="button"
-                      onClick={handleGenerateMobileOtp}
+                      type="submit"
                       disabled={isOtpSending || !mobileOtpData.mobile}
                       className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isOtpSending ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
                         <>
                           <Send className="w-4 h-4 mr-2 mt-0.5" />
@@ -553,9 +698,7 @@ export default function LoginPage() {
                       )}
                     </button>
                   </div>
-                )}
-
-                {mobileOtpData.step === 'otp' && (
+                ) : (
                   <div>
                     <button
                       type="submit"
@@ -563,7 +706,7 @@ export default function LoginPage() {
                       className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isOtpVerifying ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
                         <>
                           <LogIn className="w-4 h-4 mr-2 mt-0.5" />
@@ -576,15 +719,33 @@ export default function LoginPage() {
               </>
             )}
           </form>
+
+          {/* Security Footer */}
+          <div className="mt-6">
+            <div className="flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSecurityTip(!showSecurityTip)}
+                className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+              >
+                <Shield className="w-3 h-3" />
+                <span>Security Info</span>
+              </button>
+              <span className="text-xs text-gray-300">|</span>
+              <Link href="/privacy" className="text-xs text-gray-400 hover:text-gray-600">
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Forgot Password Modal - Same as before */}
+      {/* Forgot Password Modal with OTP Display */}
       {showForgotPassword && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
             <div 
-              className="fixed inset-0 bg-white/90 bg-opacity-75 transition-opacity"
+              className="fixed inset-0 bg-black/50 bg-opacity-75 transition-opacity"
               onClick={closeModal}
             ></div>
 
@@ -601,6 +762,7 @@ export default function LoginPage() {
 
               <div>
                 {!resetSent ? (
+                  // Step 1: Enter Email
                   <>
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                       <Mail className="h-6 w-6 text-red-600" />
@@ -611,7 +773,7 @@ export default function LoginPage() {
                       </h3>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Enter your email address and we'll send you a link to reset your password.
+                          Enter your email address and we'll send you an OTP to reset your password.
                         </p>
                       </div>
                     </div>
@@ -634,7 +796,9 @@ export default function LoginPage() {
                           autoFocus
                         />
                         {forgotError && (
-                          <p className="mt-2 text-sm text-red-600">{forgotError}</p>
+                          <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                            <AlertCircle className="w-4 h-4" /> {forgotError}
+                          </p>
                         )}
                       </div>
 
@@ -646,13 +810,13 @@ export default function LoginPage() {
                         >
                           {resetLoading ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
                               Sending...
                             </>
                           ) : (
                             <>
                               <Send className="w-4 h-4 mr-2" />
-                              Send Reset Link
+                              Send OTP
                             </>
                           )}
                         </button>
@@ -660,31 +824,104 @@ export default function LoginPage() {
                     </form>
                   </>
                 ) : (
+                  // Step 2: Show OTP
                   <>
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                       <CheckCircle className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="mt-3 text-center sm:mt-5">
                       <h3 className="text-lg font-semibold leading-6 text-gray-900">
-                        Check your email
+                        OTP Sent Successfully!
                       </h3>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          We've sent a password reset link to <strong>{forgotEmail}</strong>
+                          We've sent a password reset OTP to <strong>{forgotEmail}</strong>
                         </p>
-                        <p className="text-xs text-gray-400 mt-2">
-                          Didn't receive the email? Check your spam folder or try again.
+                        <p className="text-xs text-gray-400 mt-1">
+                          Please check your email inbox (and spam folder)
                         </p>
                       </div>
-                    </div>
-                    <div className="mt-5 sm:mt-6">
-                      <button
-                        type="button"
-                        onClick={closeModal}
-                        className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700"
-                      >
-                        Close
-                      </button>
+                      
+                      {/* OTP Display Box - Only show if we have OTP */}
+                      {otpDisplay && /^\d{4}$/.test(otpDisplay) ? (
+                        <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-red-200">
+                          <p className="text-xs text-gray-500 mb-2">Your OTP Code:</p>
+                          <div className="flex items-center justify-center gap-4">
+                            <div className="flex gap-2">
+                              {otpDisplay.split('').map((digit, index) => (
+                                <div
+                                  key={index}
+                                  className="w-12 h-14 bg-white border-2 border-red-300 rounded-lg flex items-center justify-center text-2xl font-bold text-red-600 shadow-sm"
+                                >
+                                  {digit}
+                                </div>
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={copyOtpToClipboard}
+                              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                              title="Copy OTP"
+                            >
+                              {otpCopied ? (
+                                <Check className="w-5 h-5 text-green-500" />
+                              ) : (
+                                <Copy className="w-5 h-5" />
+                              )}
+                            </button>
+                          </div>
+                          <p className="mt-2 text-xs text-gray-400">
+                            This OTP will expire in 15 minutes
+                          </p>
+                        </div>
+                      ) : (
+                        // Show a message if OTP couldn't be extracted
+                        <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <p className="text-sm text-yellow-700">
+                            <AlertCircle className="w-4 h-4 inline mr-1" />
+                            Please check your email for the 4-digit OTP.
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="mt-4 space-y-3">
+                        {sessionId && (
+                          <Link
+                            href={`/reset-password?session_id=${sessionId}`}
+                            className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700"
+                          >
+                            Reset Password Now
+                          </Link>
+                        )}
+                        
+                        <div className="flex flex-col gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setResetSent(false);
+                              setOtpDisplay('');
+                              setForgotEmail('');
+                              setSessionId('');
+                              setOtpCopied(false);
+                            }}
+                            className="text-sm text-gray-500 hover:text-gray-700"
+                          >
+                            ← Back to forgot password
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Resend OTP
+                              handleForgotPassword(new Event('submit'));
+                            }}
+                            disabled={resetLoading}
+                            className="text-sm text-red-600 hover:text-red-700"
+                          >
+                            Resend OTP
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </>
                 )}
