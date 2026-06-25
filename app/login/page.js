@@ -20,7 +20,7 @@ function LoginPage() {
   
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'mobile'
+  const [loginMethod, setLoginMethod] = useState('email');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);

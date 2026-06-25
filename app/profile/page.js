@@ -79,7 +79,6 @@ export default function ProfilePage() {
 
   const handleEditToggle = () => {
     if (isEditing) {
-      // Cancel editing - reset to original data
       setEditedData(profile);
       setErrors({});
       setAvatarPreview(null);

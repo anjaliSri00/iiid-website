@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import md5 from "blueimp-md5";
 
 // Direct fetch function for server-side (without client-side dependencies)
 const serverFetch = async (url, options) => {
