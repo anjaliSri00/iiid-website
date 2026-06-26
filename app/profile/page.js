@@ -62,10 +62,10 @@ export default function ProfilePage() {
         }
       );
 
-      if (response.meta?.status === 200 && response.data?.data) {
-        setProfile(response.data.data);
-        setEditedData(response.data.data);
-        setOriginalData(response.data.data);
+      if (response.meta?.status === 200 && response.data) {
+        setProfile(response.data);
+        setEditedData(response.data);
+        setOriginalData(response.data);
       } else {
         toast.error(response.meta?.message || 'Failed to fetch profile');
       }
@@ -295,44 +295,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleDocumentRemove = async (documentType) => {
-    const fieldName = documentType === 'aadhaar' ? 'aadhaar_card_url' : 'experience_letter_url';
-    
-    if (!confirm(`Are you sure you want to remove your ${documentType} document?`)) {
-      return;
-    }
-
-    setDeletingDocument(prev => ({ ...prev, [documentType]: true }));
-
-    try {
-      // Call API to delete the document
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/remove-document`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Token': session?.accessToken,
-            'Refresh-Token': session?.refreshToken
-          },
-          body: JSON.stringify({ documentType }),
-        }
-      );
-
-      if (response.meta?.status === 200) {
-        setEditedData(prev => ({ ...prev, [fieldName]: null }));
-        toast.success(`${documentType} document removed successfully`);
-      } else {
-        throw new Error(response.meta?.message || 'Failed to remove document');
-      }
-    } catch (error) {
-      console.error('Error removing document:', error);
-      toast.error(`Failed to remove ${documentType} document`);
-    } finally {
-      setDeletingDocument(prev => ({ ...prev, [documentType]: false }));
-    }
-  };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -787,20 +750,7 @@ export default function ProfilePage() {
                       </div>
                       {isEditing && (
                         <div className="flex gap-2">
-                          {editedData.aadhaar_card_url && (
-                            <button
-                              onClick={() => handleDocumentRemove('aadhaar')}
-                              disabled={deletingDocument.aadhaar}
-                              className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                              title="Remove document"
-                            >
-                              {deletingDocument.aadhaar ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </button>
-                          )}
+                          
                           <label className="cursor-pointer">
                             <div className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors">
                               <Upload className="w-4 h-4" />
@@ -848,20 +798,7 @@ export default function ProfilePage() {
                       </div>
                       {isEditing && (
                         <div className="flex gap-2">
-                          {editedData.experience_letter_url && (
-                            <button
-                              onClick={() => handleDocumentRemove('experience')}
-                              disabled={deletingDocument.experience}
-                              className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                              title="Remove document"
-                            >
-                              {deletingDocument.experience ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </button>
-                          )}
+                        
                           <label className="cursor-pointer">
                             <div className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors">
                               <Upload className="w-4 h-4" />

@@ -82,14 +82,14 @@ const FileUploadField = ({ type, label, required, fileUrl, file, uploadProgress,
       ) : (
         <div className="flex items-center justify-between p-2 border border-green-200 bg-green-50 rounded-lg">
           <div className="flex items-center space-x-2 truncate">
-            <FileText className="w-6 h-6 text-green-600 flex-shrink-0" />
+            <FileText className="w-6 h-6 text-green-600 shrink-0" />
             <div className="truncate">
               <p className="text-xs font-medium text-gray-700 truncate">{file?.name || 'Uploaded'}</p>
               <p className="text-[10px] text-gray-500">
                 {file ? `${(file.size / 1024).toFixed(1)} KB` : 'Uploaded'}
               </p>
             </div>
-            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+            <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
           </div>
           <button
             type="button"
@@ -583,7 +583,7 @@ export default function RegisterPage() {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error('Please fill all required fields before submitting');
+      // toast.error('Please fill all required fields before submitting');
       return;
     }
 

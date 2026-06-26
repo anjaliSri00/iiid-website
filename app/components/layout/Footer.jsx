@@ -26,9 +26,9 @@ export default function Footer() {
               <Link href="#" className="text-gray-600 hover:text-accent transition-colors">
                 <FaFacebook size={20} />
               </Link>
-              <Link href="#" className="text-gray-600 hover:text-accent transition-colors">
+              {/* <Link href="#" className="text-gray-600 hover:text-accent transition-colors">
                 <FaTwitter size={20} />
-              </Link>
+              </Link> */}
               <Link href="#" className="text-gray-600 hover:text-accent transition-colors">
                 <FaLinkedin size={20} />
               </Link>

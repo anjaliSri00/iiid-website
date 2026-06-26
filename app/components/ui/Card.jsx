@@ -3,7 +3,7 @@
 export default function Card({ children, className = "", onClick }) {
   return (
     <div 
-      className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 ${className}`}
+      className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 ${className}`}
       onClick={onClick}
     >
       {children}
@@ -14,7 +14,7 @@ export default function Card({ children, className = "", onClick }) {
 // Card Header Component
 Card.Header = function CardHeader({ children, className = "" }) {
   return (
-    <div className={`p-5 md:p-6 border-b border-gray-100 ${className}`}>
+    <div className={`p-4 md:p-5 border-b border-gray-100 ${className}`}>
       {children}
     </div>
   );
@@ -23,7 +23,7 @@ Card.Header = function CardHeader({ children, className = "" }) {
 // Card Body Component
 Card.Body = function CardBody({ children, className = "" }) {
   return (
-    <div className={`p-5 md:p-6 ${className}`}>
+    <div className={`p-4 ${className}`}>
       {children}
     </div>
   );
