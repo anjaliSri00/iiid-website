@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,12 +17,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 .montserrat-400{
   font-family: "Montserrat", sans-serif;
@@ -41,12 +46,17 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #f3f4f6; /* bg-gray-50 */
+  color: #111827; /* text-gray-900 */
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
 }
 
+/* Only apply dark mode to specific dark sections if needed */
+.dark-section {
+  background: var(--background);
+  color: var(--foreground);
+}
 
 .swiper {
   width: 100%;
@@ -69,4 +79,18 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Ensure form elements have proper colors */
+input, select, textarea {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+/* For dark mode form elements (if needed) */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  color: #ffffff !important;
+  background-color: #1f2937 !important;
 }
