@@ -24,12 +24,12 @@
   }
 } */
 
-.montserrat-400{
+.montserrat-400 {
   font-family: "Montserrat", sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
 }
-.montserrat-500{
+.montserrat-500 {
   font-family: "Montserrat", sans-serif;
   font-optical-sizing: auto;
   font-weight: 500;
@@ -37,12 +37,12 @@
 .montserrat-600 {
   font-family: "Montserrat", sans-serif;
   font-optical-sizing: auto;
-  font-weight:600;
+  font-weight: 600;
 }
 .montserrat-700 {
   font-family: "Montserrat", sans-serif;
   font-optical-sizing: auto;
-  font-weight:700;
+  font-weight: 700;
 }
 
 body {
@@ -82,7 +82,9 @@ body {
 }
 
 /* Ensure form elements have proper colors */
-input, select, textarea {
+input,
+select,
+textarea {
   color: #111827 !important;
   background-color: #ffffff !important;
 }
