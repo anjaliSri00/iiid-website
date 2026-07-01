@@ -103,6 +103,10 @@ export default function DashboardPage() {
   const [thumbnailUploadProgress, setThumbnailUploadProgress] = useState(0);
   const [thumbnailFile, setThumbnailFile] = useState(null);
 
+   // Enrolled Courses States
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [enrolledCoursesLoading, setEnrolledCoursesLoading] = useState(false);
+
   // Lesson states
   const [editingLesson, setEditingLesson] = useState(null);
   const [lessonSaving, setLessonSaving] = useState(false);
@@ -143,6 +147,7 @@ export default function DashboardPage() {
     if (status === "authenticated" && session?.user?.id) {
       fetchProfile();
       fetchPrograms();
+      fetchEnrolledCourses();
     }
   }, [status, session]);
 
@@ -185,6 +190,68 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+
+// Fetch enrolled courses from /api/v1/enrollments/my-courses
+const fetchEnrolledCourses = async () => {
+  setEnrolledCoursesLoading(true);
+  try {
+    const response = await fetchApiResponse(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/enrollments/my-courses`,
+      {
+        method: "GET",
+        headers: {
+          "Access-Token": session?.accessToken,
+          "Refresh-Token": session?.refreshToken,
+        },
+      }
+    );
+
+    if (response.meta?.status === 200 && response.data) {
+      // Transform the data to match our expected format
+      const courses = Array.isArray(response.data) ? response.data : [];
+      const formattedCourses = courses.map((enrollment) => ({
+        // Enrollment info
+        enrollment_id: enrollment.enrollment_id,
+        enrollment_status: enrollment.status,
+        enrolled_at: enrollment.enrolled_at,
+        // Course info (flattened from the course object)
+        course_id: enrollment.id,
+        course_code: enrollment.course_code,
+        title: enrollment.title,
+        description: enrollment.description,
+        original_price: enrollment.original_price,
+        discount: enrollment.discount,
+        final_price: enrollment.final_price,
+        thumbnail_url: enrollment.thumbnail_url,
+        instructor_id: enrollment.instructor_id,
+        category: enrollment.category,
+        level: enrollment.level,
+        is_active: enrollment.is_active,
+        mode: enrollment.mode,
+        duration: enrollment.duration,
+        created_by: enrollment.created_by,
+        created_at: enrollment.created_at,
+        updated_at: enrollment.updated_at,
+        deleted_at: enrollment.deleted_at,
+        // Progress (if not provided, default to 0)
+        progress: enrollment.progress || 0,
+        // Status mapping - use enrollment status or course status
+        status: enrollment.status || 'active',
+        // Check if certificate is issued (if this field exists)
+        certificate_issued: enrollment.certificate_issued || false,
+      }));
+      setEnrolledCourses(formattedCourses);
+    } else {
+      console.error("Enrolled courses fetch failed:", response.meta?.message);
+      setEnrolledCourses([]);
+    }
+  } catch (error) {
+    console.error("Error fetching enrolled courses:", error);
+    setEnrolledCourses([]);
+  } finally {
+    setEnrolledCoursesLoading(false);
+  }
+};
 
   // Fetch programs from API with lessons
   const fetchPrograms = async () => {
@@ -1706,6 +1773,22 @@ export default function DashboardPage() {
                     <Activity className="w-4 h-4 inline mr-2" />
                     Overview
                   </button>
+                  {!hasAdminOrInternalRoleFromSession() && <button
+                    onClick={() => setActiveTab("my-courses")}
+                    className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      activeTab === "my-courses"
+                        ? "border-red-600 text-red-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4 inline mr-2" />
+                    My Courses
+                    {enrolledCourses.length > 0 && (
+                      <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 rounded-full">
+                        {enrolledCourses.length}
+                      </span>
+                    )}
+                  </button>}
 
                   {hasAdminOrInternalRoleFromSession() && (
                     <button
@@ -1851,7 +1934,6 @@ export default function DashboardPage() {
                         </div>
                       </>
                     ) : (
-                      // Student Stats
                       <>
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                           <div className="flex items-center gap-3 mb-2">
@@ -1862,12 +1944,74 @@ export default function DashboardPage() {
                               Enrolled Programs
                             </h4>
                           </div>
-                          <p className="text-2xl font-bold text-blue-600">0</p>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {enrolledCourses.filter(
+                              (c) => c.enrollment_status === 'active' || c.status === 'active'
+                            ).length}
+                          </p>
                           <p className="text-xs text-gray-500 mt-1">
                             Active enrollments
                           </p>
                         </div>
 
+                        <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-green-100 rounded-full">
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              Completed
+                            </h4>
+                          </div>
+                          <p className="text-2xl font-bold text-green-600">
+                            {enrolledCourses.filter(
+                              (c) => c.enrollment_status === 'completed' || c.status === 'completed'
+                            ).length}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Completed programs
+                          </p>
+                        </div>
+
+                        <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-yellow-100 rounded-full">
+                              <TrendingUp className="w-5 h-5 text-yellow-600" />
+                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              In Progress
+                            </h4>
+                          </div>
+                          <p className="text-2xl font-bold text-yellow-600">
+                            {enrolledCourses.filter(
+                              (c) =>  (c.enrollment_status === 'active' || c.status === 'active') && 
+        c.progress > 0 && c.progress < 100
+                            ).length}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Programs in progress
+                          </p>
+                        </div>
+
+                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-purple-100 rounded-full">
+                              <Award className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              Certificates
+                            </h4>
+                          </div>
+                          <p className="text-2xl font-bold text-purple-600">
+                            {enrolledCourses.filter(
+                              (c) => c.certificate_issued
+                            ).length || 0}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Earned certificates
+                          </p>
+                        </div>
+                      
                         <div className="p-4 bg-green-50 rounded-lg border border-green-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-green-100 rounded-full">
@@ -2036,6 +2180,139 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
+              ) : activeTab === "my-courses" ? (
+  // My Courses Tab - Enrolled Courses
+  <div>
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">
+          My Courses
+        </h3>
+        <p className="text-sm text-gray-500">
+          {enrolledCourses.length > 0
+            ? `You are enrolled in ${enrolledCourses.length} course${enrolledCourses.length > 1 ? 's' : ''}`
+            : "You haven't enrolled in any courses yet"}
+        </p>
+      </div>
+      <Link
+        href="/#programs"
+        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+      >
+        <Plus className="w-4 h-4" />
+        Browse Courses
+      </Link>
+    </div>
+
+    {enrolledCoursesLoading ? (
+      <div className="text-center py-8">
+        <Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto" />
+        <p className="mt-2 text-gray-500">Loading your courses...</p>
+      </div>
+    ) : enrolledCourses.length === 0 ? (
+      <div className="text-center py-12">
+        <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500 mb-2">
+          You haven't enrolled in any courses yet
+        </p>
+        <Link
+          href="/#programs"
+          className="text-red-600 hover:text-red-700 inline-flex items-center gap-1"
+        >
+          Browse available programs
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    ) : (
+      <div className="space-y-4">
+        {enrolledCourses.map((course) => (
+          <div
+            key={course.enrollment_id || course.course_id}
+            className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+          >
+            <div className="flex flex-col md:flex-row">
+              {course.thumbnail_url && (
+                <div className="md:w-48 h-32 bg-gray-200 shrink-0">
+                  <img
+                    src={course.thumbnail_url}
+                    alt={course.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex-1 p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <h4 className="font-semibold text-gray-900">
+                        {course.title}
+                      </h4>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(course.enrollment_status || course.status)}`}
+                      >
+                        {course.enrollment_status || course.status || "Active"}
+                      </span>
+                      {course.course_code && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                          {course.course_code}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {course.description}
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <BookOpen className="w-3 h-3" />
+                        {course.category || "General"}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {course.duration || "N/A"}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Award className="w-3 h-3" />
+                        {course.level || "Beginner"}
+                      </span>
+                      {course.enrolled_at && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Enrolled: {new Date(course.enrolled_at).toLocaleDateString()}
+                        </span>
+                      )}
+                      {course.final_price && (
+                        <span className="flex items-center gap-1 font-semibold text-gray-700">
+                          ₹{course.final_price}
+                          {course.original_price && course.discount > 0 && (
+                            <span className="text-gray-400 line-through ml-1">
+                              ₹{course.original_price}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                      {course.progress !== undefined && course.progress > 0 && (
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3" />
+                          Progress: {course.progress}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/programs/${course.course_id}`}
+                    className="shrink-0 ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    {course.progress && course.progress > 0 ? 'Continue Learning' : 'Start Learning'}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+
               ) : activeTab === "programs" ? (
                 // Programs Tab
                 <div>

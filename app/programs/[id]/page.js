@@ -164,7 +164,7 @@ const ProgramDetailPage = () => {
   const savedAmount = hasDiscount ? program.original_price - program.final_price : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white py-8 md:py-16">
+    <div className="min-h-screen bg-linear-to-b from-red-50 to-white py-8 md:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Link 
@@ -213,7 +213,7 @@ const ProgramDetailPage = () => {
                 </div>
               </div>
             ) : (
-              <div className="h-64 md:h-80 bg-gradient-to-r from-red-600 to-red-700 flex items-center justify-center">
+              <div className="h-64 md:h-80 bg-linear-to-r from-red-600 to-red-700 flex items-center justify-center">
                 <div className="text-center text-white">
                   <BookOpen className="w-20 h-20 mx-auto mb-4 opacity-50" />
                   <h1 className="text-3xl md:text-4xl font-bold">{program.title}</h1>
@@ -311,7 +311,7 @@ const ProgramDetailPage = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="min-h-[200px]">
+            <div className="min-h-50">
               {/* Overview Tab */}
               {activeTab === 'overview' && (
                 <div>
@@ -355,7 +355,7 @@ const ProgramDetailPage = () => {
                           key={lesson.id || index}
                           className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors"
                         >
-                          <div className="flex-shrink-0 w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-bold text-sm">
+                          <div className="shrink-0 w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-bold text-sm">
                             {index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -418,7 +418,7 @@ const ProgramDetailPage = () => {
                         key={idx}
                         className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
                       >
-                        <div className="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                        <div className="shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
                           <CheckCircle className="w-5 h-5" />
                         </div>
                         <div>

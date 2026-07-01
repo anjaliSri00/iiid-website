@@ -29,6 +29,21 @@ import {
 import { toast } from 'react-toastify';
 import fetchApiResponse from '@/helper/api_data_store';
 
+// Load Razorpay script
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const CheckoutPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -42,10 +57,13 @@ const CheckoutPage = () => {
   const [step, setStep] = useState(1);
   const [userDetails, setUserDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null);
 
   const [formData, setFormData] = useState({
     paymentMethod: 'razorpay',
-    agreeTerms: false
+    agreeTerms: false,
+    couponCode: '',
   });
 
   // Check if user is logged in
@@ -57,12 +75,96 @@ const CheckoutPage = () => {
       return;
     }
 
-    // User is logged in, fetch user details and program details
+    // User is logged in, fetch data
     if (session?.user) {
       fetchUserDetails();
-      fetchProgramDetails();
+      fetchCheckoutDetails();
     }
   }, [session, status, router, programId]);
+
+  // Fetch checkout details (public endpoint with optional auth)
+  const fetchCheckoutDetails = async () => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/checkout?id=${programId}&type=course_enrollment`,
+        {
+          method: "GET",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        }
+      );
+
+      if (response.meta?.status === 200 && response.data) {
+      const { course, user, price_details, enrollment } = response.data;
+      
+      // Set checkout data
+      setCheckoutData({
+        course,
+        user,
+        price_details,
+        enrollment
+      });
+
+      // Set program details from course data
+      if (course) {
+        setProgram({
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          category: course.category,
+          duration: course.duration,
+          mode: course.mode || 'Online',
+          level: course.level,
+          original_price: parseFloat(course.original_price || price_details?.original_price || 0),
+          discount: parseFloat(course.discount || price_details?.discount || 0),
+          final_price: parseFloat(course.final_price || price_details?.final_price || course.original_price || 0),
+          fee: `₹${parseFloat(course.final_price || price_details?.final_price || course.original_price || 0).toFixed(2)}`,
+          thumbnail_url: course.thumbnail_url,
+          status: course.status,
+          course_code: course.course_code,
+          lessons: course.lessons || [],
+          created_at: course.created_at,
+          updated_at: course.updated_at,
+          assessment: getAssessmentForCategory(course.category),
+        });
+      }
+
+      // Update user details from checkout response
+      if (user) {
+        setUserDetails({
+          name: user.full_name || user.name || 'User',
+          email: user.email,
+          phone: user.mobile || user.phone || '',
+          address: user.full_address || user.address || '',
+          city: user.city || '',
+          state: user.state || '',
+          pincode: user.pincode || '',
+        });
+      }
+
+      // Check if already enrolled
+      if (enrollment && enrollment.status === 'active') {
+        toast.info("You are already enrolled in this course!");
+        setTimeout(() => {
+          router.push('/dashboard?tab=my-courses');
+        }, 2000);
+      }
+    } else {
+      // If checkout fails, fallback to fetching course details directly
+      fetchProgramDetails();
+    }
+  } catch (error) {
+    console.error("Error fetching checkout details:", error);
+    // Fallback to fetching course details directly
+    fetchProgramDetails();
+  }finally {
+    // IMPORTANT: Set loading to false when checkout completes
+    setIsLoading(false);
+    setLoading(false);
+  }
+};
 
   const fetchUserDetails = async () => {
     try {
@@ -116,7 +218,7 @@ const CheckoutPage = () => {
 
       if (response.meta?.status === 200 && response.data) {
         const course = response.data;
-        const formattedProgram = {
+        setProgram({
           id: course.id,
           title: course.title,
           description: course.description,
@@ -135,8 +237,7 @@ const CheckoutPage = () => {
           created_at: course.created_at,
           updated_at: course.updated_at,
           assessment: getAssessmentForCategory(course.category),
-        };
-        setProgram(formattedProgram);
+        });
       } else {
         setError(response.meta?.message || "Failed to fetch program details");
       }
@@ -145,6 +246,7 @@ const CheckoutPage = () => {
       setError("Failed to load program details. Please try again.");
     } finally {
       setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -169,44 +271,198 @@ const CheckoutPage = () => {
     }));
   };
 
+  // Create order and initiate payment
+ const initiatePayment = async () => {
+  if (!formData.agreeTerms) {
+    toast.error("Please agree to the Terms & Conditions");
+    return;
+  }
+
+  if (program.status !== 'published') {
+    toast.error("This course is not yet published and cannot be enrolled.");
+    return;
+  }
+
+  setIsProcessing(true);
+  setPaymentStatus('processing');
+
+  try {
+    const finalAmount = checkoutData?.price_details?.final_price || totalAmount;
+
+    // Step 1: Create payment order using the payments API
+    const orderResponse = await fetchApiResponse(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-order?id=${programId}&type=course_enrollment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Token": session?.accessToken,
+          "Refresh-Token": session?.refreshToken,
+        },
+        body: JSON.stringify({
+          id: parseInt(programId),
+          amount: finalAmount,
+          currency: "INR",
+          method: formData.paymentMethod,
+          coupon_code: formData.couponCode || undefined,
+        }),
+      }
+    );
+
+    if (!orderResponse.meta?.status || (orderResponse.meta.status !== 200 && orderResponse.meta.status !== 201)) {
+      throw new Error(orderResponse.meta?.message || "Failed to create payment order");
+    }
+
+    const orderData = orderResponse.data;
+    console.log("Order created:", orderData);
+
+    // Step 2: Load Razorpay and process payment
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded) {
+      throw new Error("Payment gateway failed to load. Please try again.");
+    }
+
+    // Use the Razorpay order ID from the response
+    const razorpayOrderId = orderData.razorpay_order_id || orderData.partner_order_id || orderData.order_id;
+    
+    // Amount should be in paisa (multiply by 100)
+    const amountInPaisa = Math.round(parseFloat(orderData.amount_paid || finalAmount) * 100);
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: amountInPaisa,
+      currency: "INR",
+      name: "IIID Courses",
+      description: `Enrollment in ${program.title}`,
+      image: "/logo.png",
+      order_id: razorpayOrderId,
+      handler: function (response) {
+        // Payment successful - Verify payment
+        verifyPayment(response, orderData);
+      },
+      prefill: {
+        name: userDetails?.name || '',
+        email: userDetails?.email || '',
+        contact: userDetails?.phone || '',
+      },
+      notes: {
+        course_id: programId,
+        user_id: session?.user?.id,
+        order_id: orderData.order_id,
+        payment_for: orderData.payment_for || "course_enrollment",
+      },
+      theme: {
+        color: "#dc2626",
+      },
+      modal: {
+        ondismiss: function() {
+          setPaymentStatus('failed');
+          setIsProcessing(false);
+          toast.error("Payment cancelled. Please try again.");
+        }
+      }
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+
+  } catch (error) {
+    console.error("Payment initiation error:", error);
+    setPaymentStatus('failed');
+    toast.error(error.message || "Payment failed. Please try again.");
+    setIsProcessing(false);
+  }
+};
+
+  // Verify payment after successful Razorpay payment
+// Verify payment after successful Razorpay payment
+const verifyPayment = async (paymentResponse, orderData) => {
+  try {
+    setPaymentStatus('verifying');
+
+    // Step 3: Verify payment using the payments verify API
+    const verifyResponse = await fetchApiResponse(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Token": session?.accessToken,
+          "Refresh-Token": session?.refreshToken,
+        },
+        body: JSON.stringify({
+          payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_order_id: paymentResponse.razorpay_order_id || orderData.razorpay_order_id || orderData.partner_order_id,
+          razorpay_signature: paymentResponse.razorpay_signature,
+          order_id: orderData.order_id,
+          type: "course_enrollment",
+          id: parseInt(programId),
+        }),
+      }
+    );
+
+    if (verifyResponse.meta?.status === 200) {
+      // Step 4: Payment verified successfully - Now create enrollment
+      setPaymentStatus('enrolling');
+      
+      const enrollmentResponse = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/enrollments/courses/${programId}/enroll`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+          body: JSON.stringify({
+            payment_id: paymentResponse.razorpay_payment_id,
+            order_id: orderData.order_id,
+            payment_method: formData.paymentMethod,
+            amount: checkoutData?.price_details?.final_price || totalAmount,
+            currency: "INR",
+          }),
+        }
+      );
+
+      if (enrollmentResponse.meta?.status === 201) {
+        setPaymentStatus('success');
+        toast.success('🎉 Payment successful! You are now enrolled in the course.');
+        
+        // Redirect to success page
+        router.push(
+          `/payment-success?id=${programId}&payment_id=${paymentResponse.razorpay_payment_id}&order_id=${orderData.order_id}`
+        );
+      } else {
+        // Payment verified but enrollment failed
+        const errorMsg = enrollmentResponse.meta?.message || "Payment successful but enrollment failed. Please contact support.";
+        toast.error(errorMsg);
+        setPaymentStatus('partial');
+        // Still redirect to success page with warning
+        router.push(
+          `/payment-success?id=${programId}&payment_id=${paymentResponse.razorpay_payment_id}&order_id=${orderData.order_id}&status=partial`
+        );
+      }
+    } else {
+      throw new Error(verifyResponse.meta?.message || "Payment verification failed");
+    }
+
+  } catch (error) {
+    console.error("Payment verification error:", error);
+    setPaymentStatus('failed');
+    toast.error(error.message || "Payment verification failed. Please contact support.");
+    
+    // Still redirect to success page with warning
+    router.push(
+      `/payment-success?id=${programId}&payment_id=${paymentResponse?.razorpay_payment_id}&status=partial`
+    );
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.agreeTerms) {
-      toast.error("Please agree to the Terms & Conditions");
-      return;
-    }
-
-    setIsProcessing(true);
-    
-    try {
-      // Prepare enrollment data
-      const enrollmentData = {
-        course_id: program.id,
-        user_id: session?.user?.id,
-        payment_method: formData.paymentMethod,
-        amount: program.final_price || program.original_price,
-        status: 'pending',
-        user_details: {
-          name: userDetails?.name,
-          email: userDetails?.email,
-          phone: userDetails?.phone,
-        }
-      };
-
-      // In a real implementation, you would call your payment API here
-      // For now, we'll simulate the payment process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      toast.success('Payment successful! You are now enrolled.');
-      router.push(`/payment-success?program=${program.id}`);
-      
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast.error("Payment failed. Please try again.");
-    } finally {
-      setIsProcessing(false);
-    }
+    await initiatePayment();
   };
 
   const handlePrevious = () => {
@@ -214,13 +470,20 @@ const CheckoutPage = () => {
   };
 
   const handleNext = () => {
+    if (step === 1) {
+      // Validate before going to payment
+      if (!formData.agreeTerms) {
+        toast.error("Please agree to the Terms & Conditions");
+        return;
+      }
+    }
     setStep(step + 1);
   };
 
   // Show loading state
   if (status === 'loading' || isLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-red-50 to-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-linear-to-b from-red-50 to-white flex flex-col items-center justify-center">
         <div className="relative">
           <div className="w-16 h-16 border-4 border-red-100 rounded-full"></div>
           <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin"></div>
@@ -405,6 +668,36 @@ const CheckoutPage = () => {
                       </div>
                     </div>
 
+                    {/* Coupon Code */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Coupon Code
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          name="couponCode"
+                          value={formData.couponCode}
+                          onChange={handleChange}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                          placeholder="Enter coupon code"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (formData.couponCode) {
+                              toast.info("Coupon applied successfully!");
+                            } else {
+                              toast.warning("Please enter a coupon code");
+                            }
+                          }}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+
                     {/* User Info Summary */}
                     <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                       <h4 className="text-sm font-semibold text-blue-800 mb-2">Enrolled As</h4>
@@ -427,12 +720,46 @@ const CheckoutPage = () => {
                       <div className="flex items-start gap-3">
                         <Shield className="w-5 h-5 text-green-600 mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-green-800">Secure Enrollment</p>
+                          <p className="text-sm font-medium text-green-800">Secure Payment</p>
                           <p className="text-xs text-green-600 mt-0.5">
-                            Your information is safe and secure. We never share your data with third parties.
+                            Your payment will be processed securely. You will be enrolled immediately after successful payment.
                           </p>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Navigation to Payment */}
+                    <div className="flex justify-end pt-4">
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={!formData.agreeTerms || program.status !== 'published'}
+                        className={`px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
+                          (!formData.agreeTerms || program.status !== 'published') && 'opacity-50 cursor-not-allowed'
+                        }`}
+                      >
+                        Proceed to Payment
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
+
+                    {/* Terms Checkbox */}
+                    <div className="pt-4 border-t border-gray-200">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="agreeTerms"
+                          checked={formData.agreeTerms}
+                          onChange={handleChange}
+                          className="mt-0.5 accent-red-600"
+                          required
+                        />
+                        <span className="text-xs text-gray-600">
+                          I agree to the <a href="#" className="text-red-600 hover:underline">Terms & Conditions</a> and 
+                          <a href="#" className="text-red-600 hover:underline ml-1">Privacy Policy</a>. 
+                          I understand that this is a binding agreement.
+                        </span>
+                      </label>
                     </div>
                   </div>
                 )}
@@ -514,78 +841,51 @@ const CheckoutPage = () => {
                         <div>
                           <p className="text-sm font-medium text-amber-800">Payment Confirmation</p>
                           <p className="text-xs text-amber-700 mt-0.5">
-                            You will receive a confirmation email after successful payment.
+                            You will be enrolled immediately after successful payment. A confirmation email will be sent to you.
                           </p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
 
-                {/* Navigation Buttons */}
-                <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-                  {step > 1 ? (
-                    <button
-                      type="button"
-                      onClick={handlePrevious}
-                      className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
-                    >
-                      Previous
-                    </button>
-                  ) : (
-                    <div />
-                  )}
-                  
-                  {step < 2 ? (
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg"
-                    >
-                      Continue
-                      <ChevronRight size={18} />
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={isProcessing || !formData.agreeTerms}
-                      className={`px-8 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
-                        (isProcessing || !formData.agreeTerms) && 'opacity-70 cursor-not-allowed'
-                      }`}
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={16} />
-                          Pay ₹{totalAmount.toFixed(2)}
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                      <button
+                        type="button"
+                        onClick={handlePrevious}
+                        className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
+                      >
+                        Previous
+                      </button>
+                      
+                      <button
+                        type="submit"
+                        disabled={isProcessing || !formData.agreeTerms || program.status !== 'published'}
+                        className={`px-8 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
+                          (isProcessing || !formData.agreeTerms || program.status !== 'published') && 'opacity-70 cursor-not-allowed'
+                        }`}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {paymentStatus === 'processing' ? 'Processing...' : 'Verifying...'}
+                          </>
+                        ) : (
+                          <>
+                            <Lock size={16} />
+                            Pay ₹{totalAmount.toFixed(2)}
+                          </>
+                        )}
+                      </button>
+                    </div>
 
-                {/* Terms Checkbox */}
-                {step === 2 && (
-                  <div className="mt-6 pt-4 border-t border-gray-200">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="agreeTerms"
-                        checked={formData.agreeTerms}
-                        onChange={handleChange}
-                        className="mt-0.5 accent-red-600"
-                        required
-                      />
-                      <span className="text-xs text-gray-600">
-                        I agree to the <a href="#" className="text-red-600 hover:underline">Terms & Conditions</a> and 
-                        <a href="#" className="text-red-600 hover:underline ml-1">Privacy Policy</a>. 
-                        I understand that this is a binding agreement.
-                      </span>
-                    </label>
+                    {program.status !== 'published' && (
+                      <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                        <div className="flex items-center gap-2 text-xs text-red-700">
+                          <AlertCircle size={14} className="text-red-600" />
+                          <span>This course is not yet published and cannot be enrolled.</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -602,7 +902,7 @@ const CheckoutPage = () => {
               <div className="space-y-3">
                 <div className="flex items-start gap-3 pb-3 border-b border-gray-200">
                   {program.thumbnail_url ? (
-                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0">
                       <img 
                         src={program.thumbnail_url} 
                         alt={program.title}
@@ -659,6 +959,12 @@ const CheckoutPage = () => {
                       <span>- ₹{((program.original_price * program.discount) / 100).toFixed(2)}</span>
                     </div>
                   )}
+                  {formData.couponCode && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Coupon ({formData.couponCode})</span>
+                      <span>- ₹{0}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">GST (18%)</span>
                     <span className="font-medium text-gray-900">
@@ -681,7 +987,7 @@ const CheckoutPage = () => {
                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-center gap-2 text-xs text-blue-700">
                       <CheckCircle size={14} className="text-blue-600" />
-                      <span>Instant enrollment confirmation</span>
+                      <span>Instant enrollment after payment</span>
                     </div>
                   </div>
                 </div>
