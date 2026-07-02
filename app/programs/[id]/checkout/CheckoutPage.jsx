@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import fetchApiResponse from '@/helper/api_data_store';
+import { logo } from '@/public/img';
 
 // Load Razorpay script
 const loadRazorpayScript = () => {
@@ -97,74 +98,74 @@ const CheckoutPage = () => {
       );
 
       if (response.meta?.status === 200 && response.data) {
-      const { course, user, price_details, enrollment } = response.data;
+        const { course, user, price_details, enrollment } = response.data;
       
-      // Set checkout data
-      setCheckoutData({
-        course,
-        user,
-        price_details,
-        enrollment
-      });
-
-      // Set program details from course data
-      if (course) {
-        setProgram({
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          category: course.category,
-          duration: course.duration,
-          mode: course.mode || 'Online',
-          level: course.level,
-          original_price: parseFloat(course.original_price || price_details?.original_price || 0),
-          discount: parseFloat(course.discount || price_details?.discount || 0),
-          final_price: parseFloat(course.final_price || price_details?.final_price || course.original_price || 0),
-          fee: `₹${parseFloat(course.final_price || price_details?.final_price || course.original_price || 0).toFixed(2)}`,
-          thumbnail_url: course.thumbnail_url,
-          status: course.status,
-          course_code: course.course_code,
-          lessons: course.lessons || [],
-          created_at: course.created_at,
-          updated_at: course.updated_at,
-          assessment: getAssessmentForCategory(course.category),
+        // Set checkout data
+        setCheckoutData({
+          course,
+          user,
+          price_details,
+          enrollment
         });
-      }
 
-      // Update user details from checkout response
-      if (user) {
-        setUserDetails({
-          name: user.full_name || user.name || 'User',
-          email: user.email,
-          phone: user.mobile || user.phone || '',
-          address: user.full_address || user.address || '',
-          city: user.city || '',
-          state: user.state || '',
-          pincode: user.pincode || '',
-        });
-      }
+        // Set program details from course data
+        if (course) {
+          setProgram({
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            category: course.category,
+            duration: course.duration,
+            mode: course.mode || 'Online',
+            level: course.level,
+            original_price: parseFloat(course.original_price || price_details?.original_price || 0),
+            discount: parseFloat(course.discount || price_details?.discount || 0),
+            final_price: parseFloat(course.final_price || price_details?.final_price || course.original_price || 0),
+            fee: `₹${parseFloat(course.final_price || price_details?.final_price || course.original_price || 0).toFixed(2)}`,
+            thumbnail_url: course.thumbnail_url,
+            status: course.status,
+            course_code: course.course_code,
+            lessons: course.lessons || [],
+            created_at: course.created_at,
+            updated_at: course.updated_at,
+            assessment: getAssessmentForCategory(course.category),
+          });
+        }
 
-      // Check if already enrolled
-      if (enrollment && enrollment.status === 'active') {
-        toast.info("You are already enrolled in this course!");
-        setTimeout(() => {
-          router.push('/dashboard?tab=my-courses');
-        }, 2000);
+        // Update user details from checkout response
+        if (user) {
+          setUserDetails({
+            name: user.full_name || user.name || 'User',
+            email: user.email,
+            phone: user.mobile || user.phone || '',
+            address: user.full_address || user.address || '',
+            city: user.city || '',
+            state: user.state || '',
+            pincode: user.pincode || '',
+          });
+        }
+
+        // Check if already enrolled
+        if (enrollment && enrollment.status === 'active') {
+          toast.info("You are already enrolled in this course!");
+          setTimeout(() => {
+            router.push('/dashboard?tab=my-courses');
+          }, 2000);
+        }
+      } else {
+        // If checkout fails, fallback to fetching course details directly
+        fetchProgramDetails();
       }
-    } else {
-      // If checkout fails, fallback to fetching course details directly
+    } catch (error) {
+      console.error("Error fetching checkout details:", error);
+      // Fallback to fetching course details directly
       fetchProgramDetails();
+    } finally {
+      // IMPORTANT: Set loading to false when checkout completes
+      setIsLoading(false);
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching checkout details:", error);
-    // Fallback to fetching course details directly
-    fetchProgramDetails();
-  }finally {
-    // IMPORTANT: Set loading to false when checkout completes
-    setIsLoading(false);
-    setLoading(false);
-  }
-};
+  };
 
   const fetchUserDetails = async () => {
     try {
@@ -272,139 +273,26 @@ const CheckoutPage = () => {
   };
 
   // Create order and initiate payment
- const initiatePayment = async () => {
-  if (!formData.agreeTerms) {
-    toast.error("Please agree to the Terms & Conditions");
-    return;
-  }
-
-  if (program.status !== 'published') {
-    toast.error("This course is not yet published and cannot be enrolled.");
-    return;
-  }
-
-  setIsProcessing(true);
-  setPaymentStatus('processing');
-
-  try {
-    const finalAmount = checkoutData?.price_details?.final_price || totalAmount;
-
-    // Step 1: Create payment order using the payments API
-    const orderResponse = await fetchApiResponse(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-order?id=${programId}&type=course_enrollment`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Token": session?.accessToken,
-          "Refresh-Token": session?.refreshToken,
-        },
-        body: JSON.stringify({
-          id: parseInt(programId),
-          amount: finalAmount,
-          currency: "INR",
-          method: formData.paymentMethod,
-          coupon_code: formData.couponCode || undefined,
-        }),
-      }
-    );
-
-    if (!orderResponse.meta?.status || (orderResponse.meta.status !== 200 && orderResponse.meta.status !== 201)) {
-      throw new Error(orderResponse.meta?.message || "Failed to create payment order");
+  const initiatePayment = async () => {
+    if (!formData.agreeTerms) {
+      toast.error("Please agree to the Terms & Conditions");
+      return;
     }
 
-    const orderData = orderResponse.data;
-
-    // Step 2: Load Razorpay and process payment
-    const scriptLoaded = await loadRazorpayScript();
-    if (!scriptLoaded) {
-      throw new Error("Payment gateway failed to load. Please try again.");
+    if (program.status !== 'published') {
+      toast.error("This course is not yet published and cannot be enrolled.");
+      return;
     }
 
-    // Use the Razorpay order ID from the response
-    const razorpayOrderId = orderData.razorpay_order_id || orderData.partner_order_id || orderData.order_id;
-    
-    // Amount should be in paisa (multiply by 100)
-    const amountInPaisa = Math.round(parseFloat(orderData.amount_paid || finalAmount) * 100);
+    setIsProcessing(true);
+    setPaymentStatus('processing');
 
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: amountInPaisa,
-      currency: "INR",
-      name: "IIID Courses",
-      description: `Enrollment in ${program.title}`,
-      image: "/logo.png",
-      order_id: razorpayOrderId,
-      handler: function (response) {
-        // Payment successful - Verify payment
-        verifyPayment(response, orderData);
-      },
-      prefill: {
-        name: userDetails?.name || '',
-        email: userDetails?.email || '',
-        contact: userDetails?.phone || '',
-      },
-      notes: {
-        course_id: programId,
-        user_id: session?.user?.id,
-        order_id: orderData.order_id,
-        payment_for: orderData.payment_for || "course_enrollment",
-      },
-      theme: {
-        color: "#dc2626",
-      },
-      modal: {
-        ondismiss: function() {
-          setPaymentStatus('failed');
-          setIsProcessing(false);
-          toast.error("Payment cancelled. Please try again.");
-        }
-      }
-    };
+    try {
+      const finalAmount = checkoutData?.price_details?.final_price || totalAmount;
 
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
-
-  } catch (error) {
-    console.error("Payment initiation error:", error);
-    setPaymentStatus('failed');
-    toast.error(error.message || "Payment failed. Please try again.");
-    setIsProcessing(false);
-  }
-};
-
-// Verify payment after successful Razorpay payment
-const verifyPayment = async (paymentResponse, orderData) => {
-  try {
-    setPaymentStatus('verifying');
-
-    // Step 3: Verify payment using the payments verify API
-    const verifyResponse = await fetchApiResponse(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/verify`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Token": session?.accessToken,
-          "Refresh-Token": session?.refreshToken,
-        },
-        body: JSON.stringify({
-          payment_id: orderData.order_id,
-          partner_order_id:orderData.partner_order_id,
-          partner_txn_id:  paymentResponse.razorpay_payment_id || paymentResponse.payment_id,
-          razorpay_signature: paymentResponse.razorpay_signature,
-          type: "course_enrollment",
-          id: parseInt(programId),
-        }),
-      }
-    );
-
-    if (verifyResponse.meta?.status === 200) {
-      // Step 4: Payment verified successfully - Now create enrollment
-      setPaymentStatus('enrolling');
-      
-      const enrollmentResponse = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/enrollments/courses/${programId}/enroll`,
+      // Step 1: Create payment order using the payments API
+      const orderResponse = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-order?id=${programId}&type=course_enrollment`,
         {
           method: "POST",
           headers: {
@@ -413,50 +301,102 @@ const verifyPayment = async (paymentResponse, orderData) => {
             "Refresh-Token": session?.refreshToken,
           },
           body: JSON.stringify({
-            payment_id: paymentResponse.razorpay_payment_id,
-            order_id: orderData.order_id,
-            payment_method: formData.paymentMethod,
-            amount: checkoutData?.price_details?.final_price || totalAmount,
+            id: parseInt(programId),
+            amount: finalAmount,
             currency: "INR",
+            method: formData.paymentMethod,
+            coupon_code: formData.couponCode || undefined,
           }),
         }
       );
 
-      if (enrollmentResponse.meta?.status === 201) {
-        setPaymentStatus('success');
-        toast.success('🎉 Payment successful! You are now enrolled in the course.');
-        
-        // Redirect to success page
-        router.push(
-          `/payment-success?id=${programId}&payment_id=${paymentResponse.razorpay_payment_id}&order_id=${orderData.order_id}`
-        );
-      } else {
-        // Payment verified but enrollment failed
-        const errorMsg = enrollmentResponse.meta?.message || "Payment successful but enrollment failed. Please contact support.";
-        toast.error(errorMsg);
-        setPaymentStatus('partial');
-        // Still redirect to success page with warning
-        router.push(
-          `/payment-success?id=${programId}&payment_id=${paymentResponse.razorpay_payment_id}&order_id=${orderData.order_id}&status=partial`
-        );
+      if (!orderResponse.meta?.status || (orderResponse.meta.status !== 200 && orderResponse.meta.status !== 201)) {
+        throw new Error(orderResponse.meta?.message || "Failed to create payment order");
       }
-    } else {
-      throw new Error(verifyResponse.meta?.message || "Payment verification failed");
-    }
 
-  } catch (error) {
-    console.error("Payment verification error:", error);
-    setPaymentStatus('failed');
-    toast.error(error.message || "Payment verification failed. Please contact support.");
-    
-    // Still redirect to success page with warning
-    router.push(
-      `/payment-success?id=${programId}&payment_id=${paymentResponse?.razorpay_payment_id}&status=partial`
-    );
-  } finally {
-    setIsProcessing(false);
-  }
-};
+      const orderData = orderResponse.data;
+
+      // Step 2: Load Razorpay and process payment
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error("Payment gateway failed to load. Please try again.");
+      }
+
+      // Use the Razorpay order ID from the response
+      const razorpayOrderId = orderData.razorpay_order_id || orderData.partner_order_id || orderData.order_id;
+      
+      // Amount should be in paisa (multiply by 100)
+      const amountInPaisa = Math.round(parseFloat(orderData.amount_paid || finalAmount) * 100);
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: amountInPaisa,
+        currency: "INR",
+        name: "IIID Courses",
+        description: `Enrollment in ${program.title}`,
+        image: logo,
+        order_id: razorpayOrderId,
+        handler: function (response) {
+          // Payment successful - Webhook will handle enrollment automatically
+          handlePaymentSuccess(response, orderData);
+        },
+        prefill: {
+          name: userDetails?.name || '',
+          email: userDetails?.email || '',
+          contact: userDetails?.phone || '',
+        },
+        notes: {
+          course_id: programId,
+          user_id: session?.user?.id,
+          order_id: orderData.order_id,
+          payment_for: orderData.payment_for || "course_enrollment",
+        },
+        theme: {
+          color: "#dc2626",
+        },
+        modal: {
+          ondismiss: function() {
+            setPaymentStatus('failed');
+            setIsProcessing(false);
+            toast.error("Payment cancelled. Please try again.");
+          }
+        }
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+
+    } catch (error) {
+      console.error("Payment initiation error:", error);
+      setPaymentStatus('failed');
+      toast.error(error.message || "Payment failed. Please try again.");
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle successful payment - Webhook will handle enrollment automatically
+  const handlePaymentSuccess = async (paymentResponse, orderData) => {
+    try {
+      setPaymentStatus('success');
+      
+      // Show success message - enrollment will be handled by webhook
+      toast.success('🎉 Payment successful! You will be enrolled in the course shortly.');
+      
+      // Redirect to success page with payment details
+      router.push(
+        `/payment-success?id=${programId}&payment_id=${paymentResponse.razorpay_payment_id}&order_id=${orderData.order_id}`
+      );
+
+    } catch (error) {
+      console.error("Payment success handling error:", error);
+      toast.error("Payment successful but there was an issue. Please contact support.");
+      router.push(
+        `/payment-success?id=${programId}&payment_id=${paymentResponse?.razorpay_payment_id}&status=partial`
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -870,7 +810,7 @@ const verifyPayment = async (paymentResponse, orderData) => {
                       />
                     </div>
                   ) : (
-                    <div className="w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
                       <GraduationCap className="w-8 h-8 text-red-600" />
                     </div>
                   )}

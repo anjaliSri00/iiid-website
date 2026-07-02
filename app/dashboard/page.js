@@ -103,7 +103,7 @@ export default function DashboardPage() {
   const [thumbnailUploadProgress, setThumbnailUploadProgress] = useState(0);
   const [thumbnailFile, setThumbnailFile] = useState(null);
 
-   // Enrolled Courses States
+  // Enrolled Courses States
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [enrolledCoursesLoading, setEnrolledCoursesLoading] = useState(false);
 
@@ -120,13 +120,11 @@ export default function DashboardPage() {
     if (!session || !session.user) return false;
 
     const role = session.user.role;
-    // If role is a string, check if it's admin or internal
     if (typeof role === "string") {
       return (
         role.toLowerCase() === "admin" || role.toLowerCase() === "internal"
       );
     }
-    // If role is an array, check if any element is admin or internal
     if (Array.isArray(role)) {
       return role.some(
         (r) => r.toLowerCase() === "admin" || r.toLowerCase() === "internal",
@@ -135,6 +133,8 @@ export default function DashboardPage() {
     return false;
   };
 
+  const isAdmin = hasAdminOrInternalRoleFromSession();
+
   // Redirect if not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -142,14 +142,20 @@ export default function DashboardPage() {
     }
   }, [status, router]);
 
-  // Fetch profile data
+  // Fetch profile data and conditional data based on role
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       fetchProfile();
-      fetchPrograms();
-      fetchEnrolledCourses();
+
+      if (isAdmin) {
+        // Only fetch programs for admin/internal users
+        fetchPrograms();
+      } else {
+        // Only fetch enrolled courses for students
+        fetchEnrolledCourses();
+      }
     }
-  }, [status, session]);
+  }, [status, session, isAdmin]);
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -191,69 +197,63 @@ export default function DashboardPage() {
     }
   };
 
-// Fetch enrolled courses from /api/v1/enrollments/my-courses
-const fetchEnrolledCourses = async () => {
-  setEnrolledCoursesLoading(true);
-  try {
-    const response = await fetchApiResponse(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/enrollments/my-courses`,
-      {
-        method: "GET",
-        headers: {
-          "Access-Token": session?.accessToken,
-          "Refresh-Token": session?.refreshToken,
+  // Fetch enrolled courses from /api/v1/enrollments/my-courses
+  const fetchEnrolledCourses = async () => {
+    setEnrolledCoursesLoading(true);
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/enrollments/my-courses`,
+        {
+          method: "GET",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
         },
+      );
+
+      if (response.meta?.status === 200 && response.data) {
+        const courses = Array.isArray(response.data) ? response.data : [];
+        const formattedCourses = courses.map((enrollment) => ({
+          enrollment_id: enrollment.enrollment_id,
+          enrollment_status: enrollment.status,
+          enrolled_at: enrollment.enrolled_at,
+          course_id: enrollment.id,
+          course_code: enrollment.course_code,
+          title: enrollment.title,
+          description: enrollment.description,
+          original_price: enrollment.original_price,
+          discount: enrollment.discount,
+          final_price: enrollment.final_price,
+          thumbnail_url: enrollment.thumbnail_url,
+          instructor_id: enrollment.instructor_id,
+          category: enrollment.category,
+          level: enrollment.level,
+          is_active: enrollment.is_active,
+          mode: enrollment.mode,
+          duration: enrollment.duration,
+          created_by: enrollment.created_by,
+          created_at: enrollment.created_at,
+          updated_at: enrollment.updated_at,
+          deleted_at: enrollment.deleted_at,
+          progress: enrollment.progress || 0,
+          status: enrollment.status || "active",
+          certificate_issued: enrollment.certificate_issued || false,
+        }));
+        setEnrolledCourses(formattedCourses);
+      } else {
+        console.error("Enrolled courses fetch failed:", response.meta?.message);
+        setEnrolledCourses([]);
       }
-    );
-
-    if (response.meta?.status === 200 && response.data) {
-      // Transform the data to match our expected format
-      const courses = Array.isArray(response.data) ? response.data : [];
-      const formattedCourses = courses.map((enrollment) => ({
-        // Enrollment info
-        enrollment_id: enrollment.enrollment_id,
-        enrollment_status: enrollment.status,
-        enrolled_at: enrollment.enrolled_at,
-        // Course info (flattened from the course object)
-        course_id: enrollment.id,
-        course_code: enrollment.course_code,
-        title: enrollment.title,
-        description: enrollment.description,
-        original_price: enrollment.original_price,
-        discount: enrollment.discount,
-        final_price: enrollment.final_price,
-        thumbnail_url: enrollment.thumbnail_url,
-        instructor_id: enrollment.instructor_id,
-        category: enrollment.category,
-        level: enrollment.level,
-        is_active: enrollment.is_active,
-        mode: enrollment.mode,
-        duration: enrollment.duration,
-        created_by: enrollment.created_by,
-        created_at: enrollment.created_at,
-        updated_at: enrollment.updated_at,
-        deleted_at: enrollment.deleted_at,
-        // Progress (if not provided, default to 0)
-        progress: enrollment.progress || 0,
-        // Status mapping - use enrollment status or course status
-        status: enrollment.status || 'active',
-        // Check if certificate is issued (if this field exists)
-        certificate_issued: enrollment.certificate_issued || false,
-      }));
-      setEnrolledCourses(formattedCourses);
-    } else {
-      console.error("Enrolled courses fetch failed:", response.meta?.message);
+    } catch (error) {
+      console.error("Error fetching enrolled courses:", error);
       setEnrolledCourses([]);
+    } finally {
+      setEnrolledCoursesLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching enrolled courses:", error);
-    setEnrolledCourses([]);
-  } finally {
-    setEnrolledCoursesLoading(false);
-  }
-};
+  };
 
-  // Fetch programs from API with lessons
+  // Fetch programs from API with lessons (Admin only)
   const fetchPrograms = async () => {
     setProgramsLoading(true);
     try {
@@ -275,7 +275,6 @@ const fetchEnrolledCourses = async () => {
         const mappedPrograms = await Promise.all(
           courses.map(async (course) => {
             try {
-              // Fetch course details including lessons
               const detailsResponse = await fetchApiResponse(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${course.id}`,
                 {
@@ -846,9 +845,7 @@ const fetchEnrolledCourses = async () => {
       console.log("Editing Program:", editingProgram);
       console.log("Editing Program Lessons:", editingProgram?.lessons);
 
-      // If lesson has an ID and is not new, use update
       if (lesson.id && !lesson.is_new) {
-        // Get original lesson data
         const originalLesson = editingProgram?.lessons?.find(
           (l) => l.id === lesson.id,
         );
@@ -860,7 +857,6 @@ const fetchEnrolledCourses = async () => {
           return;
         }
 
-        // Build payload with only changed fields
         const payload = {};
 
         if (lesson.title !== originalLesson.title) {
@@ -897,14 +893,12 @@ const fetchEnrolledCourses = async () => {
           payload.pdf_url = lesson.pdf_url || null;
         }
 
-        // Check if there are any changes
         if (Object.keys(payload).length === 0) {
           toast.info("No changes to update");
           setLessonSaving(false);
           return;
         }
 
-        // Update existing lesson - PUT /api/v1/lessons/update/:id
         response = await fetchApiResponse(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/lessons/update/${lesson.id}`,
           {
@@ -918,14 +912,12 @@ const fetchEnrolledCourses = async () => {
           },
         );
       } else {
-        // Create new lesson
         if (!courseId) {
           toast.error("Please save the course first before adding lessons");
           setLessonSaving(false);
           return;
         }
 
-        // Prepare payload for new lesson
         const payload = {
           title: lesson.title,
           content_type: lesson.content_type || "video",
@@ -956,7 +948,6 @@ const fetchEnrolledCourses = async () => {
           payload.pdf_url = lesson.pdf_url;
         }
 
-        // Create new lesson - POST /api/v1/courses/:courseId/lessons
         response = await fetchApiResponse(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/lessons`,
           {
@@ -978,7 +969,6 @@ const fetchEnrolledCourses = async () => {
             : "Lesson created successfully!",
         );
 
-        // Update the lesson in local state with the response data
         const savedLesson = response.data;
         setProgramFormData((prev) => ({
           ...prev,
@@ -987,7 +977,6 @@ const fetchEnrolledCourses = async () => {
           ),
         }));
 
-        // Also update editingProgram if it exists
         if (editingProgram) {
           setEditingProgram((prev) => ({
             ...prev,
@@ -1012,7 +1001,7 @@ const fetchEnrolledCourses = async () => {
     }
   };
 
-  // Program handlers
+  // Program handlers (Admin only)
   const handleProgramFormChange = (e) => {
     const { name, value } = e.target;
     setProgramFormData((prev) => ({ ...prev, [name]: value }));
@@ -1024,7 +1013,6 @@ const fetchEnrolledCourses = async () => {
   const handleProgramSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
     const newErrors = {};
     if (!programFormData.title) newErrors.title = "Title is required";
     if (!programFormData.description)
@@ -1047,22 +1035,17 @@ const fetchEnrolledCourses = async () => {
       let savedCourseId = editingProgram?.id;
 
       if (editingProgram) {
-        // Check if there are any unsaved lessons first
         const unsavedLessons = programFormData.lessons.filter(
           (lesson) => lesson.is_new,
         );
 
         if (unsavedLessons.length > 0) {
-          // If there are unsaved lessons, we need to save them first
-          // But we also need to check if the course has any other changes
           const hasCourseChanges = checkForCourseChanges();
 
           if (hasCourseChanges) {
-            // First update the course
             await updateCourse();
           }
 
-          // Then save all unsaved lessons
           savedCourseId = editingProgram.id;
           await saveUnsavedLessons(savedCourseId);
 
@@ -1076,7 +1059,6 @@ const fetchEnrolledCourses = async () => {
           return;
         }
 
-        // No unsaved lessons, check for other changes
         const changedFields = getChangedFields();
 
         if (Object.keys(changedFields).length > 0) {
@@ -1096,7 +1078,6 @@ const fetchEnrolledCourses = async () => {
         setProgramSaving(false);
         return;
       } else {
-        // CREATE NEW COURSE
         const payload = {
           title: programFormData.title,
           description: programFormData.description,
@@ -1136,7 +1117,6 @@ const fetchEnrolledCourses = async () => {
           savedCourseId = response.data?.id;
           setProgramFormData((prev) => ({ ...prev, courseId: savedCourseId }));
 
-          // Save any unsaved lessons
           const unsavedLessons = programFormData.lessons.filter(
             (lesson) => lesson.is_new,
           );
@@ -1164,7 +1144,6 @@ const fetchEnrolledCourses = async () => {
     }
   };
 
-  // Helper function to check for course changes
   const checkForCourseChanges = () => {
     if (!editingProgram) return false;
 
@@ -1184,7 +1163,6 @@ const fetchEnrolledCourses = async () => {
     );
   };
 
-  // Helper function to get changed fields
   const getChangedFields = () => {
     if (!editingProgram) return {};
 
@@ -1230,7 +1208,6 @@ const fetchEnrolledCourses = async () => {
     return changedFields;
   };
 
-  // Helper function to update course
   const updateCourse = async (changedFields) => {
     if (!editingProgram || Object.keys(changedFields).length === 0) return;
 
@@ -1261,7 +1238,6 @@ const fetchEnrolledCourses = async () => {
     }));
   };
 
-  // Update Lesson Function - Only sends changed values
   const updateLesson = async (index) => {
     const lesson = programFormData.lessons[index];
 
@@ -1270,7 +1246,6 @@ const fetchEnrolledCourses = async () => {
       return;
     }
 
-    // Check if the lesson has an ID (existing lesson)
     if (!lesson.id || lesson.is_new) {
       toast.error("Please save the lesson first");
       return;
@@ -1288,53 +1263,42 @@ const fetchEnrolledCourses = async () => {
         return;
       }
 
-      // Build payload with only changed fields
       const payload = {};
 
-      // Check each field for changes and only add if changed
       if (lesson.title !== originalLesson.title) {
         payload.title = lesson.title;
       }
-
       if (lesson.description !== originalLesson.description) {
         payload.description = lesson.description || "";
       }
-
       if (lesson.content_type !== originalLesson.content_type) {
         payload.content_type = lesson.content_type || "video";
       }
-
       if (lesson.video_url !== originalLesson.video_url) {
         payload.video_url = lesson.video_url || "";
       }
-
       if (lesson.external_video_url !== originalLesson.external_video_url) {
         payload.external_video_url = lesson.external_video_url || "";
       }
-
       if (
         parseInt(lesson.duration_seconds || 0) !==
         parseInt(originalLesson.duration_seconds || 0)
       ) {
         payload.duration_seconds = parseInt(lesson.duration_seconds) || 0;
       }
-
       if (
         parseInt(lesson.lesson_order || 0) !==
         parseInt(originalLesson.lesson_order || 0)
       ) {
         payload.lesson_order = parseInt(lesson.lesson_order) || 0;
       }
-
       if (lesson.is_free_preview !== originalLesson.is_free_preview) {
         payload.is_free_preview = lesson.is_free_preview || false;
       }
-
       if (lesson.pdf_url !== originalLesson.pdf_url) {
         payload.pdf_url = lesson.pdf_url || null;
       }
 
-      // Check if there are any changes
       if (Object.keys(payload).length === 0) {
         toast.info("No changes to update");
         setLessonSaving(false);
@@ -1343,7 +1307,6 @@ const fetchEnrolledCourses = async () => {
 
       console.log("Updating lesson with changed fields:", payload);
 
-      // Make API call with only changed fields
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/lessons/update/${lesson.id}`,
         {
@@ -1360,7 +1323,6 @@ const fetchEnrolledCourses = async () => {
       if (response.meta?.status === 200) {
         toast.success("Lesson updated successfully!");
 
-        // Update the lesson in local state with the response data
         const updatedLesson = response.data;
         setProgramFormData((prev) => ({
           ...prev,
@@ -1369,13 +1331,11 @@ const fetchEnrolledCourses = async () => {
           ),
         }));
 
-        // Update originalLessons with the new data
         setOriginalLessons((prev) => ({
           ...prev,
           [updatedLesson.id]: { ...updatedLesson },
         }));
 
-        // Also update the editingProgram lessons to keep it in sync
         if (editingProgram) {
           setEditingProgram((prev) => ({
             ...prev,
@@ -1400,7 +1360,6 @@ const fetchEnrolledCourses = async () => {
     }
   };
 
-  // Helper function to save unsaved lessons
   const saveUnsavedLessons = async (courseId) => {
     const unsavedLessons = programFormData.lessons.filter(
       (lesson) => lesson.is_new,
@@ -1501,7 +1460,6 @@ const fetchEnrolledCourses = async () => {
     try {
       setProgramsLoading(true);
 
-      // Fetch complete course details including lessons
       const courseDetails = await fetchCourseDetails(program.id);
 
       if (!courseDetails) {
@@ -1510,17 +1468,15 @@ const fetchEnrolledCourses = async () => {
         return;
       }
 
-      // IMPORTANT: Set editingProgram with the full course details including lessons
       setEditingProgram({
-        ...courseDetails, // Use the full course details
+        ...courseDetails,
         id: courseDetails.id,
-        lessons: courseDetails.lessons || [], // Ensure lessons is an array
+        lessons: courseDetails.lessons || [],
       });
 
-      // Mark all existing lessons as not new
       const existingLessons = (courseDetails.lessons || []).map((lesson) => ({
         ...lesson,
-        is_new: false, // Explicitly mark as not new
+        is_new: false,
       }));
 
       const originalLessonsMap = {};
@@ -1598,6 +1554,10 @@ const fetchEnrolledCourses = async () => {
       published: "bg-green-100 text-green-700",
       draft: "bg-yellow-100 text-yellow-700",
       archived: "bg-gray-100 text-gray-700",
+      active: "bg-green-100 text-green-700",
+      completed: "bg-blue-100 text-blue-700",
+      inactive: "bg-gray-100 text-gray-700",
+      pending: "bg-yellow-100 text-yellow-700",
     };
     return styles[status] || styles.draft;
   };
@@ -1773,24 +1733,25 @@ const fetchEnrolledCourses = async () => {
                     <Activity className="w-4 h-4 inline mr-2" />
                     Overview
                   </button>
-                  {!hasAdminOrInternalRoleFromSession() && <button
-                    onClick={() => setActiveTab("my-courses")}
-                    className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      activeTab === "my-courses"
-                        ? "border-red-600 text-red-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    <BookOpen className="w-4 h-4 inline mr-2" />
-                    My Courses
-                    {enrolledCourses.length > 0 && (
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 rounded-full">
-                        {enrolledCourses.length}
-                      </span>
-                    )}
-                  </button>}
-
-                  {hasAdminOrInternalRoleFromSession() && (
+                  {!isAdmin && (
+                    <button
+                      onClick={() => setActiveTab("my-courses")}
+                      className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === "my-courses"
+                          ? "border-red-600 text-red-600"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4 inline mr-2" />
+                      My Courses
+                      {enrolledCourses.length > 0 && (
+                        <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 rounded-full">
+                          {enrolledCourses.length}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                  {isAdmin && (
                     <button
                       onClick={() => setActiveTab("programs")}
                       className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
@@ -1830,7 +1791,7 @@ const fetchEnrolledCourses = async () => {
                         {profile?.full_name ? `, ${profile.full_name}` : ""}!
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
-                        {hasAdminOrInternalRoleFromSession()
+                        {isAdmin
                           ? "Manage your courses, track performance, and oversee program operations."
                           : "Track your learning progress, view enrolled programs, and manage your account."}
                       </p>
@@ -1839,22 +1800,20 @@ const fetchEnrolledCourses = async () => {
                     <div className="flex items-center gap-2">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          hasAdminOrInternalRoleFromSession()
+                          isAdmin
                             ? "bg-red-100 text-red-700"
                             : "bg-blue-100 text-blue-700"
                         }`}
                       >
-                        {hasAdminOrInternalRoleFromSession()
-                          ? "Admin"
-                          : "Student"}
+                        {isAdmin ? "Admin" : "Student"}
                       </span>
                     </div>
                   </div>
 
                   {/* Stats Grid - Different for Admin and Student */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {hasAdminOrInternalRoleFromSession() ? (
-                      // Admin Stats
+                    {isAdmin ? (
+                      // Admin Stats - Only show if programs data is loaded
                       <>
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                           <div className="flex items-center gap-3 mb-2">
@@ -1934,6 +1893,7 @@ const fetchEnrolledCourses = async () => {
                         </div>
                       </>
                     ) : (
+                      // Student Stats - Only show enrolled courses data
                       <>
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                           <div className="flex items-center gap-3 mb-2">
@@ -1945,9 +1905,13 @@ const fetchEnrolledCourses = async () => {
                             </h4>
                           </div>
                           <p className="text-2xl font-bold text-blue-600">
-                            {enrolledCourses.filter(
-                              (c) => c.enrollment_status === 'active' || c.status === 'active'
-                            ).length}
+                            {
+                              enrolledCourses.filter(
+                                (c) =>
+                                  c.enrollment_status === "active" ||
+                                  c.status === "published",
+                              ).length
+                            }
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             Active enrollments
@@ -1964,9 +1928,13 @@ const fetchEnrolledCourses = async () => {
                             </h4>
                           </div>
                           <p className="text-2xl font-bold text-green-600">
-                            {enrolledCourses.filter(
-                              (c) => c.enrollment_status === 'completed' || c.status === 'completed'
-                            ).length}
+                            {
+                              enrolledCourses.filter(
+                                (c) =>
+                                  c.enrollment_status === "completed" ||
+                                  c.status === "completed",
+                              ).length
+                            }
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             Completed programs
@@ -1983,10 +1951,15 @@ const fetchEnrolledCourses = async () => {
                             </h4>
                           </div>
                           <p className="text-2xl font-bold text-yellow-600">
-                            {enrolledCourses.filter(
-                              (c) =>  (c.enrollment_status === 'active' || c.status === 'active') && 
-        c.progress > 0 && c.progress < 100
-                            ).length}
+                            {
+                              enrolledCourses.filter(
+                                (c) =>
+                                  (c.enrollment_status === "active" ||
+                                    c.status === "active") &&
+                                  c.progress > 0 &&
+                                  c.progress < 100,
+                              ).length
+                            }
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             Programs in progress
@@ -2003,58 +1976,11 @@ const fetchEnrolledCourses = async () => {
                             </h4>
                           </div>
                           <p className="text-2xl font-bold text-purple-600">
-                            {enrolledCourses.filter(
-                              (c) => c.certificate_issued
-                            ).length || 0}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Earned certificates
-                          </p>
-                        </div>
-                      
-                        <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-green-100 rounded-full">
-                              <CheckCircle className="w-5 h-5 text-green-600" />
-                            </div>
-                            <h4 className="font-medium text-gray-900">
-                              Completed
-                            </h4>
-                          </div>
-                          <p className="text-2xl font-bold text-green-600">0</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Completed programs
-                          </p>
-                        </div>
-
-                        <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-yellow-100 rounded-full">
-                              <TrendingUp className="w-5 h-5 text-yellow-600" />
-                            </div>
-                            <h4 className="font-medium text-gray-900">
-                              In Progress
-                            </h4>
-                          </div>
-                          <p className="text-2xl font-bold text-yellow-600">
-                            0
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Programs in progress
-                          </p>
-                        </div>
-
-                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-purple-100 rounded-full">
-                              <Award className="w-5 h-5 text-purple-600" />
-                            </div>
-                            <h4 className="font-medium text-gray-900">
-                              Certificates
-                            </h4>
-                          </div>
-                          <p className="text-2xl font-bold text-purple-600">
-                            0
+                            {
+                              enrolledCourses.filter(
+                                (c) => c.certificate_issued,
+                              ).length
+                            }
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             Earned certificates
@@ -2070,7 +1996,7 @@ const fetchEnrolledCourses = async () => {
                       Quick Actions
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {hasAdminOrInternalRoleFromSession() ? (
+                      {isAdmin ? (
                         // Admin Quick Actions
                         <>
                           <button
@@ -2136,15 +2062,15 @@ const fetchEnrolledCourses = async () => {
                               My Profile
                             </span>
                           </Link>
-                          <Link
-                            href="/dashboard"
+                          <button
+                            onClick={() => setActiveTab("my-courses")}
                             className="flex items-center justify-center gap-2 px-4 py-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
                           >
                             <TrendingUp className="w-4 h-4 text-green-600" />
                             <span className="text-sm text-green-700">
-                              My Progress
+                              My Courses
                             </span>
-                          </Link>
+                          </button>
                           <button
                             onClick={() => setActiveTab("password")}
                             className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
@@ -2159,19 +2085,17 @@ const fetchEnrolledCourses = async () => {
                     </div>
                   </div>
 
-                  {/* Recent Activity Section - Optional */}
+                  {/* Recent Activity Section */}
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                      {hasAdminOrInternalRoleFromSession()
-                        ? "Recent Activity"
-                        : "Your Recent Activity"}
+                      {isAdmin ? "Recent Activity" : "Your Recent Activity"}
                     </h4>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center justify-center py-6">
                         <div className="text-center">
                           <Activity className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                           <p className="text-sm text-gray-400">
-                            {hasAdminOrInternalRoleFromSession()
+                            {isAdmin
                               ? "No recent activity to show"
                               : "Start exploring programs to see your activity here"}
                           </p>
@@ -2181,140 +2105,150 @@ const fetchEnrolledCourses = async () => {
                   </div>
                 </div>
               ) : activeTab === "my-courses" ? (
-  // My Courses Tab - Enrolled Courses
-  <div>
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900">
-          My Courses
-        </h3>
-        <p className="text-sm text-gray-500">
-          {enrolledCourses.length > 0
-            ? `You are enrolled in ${enrolledCourses.length} course${enrolledCourses.length > 1 ? 's' : ''}`
-            : "You haven't enrolled in any courses yet"}
-        </p>
-      </div>
-      <Link
-        href="/#programs"
-        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
-      >
-        <Plus className="w-4 h-4" />
-        Browse Courses
-      </Link>
-    </div>
-
-    {enrolledCoursesLoading ? (
-      <div className="text-center py-8">
-        <Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto" />
-        <p className="mt-2 text-gray-500">Loading your courses...</p>
-      </div>
-    ) : enrolledCourses.length === 0 ? (
-      <div className="text-center py-12">
-        <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500 mb-2">
-          You haven't enrolled in any courses yet
-        </p>
-        <Link
-          href="/#programs"
-          className="text-red-600 hover:text-red-700 inline-flex items-center gap-1"
-        >
-          Browse available programs
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-    ) : (
-      <div className="space-y-4">
-        {enrolledCourses.map((course) => (
-          <div
-            key={course.enrollment_id || course.course_id}
-            className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-          >
-            <div className="flex flex-col md:flex-row">
-              {course.thumbnail_url && (
-                <div className="md:w-48 h-32 bg-gray-200 shrink-0">
-                  <img
-                    src={course.thumbnail_url}
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <div className="flex-1 p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h4 className="font-semibold text-gray-900">
-                        {course.title}
-                      </h4>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(course.enrollment_status || course.status)}`}
-                      >
-                        {course.enrollment_status || course.status || "Active"}
-                      </span>
-                      {course.course_code && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                          {course.course_code}
-                        </span>
-                      )}
+                // My Courses Tab - Enrolled Courses
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        My Courses
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {enrolledCourses.length > 0
+                          ? `You are enrolled in ${enrolledCourses.length} course${enrolledCourses.length > 1 ? "s" : ""}`
+                          : "You haven't enrolled in any courses yet"}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {course.description}
-                    </p>
-
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <BookOpen className="w-3 h-3" />
-                        {course.category || "General"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {course.duration || "N/A"}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Award className="w-3 h-3" />
-                        {course.level || "Beginner"}
-                      </span>
-                      {course.enrolled_at && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Enrolled: {new Date(course.enrolled_at).toLocaleDateString()}
-                        </span>
-                      )}
-                      {course.final_price && (
-                        <span className="flex items-center gap-1 font-semibold text-gray-700">
-                          ₹{course.final_price}
-                          {course.original_price && course.discount > 0 && (
-                            <span className="text-gray-400 line-through ml-1">
-                              ₹{course.original_price}
-                            </span>
-                          )}
-                        </span>
-                      )}
-                      {course.progress !== undefined && course.progress > 0 && (
-                        <span className="flex items-center gap-1">
-                          <TrendingUp className="w-3 h-3" />
-                          Progress: {course.progress}%
-                        </span>
-                      )}
-                    </div>
+                    <Link
+                      href="/#programs"
+                      className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Browse Courses
+                    </Link>
                   </div>
-                  <Link
-                    href={`/programs/${course.course_id}`}
-                    className="shrink-0 ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-                  >
-                    {course.progress && course.progress > 0 ? 'Continue Learning' : 'Start Learning'}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
 
+                  {enrolledCoursesLoading ? (
+                    <div className="text-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto" />
+                      <p className="mt-2 text-gray-500">
+                        Loading your courses...
+                      </p>
+                    </div>
+                  ) : enrolledCourses.length === 0 ? (
+                    <div className="text-center py-12">
+                      <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">
+                        You haven't enrolled in any courses yet
+                      </p>
+                      <Link
+                        href="/#programs"
+                        className="text-red-600 hover:text-red-700 inline-flex items-center gap-1"
+                      >
+                        Browse available programs
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {enrolledCourses.map((course) => (
+                        <div
+                          key={course.enrollment_id || course.course_id}
+                          className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex flex-col md:flex-row">
+                            {course.thumbnail_url && (
+                              <div className="md:w-48 h-32 bg-gray-200 shrink-0">
+                                <img
+                                  src={course.thumbnail_url}
+                                  alt={course.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1 p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                    <h4 className="font-semibold text-gray-900">
+                                      {course.title}
+                                    </h4>
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(course.enrollment_status || course.status)}`}
+                                    >
+                                      {course.enrollment_status ||
+                                        course.status ||
+                                        "Active"}
+                                    </span>
+                                    {course.course_code && (
+                                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                        {course.course_code}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-gray-600 line-clamp-2">
+                                    {course.description}
+                                  </p>
+
+                                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                                    <span className="flex items-center gap-1">
+                                      <BookOpen className="w-3 h-3" />
+                                      {course.category || "General"}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      {course.duration || "N/A"}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <Award className="w-3 h-3" />
+                                      {course.level || "Beginner"}
+                                    </span>
+                                    {course.enrolled_at && (
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="w-3 h-3" />
+                                        Enrolled:{" "}
+                                        {new Date(
+                                          course.enrolled_at,
+                                        ).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                    {course.final_price && (
+                                      <span className="flex items-center gap-1 font-semibold text-gray-700">
+                                        ₹{course.final_price}
+                                        {course.original_price &&
+                                          course.discount > 0 && (
+                                            <span className="text-gray-400 line-through ml-1">
+                                              ₹{course.original_price}
+                                            </span>
+                                          )}
+                                      </span>
+                                    )}
+                                    {course.progress !== undefined &&
+                                      course.progress > 0 && (
+                                        <span className="flex items-center gap-1">
+                                          <TrendingUp className="w-3 h-3" />
+                                          Progress: {course.progress}%
+                                        </span>
+                                      )}
+                                  </div>
+                                </div>
+                                <Link
+                                  href={`/programs/${course.course_id}`}
+                                  className="shrink-0 ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                >
+                                  {course.progress && course.progress > 0
+                                    ? "Continue Learning"
+                                    : "Start Learning"}
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : activeTab === "programs" ? (
-                // Programs Tab
+                // Programs Tab (Admin only)
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -2325,19 +2259,17 @@ const fetchEnrolledCourses = async () => {
                         Create and manage your courses and programs
                       </p>
                     </div>
-                    {hasAdminOrInternalRoleFromSession() && (
-                      <button
-                        onClick={() => {
-                          setShowCreateProgram(true);
-                          setEditingProgram(null);
-                          resetProgramForm();
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Create Program
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        setShowCreateProgram(true);
+                        setEditingProgram(null);
+                        resetProgramForm();
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Create Program
+                    </button>
                   </div>
 
                   {/* Create/Edit Program Form */}
@@ -3204,7 +3136,6 @@ const fetchEnrolledCourses = async () => {
                   )}
                 </div>
               ) : (
-                // Change Password Tab
                 <div>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-red-100 rounded-full">
