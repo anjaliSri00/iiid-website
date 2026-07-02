@@ -21,6 +21,7 @@ import {
   Download,
   Star,
   Users,
+  PlayCircle,
 } from "lucide-react";
 import fetchApiResponse from "@/helper/api_data_store";
 import { useRouter } from "next/navigation";
@@ -59,6 +60,7 @@ const ProgramDetailPage = () => {
 
       if (response.meta?.status === 200 && response.data) {
         const course = response.data;
+        
         // Transform the data
         const formattedProgram = {
           id: course.id,
@@ -79,6 +81,7 @@ const ProgramDetailPage = () => {
           created_at: course.created_at,
           updated_at: course.updated_at,
           instructor_id: course.instructor_id,
+          is_purchased:Boolean(course.is_purchased),
           is_active: course.is_active,
           assessment: getAssessmentForCategory(course.category),
         };
@@ -509,27 +512,38 @@ const ProgramDetailPage = () => {
                 </div>
 
                 {/* Updated Apply Now button with login check */}
-                {session ? (
-                  <Link href={`/programs/${program.id}/checkout`}>
-                    <button className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg">
-                      Apply Now
-                    </button>
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => {
-                      // Store the current URL to redirect back after login
-                      sessionStorage.setItem(
-                        "redirectAfterLogin",
-                        `/programs/${program.id}/checkout`,
-                      );
-                      router.push("/login");
-                    }}
-                    className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg"
-                  >
-                    Login to Apply
-                  </button>
-                )}
+               {session ? (
+  <>
+    {program.is_purchased ? (
+      // <Link href={`/programs/${program.id}`}>
+        <button className="w-full sm:w-auto bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+          <PlayCircle className="w-5 h-5" />
+          Continue Learning
+        </button>
+      // </Link>
+    ) : (
+      <Link href={`/programs/${program.id}/checkout`}>
+        <button className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg">
+          Apply Now
+        </button>
+      </Link>
+    )}
+  </>
+) : (
+  <button
+    onClick={() => {
+      // Store the current URL to redirect back after login
+      sessionStorage.setItem(
+        "redirectAfterLogin",
+        `/programs/${program.id}/checkout`,
+      );
+      router.push("/login");
+    }}
+    className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg"
+  >
+    Login to Apply
+  </button>
+)}
               </div>
             </div>
           </div>

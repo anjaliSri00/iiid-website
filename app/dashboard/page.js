@@ -51,6 +51,7 @@ import {
 import { toast } from "react-toastify";
 import fetchApiResponse from "@/helper/api_data_store";
 import sha256 from "crypto-js/sha256";
+import Image from "next/image";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -237,7 +238,8 @@ export default function DashboardPage() {
           updated_at: enrollment.updated_at,
           deleted_at: enrollment.deleted_at,
           progress: enrollment.progress || 0,
-          status: enrollment.status || "active",
+          enrollment_status: enrollment.enrollment_status || "active",
+          status:enrollment.status || "published",
           certificate_issued: enrollment.certificate_issued || false,
         }));
         setEnrolledCourses(formattedCourses);
@@ -1616,14 +1618,18 @@ export default function DashboardPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow overflow-hidden">
               {/* Profile Header */}
-              <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-8">
+              <div className="bg-linear-to-r from-red-600 to-red-700 px-6 py-8">
                 <div className="flex flex-col items-center">
                   <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 overflow-hidden mb-4">
                     {profile.avatar_url ? (
-                      <img
-                        src={profile.avatar_url}
-                        alt={profile.full_name}
-                        className="w-full h-full object-cover"
+                      <Image
+                      width={96}
+    height={96}
+                      src={profile.avatar_url}
+                      alt={profile.full_name}
+                      className="w-full h-full object-cover"
+                      priority={false}
+                      quality={85}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-red-100 text-red-600 text-3xl font-bold">
@@ -1908,8 +1914,7 @@ export default function DashboardPage() {
                             {
                               enrolledCourses.filter(
                                 (c) =>
-                                  c.enrollment_status === "active" ||
-                                  c.status === "published",
+                                  c.enrollment_status === "active"
                               ).length
                             }
                           </p>
@@ -1930,10 +1935,7 @@ export default function DashboardPage() {
                           <p className="text-2xl font-bold text-green-600">
                             {
                               enrolledCourses.filter(
-                                (c) =>
-                                  c.enrollment_status === "completed" ||
-                                  c.status === "completed",
-                              ).length
+                                (c) => c.enrollment_status === "completed").length
                             }
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
@@ -1954,8 +1956,7 @@ export default function DashboardPage() {
                             {
                               enrolledCourses.filter(
                                 (c) =>
-                                  (c.enrollment_status === "active" ||
-                                    c.status === "active") &&
+                                  (c.enrollment_status === "active") &&
                                   c.progress > 0 &&
                                   c.progress < 100,
                               ).length
@@ -2158,9 +2159,13 @@ export default function DashboardPage() {
                           <div className="flex flex-col md:flex-row">
                             {course.thumbnail_url && (
                               <div className="md:w-48 h-32 bg-gray-200 shrink-0">
-                                <img
+                                <Image
                                   src={course.thumbnail_url}
                                   alt={course.title}
+                                   width={192}
+                                   height={128}
+                                   quality={85}
+                                   priority={false}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
@@ -2920,9 +2925,12 @@ export default function DashboardPage() {
                                 ) : (
                                   <div className="relative group">
                                     <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                                      <img
+                                      <Image
                                         src={programFormData.thumbnail}
                                         alt="Thumbnail"
+                                        loading="lazy"
+                                        width={800}
+                                        height={192}
                                         className="w-full h-full object-cover"
                                       />
                                       <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
@@ -3042,9 +3050,12 @@ export default function DashboardPage() {
                           <div className="flex flex-col md:flex-row">
                             {program.thumbnail_url && (
                               <div className="md:w-48 h-32 bg-gray-200 shrink-0">
-                                <img
+                                <Image
                                   src={program.thumbnail_url}
                                   alt={program.title}
+                                  loading="lazy"
+                                  width={192}
+                                  height={128}
                                   className="w-full h-full object-cover"
                                 />
                               </div>

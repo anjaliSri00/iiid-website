@@ -10,6 +10,7 @@ import {
   TrendingDown
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const ProgramGrid = ({ programs = [] }) => {
   const [hoveredId, setHoveredId] = useState(null);
@@ -32,7 +33,6 @@ const ProgramGrid = ({ programs = [] }) => {
       {programs.map((program) => {
         const isHovered = hoveredId === program.id;
         const hasDiscount = program.discount > 0;
-        const discountedPrice = hasDiscount ? program.final_price : program.original_price;
         const savedAmount = hasDiscount ? program.original_price - program.final_price : 0;
 
         return (
@@ -50,11 +50,15 @@ const ProgramGrid = ({ programs = [] }) => {
               {/* Thumbnail Image Section - Fixed height */}
               <div className="relative w-full h-44 md:h-48 bg-linear-to-r from-red-50 to-gray-100 overflow-hidden shrink-0">
                 {program.thumbnail_url ? (
-                  <img 
+                  <Image 
                     src={program.thumbnail_url} 
                     alt={program.title}
+                    fill
                     className="w-full h-full object-cover transition-transform duration-500"
                     style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                   priority={false}
+                   quality={85}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-red-50 to-red-100">

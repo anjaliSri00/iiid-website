@@ -49,6 +49,7 @@ export default function Programs() {
           thumbnail_url: course.thumbnail_url,
           status: course.status,
           level: course.level,
+          is_purchased: course.is_purchased || false, 
           course_code: course.course_code,
           assessment: getAssessmentForCategory(course.category),
         }));
