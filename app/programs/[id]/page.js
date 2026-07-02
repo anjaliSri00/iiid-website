@@ -23,12 +23,15 @@ import {
   Users
 } from 'lucide-react';
 import fetchApiResponse from '@/helper/api_data_store';
+import { useRouter } from 'next/navigation';
+
 
 const ProgramDetailPage = () => {
   const params = useParams();
   const { data: session } = useSession();
   const programId = params.id;
-  
+  const router = useRouter();
+
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -186,7 +189,7 @@ const ProgramDetailPage = () => {
                   alt={program.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent"></div>
                 
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
@@ -436,23 +439,39 @@ const ProgramDetailPage = () => {
 
             {/* Apply Button */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Ready to enroll?</p>
-                  <p className="text-2xl font-bold text-gray-900">{program.fee}</p>
-                  {hasDiscount && (
-                    <p className="text-sm text-green-600">
-                      Save ₹{savedAmount} with current discount!
-                    </p>
-                  )}
-                </div>
-                <Link href={`/programs/${program.id}/checkout`}>
-                  <button className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg">
-                    Apply Now
-                  </button>
-                </Link>
-              </div>
-            </div>
+  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div>
+      <p className="text-sm text-gray-500">Ready to enroll?</p>
+      <p className="text-2xl font-bold text-gray-900">{program.fee}</p>
+      {hasDiscount && (
+        <p className="text-sm text-green-600">
+          Save ₹{savedAmount} with current discount!
+        </p>
+      )}
+    </div>
+    
+    {/* Updated Apply Now button with login check */}
+    {session ? (
+      <Link href={`/programs/${program.id}/checkout`}>
+        <button className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg">
+          Apply Now
+        </button>
+      </Link>
+    ) : (
+      <button 
+        onClick={() => {
+          // Store the current URL to redirect back after login
+          sessionStorage.setItem('redirectAfterLogin', `/programs/${program.id}/checkout`);
+          router.push('/login');
+        }}
+        className="w-full sm:w-auto bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg"
+      >
+        Login to Apply
+      </button>
+    )}
+  </div>
+</div>
+
           </div>
         </div>
       </div>

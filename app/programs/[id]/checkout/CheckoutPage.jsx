@@ -314,7 +314,6 @@ const CheckoutPage = () => {
     }
 
     const orderData = orderResponse.data;
-    console.log("Order created:", orderData);
 
     // Step 2: Load Razorpay and process payment
     const scriptLoaded = await loadRazorpayScript();
@@ -374,7 +373,6 @@ const CheckoutPage = () => {
   }
 };
 
-  // Verify payment after successful Razorpay payment
 // Verify payment after successful Razorpay payment
 const verifyPayment = async (paymentResponse, orderData) => {
   try {
@@ -391,10 +389,10 @@ const verifyPayment = async (paymentResponse, orderData) => {
           "Refresh-Token": session?.refreshToken,
         },
         body: JSON.stringify({
-          payment_id: paymentResponse.razorpay_payment_id,
-          razorpay_order_id: paymentResponse.razorpay_order_id || orderData.razorpay_order_id || orderData.partner_order_id,
+          payment_id: orderData.order_id,
+          partner_order_id:orderData.partner_order_id,
+          partner_txn_id:  paymentResponse.razorpay_payment_id || paymentResponse.payment_id,
           razorpay_signature: paymentResponse.razorpay_signature,
-          order_id: orderData.order_id,
           type: "course_enrollment",
           id: parseInt(programId),
         }),
@@ -521,7 +519,7 @@ const verifyPayment = async (paymentResponse, orderData) => {
   const totalAmount = (program.final_price || program.original_price) + gstAmount;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white py-8 md:py-12">
+    <div className="min-h-screen bg-linear-to-b from-red-50 to-white py-8 md:py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
@@ -792,44 +790,6 @@ const verifyPayment = async (paymentResponse, orderData) => {
                               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Recommended</span>
                             </div>
                             <p className="text-xs text-gray-500">Pay with credit/debit card, UPI, or Net Banking</p>
-                          </div>
-                        </label>
-                      </div>
-
-                      <div className={`border-2 rounded-lg p-4 transition cursor-pointer ${
-                        formData.paymentMethod === 'paypal' ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-red-300'
-                      }`}>
-                        <label className="flex items-start gap-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="paypal"
-                            checked={formData.paymentMethod === 'paypal'}
-                            onChange={handleChange}
-                            className="mt-1 accent-red-600"
-                          />
-                          <div>
-                            <span className="font-medium text-gray-900">PayPal</span>
-                            <p className="text-xs text-gray-500">Pay with your PayPal account</p>
-                          </div>
-                        </label>
-                      </div>
-
-                      <div className={`border-2 rounded-lg p-4 transition cursor-pointer ${
-                        formData.paymentMethod === 'bank_transfer' ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-red-300'
-                      }`}>
-                        <label className="flex items-start gap-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="bank_transfer"
-                            checked={formData.paymentMethod === 'bank_transfer'}
-                            onChange={handleChange}
-                            className="mt-1 accent-red-600"
-                          />
-                          <div>
-                            <span className="font-medium text-gray-900">Bank Transfer</span>
-                            <p className="text-xs text-gray-500">Direct bank transfer (NEFT/RTGS)</p>
                           </div>
                         </label>
                       </div>
