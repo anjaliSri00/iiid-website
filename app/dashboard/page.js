@@ -96,7 +96,9 @@ export default function DashboardPage() {
     lessons: [],
     mode: "online",
   });
+
   const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [uploadingPdfIndex, setUploadingPdfIndex] = useState(null);
   const [programErrors, setProgramErrors] = useState({});
   const [programSaving, setProgramSaving] = useState(false);
   const [programSuccess, setProgramSuccess] = useState(false);
@@ -713,60 +715,73 @@ export default function DashboardPage() {
   };
 
   // PDF upload handler
-  const handlePdfUpload = async (e, lessonIndex) => {
-    const file = e.target.files[0];
-    if (!file) return;
+const handlePdfUpload = async (e, lessonIndex) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    if (file.type !== "application/pdf") {
-      toast.error("Please upload a valid PDF file");
-      e.target.value = "";
-      return;
-    }
+  // Validate file type
+  if (file.type !== "application/pdf") {
+    toast.error("Please upload a valid PDF file");
+    e.target.value = "";
+    return;
+  }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size should be less than 10MB");
-      e.target.value = "";
-      return;
-    }
+  // Validate file size (max 10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    toast.error("File size should be less than 10MB");
+    e.target.value = "";
+    return;
+  }
 
-    setUploadingPdf(true);
-    const formData = new FormData();
-    formData.append("document", file);
-    formData.append("type", "lesson_pdf");
+  setUploadingPdf(true);
+  setUploadingPdfIndex(lessonIndex);
 
-    try {
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-document`,
-        {
-          method: "POST",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
-          body: formData,
+  const formData = new FormData();
+  formData.append("image", file); // Using 'image' field name
+  formData.append("type", "lesson_pdf");
+
+  try {
+    const response = await fetchApiResponse(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
+      {
+        method: "POST",
+        headers: {
+          "Access-Token": session?.accessToken,
+          "Refresh-Token": session?.refreshToken,
         },
-      );
+        body: formData,
+      },
+    );
 
-      if (response.meta?.status === 200) {
-        const pdfUrl = response.data?.url || response.data?.fileUrl;
-        if (pdfUrl) {
-          const encodedUrl = encodeURI(pdfUrl);
-          handleLessonInputChange(lessonIndex, "pdf_url", encodedUrl);
-          toast.success("PDF uploaded successfully!");
-          e.target.value = "";
-        } else {
-          throw new Error("No URL returned from server");
-        }
+    if (response.meta?.status === 200) {
+      // Fix: Extract URL from the correct path in response
+      const pdfUrl = response.data?.image_url?.url || // This is the correct path
+                     response.data?.url || 
+                     response.data?.fileUrl ||
+                     response.data?.file_url;
+
+      if (pdfUrl) {
+        const encodedUrl = encodeURI(pdfUrl);
+        console.log("PDF URL extracted:", encodedUrl); // Debug log
+        handleLessonInputChange(lessonIndex, "pdf_url", encodedUrl);
+        handleLessonInputChange(lessonIndex, "content_type", "pdf");
+        toast.success("PDF uploaded successfully!");
+        e.target.value = "";
       } else {
-        throw new Error(response.meta?.message || "Upload failed");
+        console.error("No URL found in response:", response.data);
+        throw new Error("No URL returned from server");
       }
-    } catch (error) {
-      console.error("Error uploading PDF:", error);
-      toast.error("Failed to upload PDF");
-    } finally {
-      setUploadingPdf(false);
+    } else {
+      throw new Error(response.meta?.message || "Upload failed");
     }
-  };
+  } catch (error) {
+    console.error("Error uploading PDF:", error);
+    toast.error("Failed to upload PDF: " + error.message);
+  } finally {
+    setUploadingPdf(false);
+    setUploadingPdfIndex(null);
+  }
+};
 
   // Lesson handlers
   const addLesson = () => {
@@ -2748,7 +2763,7 @@ export default function DashboardPage() {
                                     )}
 
                                     {/* PDF Upload Section - Only show when content_type is PDF */}
-                                    {lesson.content_type === "pdf" && (
+                                    {/* {lesson.content_type === "pdf" && ( */}
                                       <div className="md:col-span-2">
                                         <label className="block text-xs font-medium text-gray-700 mb-1">
                                           PDF File
@@ -2787,7 +2802,7 @@ export default function DashboardPage() {
                                           </p>
                                         )}
                                       </div>
-                                    )}
+                                    {/* )} */}
 
                                     <div>
                                       <label className="block text-xs font-medium text-gray-700 mb-1">

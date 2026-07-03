@@ -1,7 +1,6 @@
 import Hero from './components/sections/Hero'
 import Programs from './components/sections/Programs'
 import About from './components/sections/About'
-import Certification from './components/sections/Certification'
 
 export default function page() {
   return (
