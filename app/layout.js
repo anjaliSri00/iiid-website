@@ -1,10 +1,13 @@
 // app/layout.js
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Providers from "./provider";
+import {Providers} from "./provider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LayoutWrapper from "./components/layout/LayoutWrapper";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,11 +16,13 @@ export const metadata = {
   description: "Professional Interior Design Certification Programs",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+    const session = await getServerSession(authOptions);
+
   return (
     <html lang="en">
       <body className={inter.className} suppressHydrationWarning>
-        <Providers>
+        <Providers session={session}>
            <LayoutWrapper>
 
             {children}
