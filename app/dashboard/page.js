@@ -2739,7 +2739,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                           )}
                                         </div>
 
-                                        <div>
+                                        {/* <div>
                                           <label className="block text-xs font-medium text-gray-700 mb-1">
                                             External Video URL
                                           </label>
@@ -2758,7 +2758,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                             className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                             placeholder="https://video.com/watch?v=..."
                                           />
-                                        </div>
+                                        </div> */}
                                       </>
                                     )}
 
