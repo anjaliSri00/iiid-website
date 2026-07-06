@@ -1,4 +1,5 @@
 // app/dashboard/page.js
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,15 +11,8 @@ import {
   Mail,
   Phone,
   MapPin,
-  Briefcase,
   GraduationCap,
   Building,
-  Calendar,
-  Hash,
-  Home,
-  UserCheck,
-  FileText,
-  Settings,
   Lock,
   Key,
   Eye,
@@ -31,27 +25,32 @@ import {
   Activity,
   Clock,
   Award,
-  Star,
   TrendingUp,
   Users,
-  FileCheck,
-  Plus,
   BookOpen,
-  Video,
-  File,
-  Image as ImageIcon,
+  FileText,
+  Settings,
+  Plus,
   X,
   Edit,
-  Play,
-  Download,
   Save,
   Upload,
   Trash2Icon,
+  Calendar,
+  LayoutDashboard,
+  LogOut,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import fetchApiResponse from "@/helper/api_data_store";
 import sha256 from "crypto-js/sha256";
 import Image from "next/image";
+import { useAssessmentState } from "../components/Assessment/AssessmentState";
+import { useAssessmentOperations } from "../components/Assessment/AssessmentOperations";
+import { useQuestionOperations } from "../components/Assessment/QuestionOperations";
+import AssessmentForm from "../components/Assessment/AssessmentForm";
+import { QuestionForm } from "../components/Assessment/QuestionForm";
+import AssessmentModal from "../components/Assessment/AssessmentModal";
+import ProgramCard from "../components/Assessment/ProgramCard";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -60,6 +59,8 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState(null);
   const [profileError, setProfileError] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [expandedAssessment, setExpandedAssessment] = useState(null);
+  const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
 
   // Password change states
   const [passwordData, setPasswordData] = useState({
@@ -119,9 +120,10 @@ export default function DashboardPage() {
   const [videoFile, setVideoFile] = useState(null);
   const [originalLessons, setOriginalLessons] = useState({});
 
+  const [assessmentsLoading, setAssessmentsLoading] = useState(false);
+
   const hasAdminOrInternalRoleFromSession = () => {
     if (!session || !session.user) return false;
-
     const role = session.user.role;
     if (typeof role === "string") {
       return (
@@ -149,17 +151,183 @@ export default function DashboardPage() {
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       fetchProfile();
-
       if (isAdmin) {
-        // Only fetch programs for admin/internal users
         fetchPrograms();
       } else {
-        // Only fetch enrolled courses for students
         fetchEnrolledCourses();
       }
     }
   }, [status, session, isAdmin]);
 
+  const fetchPrograms = async () => {
+    setProgramsLoading(true);
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`,
+        {
+          method: "GET",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        },
+      );
+
+      if (response.meta?.status === 200 && response.data) {
+        const courses = Array.isArray(response.data) ? response.data : [];
+        const mappedPrograms = await Promise.all(
+          courses.map(async (course) => {
+            try {
+              const detailsResponse = await fetchApiResponse(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${course.id}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Access-Token": session?.accessToken,
+                    "Refresh-Token": session?.refreshToken,
+                  },
+                },
+              );
+
+              if (
+                detailsResponse.meta?.status === 200 &&
+                detailsResponse.data
+              ) {
+                const courseData = detailsResponse.data;
+
+                if (courseData.assessment) {
+                  setAssessments((prev) => ({
+                    ...prev,
+                    [course.id]: courseData.assessment,
+                  }));
+                }
+                return {
+                  id: course.id,
+                  title: course.title,
+                  description: course.description,
+                  category: course.category,
+                  duration: course.duration,
+                  level: course.level,
+                  original_price: course.original_price,
+                  discount: course.discount,
+                  final_price: course.final_price,
+                  thumbnail_url: course.thumbnail_url,
+                  status: course.status,
+                  mode: course.mode,
+                  course_code: course.course_code,
+                  created_at: course.created_at,
+                  updated_at: course.updated_at,
+                  lessons: detailsResponse.data.lessons || [],
+                  assessment: courseData.assessment || null,
+                  ...course,
+                };
+              }
+              return { ...course, lessons: [], assessment: null };
+            } catch (error) {
+              console.error(
+                `Error fetching details for course ${course.id}:`,
+                error,
+              );
+              return { ...course, lessons: [], assessment: null };
+            }
+          }),
+        );
+        setPrograms(mappedPrograms);
+      } else {
+        console.error("Programs fetch failed:", response.meta?.message);
+        setPrograms([]);
+      }
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+      setPrograms([]);
+    } finally {
+      setProgramsLoading(false);
+    }
+  };
+
+  // Assessment state
+  const assessmentState = useAssessmentState();
+
+  const {
+    assessments,
+    setAssessments,
+    showCreateAssessment,
+    setShowCreateAssessment,
+    editingAssessment,
+    setEditingAssessment,
+    assessmentFormData,
+    setAssessmentFormData,
+    assessmentErrors,
+    setAssessmentErrors,
+    assessmentSaving,
+    setAssessmentSaving,
+    assessmentSuccess,
+    setAssessmentSuccess,
+    showAddQuestion,
+    setShowAddQuestion,
+    editingQuestion,
+    setEditingQuestion,
+    questionFormData,
+    setQuestionFormData,
+    questionErrors,
+    setQuestionErrors,
+    questionSaving,
+    setQuestionSaving,
+    selectedAssessmentId,
+    setSelectedAssessmentId,
+    resetAssessmentForm,
+    resetQuestionForm,
+  } = assessmentState;
+
+  // Assessment operations
+  const assessmentOps = useAssessmentOperations(
+    session,
+    assessments,
+    setAssessments,
+    fetchPrograms,
+    setAssessmentFormData,
+    setAssessmentErrors,
+    setAssessmentSaving,
+    setAssessmentSuccess,
+    resetAssessmentForm,
+    () => setIsAssessmentModalOpen(false),
+    setEditingAssessment,
+  );
+
+  const {
+    fetchAssessment,
+    handleAssessmentFormChange,
+    handleAssessmentSubmit,
+    handleDeleteAssessment,
+    handleEditAssessment,
+  } = assessmentOps;
+
+  const questionOps = useQuestionOperations(
+    session,
+    assessmentOps.fetchAssessment,
+  );
+
+  const {
+    handleQuestionFormChange,
+    handleQuestionSubmit,
+    handleDeleteQuestion,
+    handleEditQuestion,
+  } = questionOps;
+
+  // Fetch single assessment
+  const fetchSingleAssessment = async (courseId) => {
+    if (!courseId) return;
+    setAssessmentsLoading(true);
+    try {
+      await fetchAssessment(courseId);
+    } catch (error) {
+      console.error("Error fetching assessment:", error);
+    } finally {
+      setAssessmentsLoading(false);
+    }
+  };
+
+  // ==================== Existing Functions ====================
   const fetchProfile = async () => {
     setLoading(true);
     setProfileError(false);
@@ -200,7 +368,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Fetch enrolled courses from /api/v1/enrollments/my-courses
   const fetchEnrolledCourses = async () => {
     setEnrolledCoursesLoading(true);
     try {
@@ -241,7 +408,7 @@ export default function DashboardPage() {
           deleted_at: enrollment.deleted_at,
           progress: enrollment.progress || 0,
           enrollment_status: enrollment.enrollment_status || "active",
-          status:enrollment.status || "published",
+          status: enrollment.status || "published",
           certificate_issued: enrollment.certificate_issued || false,
         }));
         setEnrolledCourses(formattedCourses);
@@ -257,93 +424,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Fetch programs from API with lessons (Admin only)
-  const fetchPrograms = async () => {
-    setProgramsLoading(true);
-    try {
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`,
-        {
-          method: "GET",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
-        },
-      );
-
-      if (response.meta?.status === 200 && response.data) {
-        const courses = Array.isArray(response.data) ? response.data : [];
-
-        // Fetch details for each course to get lessons
-        const mappedPrograms = await Promise.all(
-          courses.map(async (course) => {
-            try {
-              const detailsResponse = await fetchApiResponse(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${course.id}`,
-                {
-                  method: "GET",
-                  headers: {
-                    "Access-Token": session?.accessToken,
-                    "Refresh-Token": session?.refreshToken,
-                  },
-                },
-              );
-
-              if (
-                detailsResponse.meta?.status === 200 &&
-                detailsResponse.data
-              ) {
-                return {
-                  id: course.id,
-                  title: course.title,
-                  description: course.description,
-                  category: course.category,
-                  duration: course.duration,
-                  level: course.level,
-                  original_price: course.original_price,
-                  discount: course.discount,
-                  final_price: course.final_price,
-                  thumbnail_url: course.thumbnail_url,
-                  status: course.status,
-                  mode: course.mode,
-                  course_code: course.course_code,
-                  created_at: course.created_at,
-                  updated_at: course.updated_at,
-                  lessons: detailsResponse.data.lessons || [],
-                  ...course,
-                };
-              }
-              return {
-                ...course,
-                lessons: [],
-              };
-            } catch (error) {
-              console.error(
-                `Error fetching details for course ${course.id}:`,
-                error,
-              );
-              return {
-                ...course,
-                lessons: [],
-              };
-            }
-          }),
-        );
-
-        setPrograms(mappedPrograms);
-      } else {
-        console.error("Programs fetch failed:", response.meta?.message);
-        setPrograms([]);
-      }
-    } catch (error) {
-      console.error("Error fetching programs:", error);
-      setPrograms([]);
-    } finally {
-      setProgramsLoading(false);
-    }
-  };
-
   const fetchCourseDetails = async (courseId) => {
     try {
       const response = await fetchApiResponse(
@@ -356,57 +436,34 @@ export default function DashboardPage() {
           },
         },
       );
-
       if (response.meta?.status === 200 && response.data) {
         return response.data;
-      } else {
-        console.error(
-          "Failed to fetch course details:",
-          response.meta?.message,
-        );
-        return null;
       }
+      return null;
     } catch (error) {
       console.error("Error fetching course details:", error);
       return null;
     }
   };
 
-  // Check password strength
+  // Password functions
   const checkPasswordStrength = (password) => {
     let score = 0;
     let feedback = [];
-
     if (password.length === 0) {
       return { score: 0, feedback: "", strengthText: "", strengthColor: "" };
     }
+    if (password.length < 8) feedback.push("Minimum 8 characters");
+    else score += 1;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+    else feedback.push("Include uppercase and lowercase letters");
+    if (/\d/.test(password)) score += 1;
+    else feedback.push("Include numbers");
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+    else feedback.push("Include special characters");
 
-    if (password.length < 8) {
-      feedback.push("Minimum 8 characters");
-    } else {
-      score += 1;
-    }
-
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
-      score += 1;
-    } else {
-      feedback.push("Include uppercase and lowercase letters");
-    }
-
-    if (/\d/.test(password)) {
-      score += 1;
-    } else {
-      feedback.push("Include numbers");
-    }
-
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      score += 1;
-    } else {
-      feedback.push("Include special characters");
-    }
-
-    let strengthText = "";
-    let strengthColor = "";
+    let strengthText = "",
+      strengthColor = "";
     if (score <= 1) {
       strengthText = "Weak";
       strengthColor = "bg-red-500";
@@ -432,12 +489,10 @@ export default function DashboardPage() {
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData((prev) => ({ ...prev, [name]: value }));
-
     if (name === "new_password") {
       const strength = checkPasswordStrength(value);
       setPasswordStrength(strength);
     }
-
     if (passwordErrors[name]) {
       setPasswordErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -445,26 +500,19 @@ export default function DashboardPage() {
 
   const validatePasswordForm = () => {
     const newErrors = {};
-
-    if (!passwordData.old_password) {
+    if (!passwordData.old_password)
       newErrors.old_password = "Current password is required";
-    }
-
-    if (!passwordData.new_password) {
+    if (!passwordData.new_password)
       newErrors.new_password = "New password is required";
-    } else if (passwordData.new_password.length < 8) {
+    else if (passwordData.new_password.length < 8)
       newErrors.new_password = "Password must be at least 8 characters";
-    } else if (passwordStrength.score < 2) {
+    else if (passwordStrength.score < 2)
       newErrors.new_password =
         "Password is too weak. " + passwordStrength.feedback;
-    }
-
-    if (!passwordData.confirm_password) {
+    if (!passwordData.confirm_password)
       newErrors.confirm_password = "Please confirm your password";
-    } else if (passwordData.new_password !== passwordData.confirm_password) {
+    else if (passwordData.new_password !== passwordData.confirm_password)
       newErrors.confirm_password = "Passwords do not match";
-    }
-
     if (
       passwordData.old_password &&
       passwordData.new_password &&
@@ -473,26 +521,22 @@ export default function DashboardPage() {
       newErrors.new_password =
         "New password cannot be same as current password";
     }
-
     return newErrors;
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-
     const newErrors = validatePasswordForm();
     if (Object.keys(newErrors).length > 0) {
       setPasswordErrors(newErrors);
       return;
     }
-
     if (
       !confirm(
         "Changing your password will log you out. Do you want to continue?",
       )
-    ) {
+    )
       return;
-    }
 
     setPasswordLoading(true);
     setPasswordErrors({});
@@ -522,7 +566,6 @@ export default function DashboardPage() {
       if (response.meta?.status === 200) {
         setPasswordSuccess(true);
         toast.success("Password changed successfully! You will be logged out.");
-
         setPasswordData({
           old_password: "",
           new_password: "",
@@ -534,7 +577,6 @@ export default function DashboardPage() {
           strengthText: "",
           strengthColor: "",
         });
-
         setTimeout(() => {
           signOut({
             redirect: true,
@@ -544,14 +586,12 @@ export default function DashboardPage() {
       } else {
         let errorMessage =
           response.meta?.message || "Failed to change password";
-
         if (errorMessage.includes("INCORRECT_OLD_PASSWORD")) {
           errorMessage = "Current password is incorrect. Please try again.";
         } else if (errorMessage.includes("PASSWORD_IS_NOT_SET_YET")) {
           errorMessage =
             'You haven\'t set a password yet. Please use "Forgot Password" to set one.';
         }
-
         toast.error(errorMessage);
         setPasswordErrors({ general: errorMessage });
       }
@@ -568,14 +608,12 @@ export default function DashboardPage() {
   const handleThumbnailUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const validTypes = ["image/jpeg", "image/png", "image/jpg"];
     if (!validTypes.includes(file.type)) {
       toast.error("Please upload a JPEG or PNG image");
       e.target.value = "";
       return;
     }
-
     if (file.size > 2 * 1024 * 1024) {
       toast.error("File size should be less than 2MB");
       e.target.value = "";
@@ -592,7 +630,6 @@ export default function DashboardPage() {
 
     try {
       setThumbnailUploadProgress(30);
-
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
         {
@@ -604,7 +641,6 @@ export default function DashboardPage() {
           body: formData,
         },
       );
-
       setThumbnailUploadProgress(80);
 
       if (response.meta?.status === 200) {
@@ -613,7 +649,6 @@ export default function DashboardPage() {
           response.data?.url ||
           response.data?.imageUrl ||
           response.data?.fileUrl;
-
         if (imageUrl) {
           const encodedUrl = encodeURI(imageUrl);
           setProgramFormData((prev) => ({ ...prev, thumbnail: encodedUrl }));
@@ -642,7 +677,6 @@ export default function DashboardPage() {
   const handleVideoUpload = async (e, lessonIndex) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const validTypes = [
       "video/mp4",
       "video/webm",
@@ -654,7 +688,6 @@ export default function DashboardPage() {
       e.target.value = "";
       return;
     }
-
     if (file.size > 50 * 1024 * 1024) {
       toast.error("File size should be less than 50MB");
       e.target.value = "";
@@ -663,14 +696,12 @@ export default function DashboardPage() {
 
     setUploadingVideo(true);
     setVideoUploadProgress(0);
-
     const formData = new FormData();
     formData.append("video", file);
     formData.append("type", "course_video");
 
     try {
       setVideoUploadProgress(30);
-
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-video`,
         {
@@ -682,7 +713,6 @@ export default function DashboardPage() {
           body: formData,
         },
       );
-
       setVideoUploadProgress(80);
 
       if (response.meta?.status === 200) {
@@ -690,7 +720,6 @@ export default function DashboardPage() {
           response.data?.video_url ||
           response.data?.url ||
           response.data?.fileUrl;
-
         if (videoUrl) {
           const encodedUrl = encodeURI(videoUrl);
           handleLessonInputChange(lessonIndex, "video_url", encodedUrl);
@@ -715,73 +744,65 @@ export default function DashboardPage() {
   };
 
   // PDF upload handler
-const handlePdfUpload = async (e, lessonIndex) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  // Validate file type
-  if (file.type !== "application/pdf") {
-    toast.error("Please upload a valid PDF file");
-    e.target.value = "";
-    return;
-  }
-
-  // Validate file size (max 10MB)
-  if (file.size > 10 * 1024 * 1024) {
-    toast.error("File size should be less than 10MB");
-    e.target.value = "";
-    return;
-  }
-
-  setUploadingPdf(true);
-  setUploadingPdfIndex(lessonIndex);
-
-  const formData = new FormData();
-  formData.append("image", file); // Using 'image' field name
-  formData.append("type", "lesson_pdf");
-
-  try {
-    const response = await fetchApiResponse(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
-      {
-        method: "POST",
-        headers: {
-          "Access-Token": session?.accessToken,
-          "Refresh-Token": session?.refreshToken,
-        },
-        body: formData,
-      },
-    );
-
-    if (response.meta?.status === 200) {
-      // Fix: Extract URL from the correct path in response
-      const pdfUrl = response.data?.image_url?.url || // This is the correct path
-                     response.data?.url || 
-                     response.data?.fileUrl ||
-                     response.data?.file_url;
-
-      if (pdfUrl) {
-        const encodedUrl = encodeURI(pdfUrl);
-        console.log("PDF URL extracted:", encodedUrl); // Debug log
-        handleLessonInputChange(lessonIndex, "pdf_url", encodedUrl);
-        handleLessonInputChange(lessonIndex, "content_type", "pdf");
-        toast.success("PDF uploaded successfully!");
-        e.target.value = "";
-      } else {
-        console.error("No URL found in response:", response.data);
-        throw new Error("No URL returned from server");
-      }
-    } else {
-      throw new Error(response.meta?.message || "Upload failed");
+  const handlePdfUpload = async (e, lessonIndex) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      toast.error("Please upload a valid PDF file");
+      e.target.value = "";
+      return;
     }
-  } catch (error) {
-    console.error("Error uploading PDF:", error);
-    toast.error("Failed to upload PDF: " + error.message);
-  } finally {
-    setUploadingPdf(false);
-    setUploadingPdfIndex(null);
-  }
-};
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size should be less than 10MB");
+      e.target.value = "";
+      return;
+    }
+
+    setUploadingPdf(true);
+    setUploadingPdfIndex(lessonIndex);
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("type", "lesson_pdf");
+
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
+        {
+          method: "POST",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+          body: formData,
+        },
+      );
+
+      if (response.meta?.status === 200) {
+        const pdfUrl =
+          response.data?.image_url?.url ||
+          response.data?.url ||
+          response.data?.fileUrl ||
+          response.data?.file_url;
+        if (pdfUrl) {
+          const encodedUrl = encodeURI(pdfUrl);
+          handleLessonInputChange(lessonIndex, "pdf_url", encodedUrl);
+          handleLessonInputChange(lessonIndex, "content_type", "pdf");
+          toast.success("PDF uploaded successfully!");
+          e.target.value = "";
+        } else {
+          throw new Error("No URL returned from server");
+        }
+      } else {
+        throw new Error(response.meta?.message || "Upload failed");
+      }
+    } catch (error) {
+      console.error("Error uploading PDF:", error);
+      toast.error("Failed to upload PDF: " + error.message);
+    } finally {
+      setUploadingPdf(false);
+      setUploadingPdfIndex(null);
+    }
+  };
 
   // Lesson handlers
   const addLesson = () => {
@@ -807,10 +828,8 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
   const removeLesson = async (index) => {
     const lesson = programFormData.lessons[index];
-
     if (lesson.id && !lesson.is_new) {
       if (!confirm("Are you sure you want to delete this lesson?")) return;
-
       try {
         const response = await fetchApiResponse(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/lessons/${lesson.id}`,
@@ -822,7 +841,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
             },
           },
         );
-
         if (response.meta?.status === 200) {
           toast.success("Lesson deleted successfully!");
           setProgramFormData((prev) => ({
@@ -846,7 +864,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
   const saveLesson = async (index) => {
     const lesson = programFormData.lessons[index];
-
     if (!lesson.title) {
       toast.error("Lesson title is required");
       return;
@@ -858,16 +875,11 @@ const handlePdfUpload = async (e, lessonIndex) => {
     try {
       let response;
       const courseId = editingProgram?.id || programFormData.courseId;
-      console.log("Current lesson:", lesson);
-      console.log("Editing Program:", editingProgram);
-      console.log("Editing Program Lessons:", editingProgram?.lessons);
 
       if (lesson.id && !lesson.is_new) {
         const originalLesson = editingProgram?.lessons?.find(
           (l) => l.id === lesson.id,
         );
-        console.log("Original Lesson found:", originalLesson);
-
         if (!originalLesson) {
           toast.error("Original lesson data not found");
           setLessonSaving(false);
@@ -875,22 +887,15 @@ const handlePdfUpload = async (e, lessonIndex) => {
         }
 
         const payload = {};
-
-        if (lesson.title !== originalLesson.title) {
-          payload.title = lesson.title;
-        }
-        if (lesson.description !== originalLesson.description) {
+        if (lesson.title !== originalLesson.title) payload.title = lesson.title;
+        if (lesson.description !== originalLesson.description)
           payload.description = lesson.description || "";
-        }
-        if (lesson.content_type !== originalLesson.content_type) {
+        if (lesson.content_type !== originalLesson.content_type)
           payload.content_type = lesson.content_type || "video";
-        }
-        if (lesson.video_url !== originalLesson.video_url) {
+        if (lesson.video_url !== originalLesson.video_url)
           payload.video_url = lesson.video_url || "";
-        }
-        if (lesson.external_video_url !== originalLesson.external_video_url) {
+        if (lesson.external_video_url !== originalLesson.external_video_url)
           payload.external_video_url = lesson.external_video_url || "";
-        }
         if (
           parseInt(lesson.duration_seconds || 0) !==
           parseInt(originalLesson.duration_seconds || 0)
@@ -903,12 +908,10 @@ const handlePdfUpload = async (e, lessonIndex) => {
         ) {
           payload.lesson_order = parseInt(lesson.lesson_order) || 0;
         }
-        if (lesson.is_free_preview !== originalLesson.is_free_preview) {
+        if (lesson.is_free_preview !== originalLesson.is_free_preview)
           payload.is_free_preview = lesson.is_free_preview || false;
-        }
-        if (lesson.pdf_url !== originalLesson.pdf_url) {
+        if (lesson.pdf_url !== originalLesson.pdf_url)
           payload.pdf_url = lesson.pdf_url || null;
-        }
 
         if (Object.keys(payload).length === 0) {
           toast.info("No changes to update");
@@ -939,31 +942,20 @@ const handlePdfUpload = async (e, lessonIndex) => {
           title: lesson.title,
           content_type: lesson.content_type || "video",
         };
-
-        if (lesson.description) {
-          payload.description = lesson.description;
-        }
-        if (lesson.video_url) {
-          payload.video_url = lesson.video_url;
-        }
-        if (lesson.external_video_url) {
+        if (lesson.description) payload.description = lesson.description;
+        if (lesson.video_url) payload.video_url = lesson.video_url;
+        if (lesson.external_video_url)
           payload.external_video_url = lesson.external_video_url;
-        }
-        if (lesson.duration_seconds && parseInt(lesson.duration_seconds) > 0) {
+        if (lesson.duration_seconds && parseInt(lesson.duration_seconds) > 0)
           payload.duration_seconds = parseInt(lesson.duration_seconds);
-        }
-        if (lesson.lesson_order) {
-          payload.lesson_order = lesson.lesson_order;
-        }
+        if (lesson.lesson_order) payload.lesson_order = lesson.lesson_order;
         if (
           lesson.is_free_preview !== undefined &&
           lesson.is_free_preview !== null
-        ) {
+        )
           payload.is_free_preview = lesson.is_free_preview;
-        }
-        if (lesson.content_type === "pdf" && lesson.pdf_url) {
+        if (lesson.content_type === "pdf" && lesson.pdf_url)
           payload.pdf_url = lesson.pdf_url;
-        }
 
         response = await fetchApiResponse(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/lessons`,
@@ -985,7 +977,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
             ? "Lesson updated successfully!"
             : "Lesson created successfully!",
         );
-
         const savedLesson = response.data;
         setProgramFormData((prev) => ({
           ...prev,
@@ -993,7 +984,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
             i === index ? { ...savedLesson, is_new: false } : l,
           ),
         }));
-
         if (editingProgram) {
           setEditingProgram((prev) => ({
             ...prev,
@@ -1018,7 +1008,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
     }
   };
 
-  // Program handlers (Admin only)
+  // Program handlers
   const handleProgramFormChange = (e) => {
     const { name, value } = e.target;
     setProgramFormData((prev) => ({ ...prev, [name]: value }));
@@ -1029,7 +1019,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
   const handleProgramSubmit = async (e) => {
     e.preventDefault();
-
     const newErrors = {};
     if (!programFormData.title) newErrors.title = "Title is required";
     if (!programFormData.description)
@@ -1055,17 +1044,11 @@ const handlePdfUpload = async (e, lessonIndex) => {
         const unsavedLessons = programFormData.lessons.filter(
           (lesson) => lesson.is_new,
         );
-
         if (unsavedLessons.length > 0) {
           const hasCourseChanges = checkForCourseChanges();
-
-          if (hasCourseChanges) {
-            await updateCourse();
-          }
-
+          if (hasCourseChanges) await updateCourse();
           savedCourseId = editingProgram.id;
           await saveUnsavedLessons(savedCourseId);
-
           toast.success("Program updated with new lessons!");
           setProgramSuccess(true);
           setShowCreateProgram(false);
@@ -1077,7 +1060,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
         }
 
         const changedFields = getChangedFields();
-
         if (Object.keys(changedFields).length > 0) {
           await updateCourse(changedFields);
           toast.success("Program updated successfully!");
@@ -1105,14 +1087,12 @@ const handlePdfUpload = async (e, lessonIndex) => {
           mode: programFormData.mode || "online",
           status: programFormData.status || "draft",
         };
-
         if (
           programFormData.discount &&
           parseFloat(programFormData.discount) > 0
         ) {
           payload.discount = parseFloat(programFormData.discount);
         }
-
         if (programFormData.thumbnail) {
           payload.thumbnail_url = programFormData.thumbnail;
         }
@@ -1133,14 +1113,11 @@ const handlePdfUpload = async (e, lessonIndex) => {
         if (response.meta?.status === 201) {
           savedCourseId = response.data?.id;
           setProgramFormData((prev) => ({ ...prev, courseId: savedCourseId }));
-
           const unsavedLessons = programFormData.lessons.filter(
             (lesson) => lesson.is_new,
           );
-          if (unsavedLessons.length > 0) {
+          if (unsavedLessons.length > 0)
             await saveUnsavedLessons(savedCourseId);
-          }
-
           toast.success("Program created successfully!");
           setProgramSuccess(true);
           setShowCreateProgram(false);
@@ -1163,7 +1140,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
   const checkForCourseChanges = () => {
     if (!editingProgram) return false;
-
     return (
       programFormData.title !== editingProgram.title ||
       programFormData.description !== editingProgram.description ||
@@ -1182,24 +1158,17 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
   const getChangedFields = () => {
     if (!editingProgram) return {};
-
     const changedFields = {};
-
-    if (programFormData.title !== editingProgram.title) {
+    if (programFormData.title !== editingProgram.title)
       changedFields.title = programFormData.title;
-    }
-    if (programFormData.description !== editingProgram.description) {
+    if (programFormData.description !== editingProgram.description)
       changedFields.description = programFormData.description;
-    }
-    if (programFormData.category !== editingProgram.category) {
+    if (programFormData.category !== editingProgram.category)
       changedFields.category = programFormData.category;
-    }
-    if (programFormData.duration !== editingProgram.duration) {
+    if (programFormData.duration !== editingProgram.duration)
       changedFields.duration = programFormData.duration;
-    }
-    if (programFormData.level !== editingProgram.level) {
+    if (programFormData.level !== editingProgram.level)
       changedFields.level = programFormData.level;
-    }
     if (
       parseFloat(programFormData.price) !==
       parseFloat(editingProgram.original_price)
@@ -1215,19 +1184,15 @@ const handlePdfUpload = async (e, lessonIndex) => {
     if (programFormData.thumbnail !== editingProgram.thumbnail_url) {
       changedFields.thumbnail_url = programFormData.thumbnail || "";
     }
-    if (programFormData.status !== editingProgram.status) {
+    if (programFormData.status !== editingProgram.status)
       changedFields.status = programFormData.status;
-    }
-    if (programFormData.mode !== editingProgram.mode) {
+    if (programFormData.mode !== editingProgram.mode)
       changedFields.mode = programFormData.mode || "online";
-    }
-
     return changedFields;
   };
 
   const updateCourse = async (changedFields) => {
     if (!editingProgram || Object.keys(changedFields).length === 0) return;
-
     const response = await fetchApiResponse(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/update/${editingProgram.id}`,
       {
@@ -1240,7 +1205,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
         body: JSON.stringify(changedFields),
       },
     );
-
     if (response.meta?.status !== 200) {
       throw new Error(response.meta?.message || "Failed to update program");
     }
@@ -1257,12 +1221,10 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
   const updateLesson = async (index) => {
     const lesson = programFormData.lessons[index];
-
     if (!lesson.title) {
       toast.error("Lesson title is required");
       return;
     }
-
     if (!lesson.id || lesson.is_new) {
       toast.error("Please save the lesson first");
       return;
@@ -1273,7 +1235,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
     try {
       const originalLesson = originalLessons[lesson.id];
-
       if (!originalLesson) {
         toast.error("Original lesson data not found");
         setLessonSaving(false);
@@ -1281,22 +1242,15 @@ const handlePdfUpload = async (e, lessonIndex) => {
       }
 
       const payload = {};
-
-      if (lesson.title !== originalLesson.title) {
-        payload.title = lesson.title;
-      }
-      if (lesson.description !== originalLesson.description) {
+      if (lesson.title !== originalLesson.title) payload.title = lesson.title;
+      if (lesson.description !== originalLesson.description)
         payload.description = lesson.description || "";
-      }
-      if (lesson.content_type !== originalLesson.content_type) {
+      if (lesson.content_type !== originalLesson.content_type)
         payload.content_type = lesson.content_type || "video";
-      }
-      if (lesson.video_url !== originalLesson.video_url) {
+      if (lesson.video_url !== originalLesson.video_url)
         payload.video_url = lesson.video_url || "";
-      }
-      if (lesson.external_video_url !== originalLesson.external_video_url) {
+      if (lesson.external_video_url !== originalLesson.external_video_url)
         payload.external_video_url = lesson.external_video_url || "";
-      }
       if (
         parseInt(lesson.duration_seconds || 0) !==
         parseInt(originalLesson.duration_seconds || 0)
@@ -1309,20 +1263,16 @@ const handlePdfUpload = async (e, lessonIndex) => {
       ) {
         payload.lesson_order = parseInt(lesson.lesson_order) || 0;
       }
-      if (lesson.is_free_preview !== originalLesson.is_free_preview) {
+      if (lesson.is_free_preview !== originalLesson.is_free_preview)
         payload.is_free_preview = lesson.is_free_preview || false;
-      }
-      if (lesson.pdf_url !== originalLesson.pdf_url) {
+      if (lesson.pdf_url !== originalLesson.pdf_url)
         payload.pdf_url = lesson.pdf_url || null;
-      }
 
       if (Object.keys(payload).length === 0) {
         toast.info("No changes to update");
         setLessonSaving(false);
         return;
       }
-
-      console.log("Updating lesson with changed fields:", payload);
 
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/lessons/update/${lesson.id}`,
@@ -1339,7 +1289,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
       if (response.meta?.status === 200) {
         toast.success("Lesson updated successfully!");
-
         const updatedLesson = response.data;
         setProgramFormData((prev) => ({
           ...prev,
@@ -1347,12 +1296,10 @@ const handlePdfUpload = async (e, lessonIndex) => {
             i === index ? { ...updatedLesson, is_new: false } : l,
           ),
         }));
-
         setOriginalLessons((prev) => ({
           ...prev,
           [updatedLesson.id]: { ...updatedLesson },
         }));
-
         if (editingProgram) {
           setEditingProgram((prev) => ({
             ...prev,
@@ -1381,44 +1328,30 @@ const handlePdfUpload = async (e, lessonIndex) => {
     const unsavedLessons = programFormData.lessons.filter(
       (lesson) => lesson.is_new,
     );
-
     if (unsavedLessons.length === 0) return;
-
     toast.info(`Saving ${unsavedLessons.length} lesson(s)...`);
 
     for (const lesson of unsavedLessons) {
       if (!lesson.title) continue;
-
       try {
         const payload = {
           title: lesson.title,
           content_type: lesson.content_type || "video",
         };
-
-        if (lesson.description) {
-          payload.description = lesson.description;
-        }
-        if (lesson.video_url) {
-          payload.video_url = lesson.video_url;
-        }
-        if (lesson.external_video_url) {
+        if (lesson.description) payload.description = lesson.description;
+        if (lesson.video_url) payload.video_url = lesson.video_url;
+        if (lesson.external_video_url)
           payload.external_video_url = lesson.external_video_url;
-        }
-        if (lesson.duration_seconds && parseInt(lesson.duration_seconds) > 0) {
+        if (lesson.duration_seconds && parseInt(lesson.duration_seconds) > 0)
           payload.duration_seconds = parseInt(lesson.duration_seconds);
-        }
-        if (lesson.lesson_order) {
-          payload.lesson_order = lesson.lesson_order;
-        }
+        if (lesson.lesson_order) payload.lesson_order = lesson.lesson_order;
         if (
           lesson.is_free_preview !== undefined &&
           lesson.is_free_preview !== null
-        ) {
+        )
           payload.is_free_preview = lesson.is_free_preview;
-        }
-        if (lesson.content_type === "pdf" && lesson.pdf_url) {
+        if (lesson.content_type === "pdf" && lesson.pdf_url)
           payload.pdf_url = lesson.pdf_url;
-        }
 
         const lessonResponse = await fetchApiResponse(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/lessons`,
@@ -1447,7 +1380,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
         toast.error(`Failed to save lesson: ${lesson.title}`);
       }
     }
-
     toast.success("All lessons saved successfully!");
   };
 
@@ -1476,9 +1408,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
   const handleEditProgram = async (program) => {
     try {
       setProgramsLoading(true);
-
       const courseDetails = await fetchCourseDetails(program.id);
-
       if (!courseDetails) {
         toast.error("Failed to load course details");
         setProgramsLoading(false);
@@ -1490,17 +1420,13 @@ const handlePdfUpload = async (e, lessonIndex) => {
         id: courseDetails.id,
         lessons: courseDetails.lessons || [],
       });
-
       const existingLessons = (courseDetails.lessons || []).map((lesson) => ({
         ...lesson,
         is_new: false,
       }));
-
       const originalLessonsMap = {};
       (courseDetails.lessons || []).forEach((lesson) => {
-        if (lesson.id) {
-          originalLessonsMap[lesson.id] = { ...lesson };
-        }
+        if (lesson.id) originalLessonsMap[lesson.id] = { ...lesson };
       });
       setOriginalLessons(originalLessonsMap);
 
@@ -1531,7 +1457,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
 
   const handleDeleteProgram = async (programId) => {
     if (!confirm("Are you sure you want to delete this program?")) return;
-
     try {
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${programId}`,
@@ -1543,7 +1468,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
           },
         },
       );
-
       if (response.meta?.status === 200) {
         toast.success("Program deleted successfully!");
         await fetchPrograms();
@@ -1566,17 +1490,53 @@ const handlePdfUpload = async (e, lessonIndex) => {
       .slice(0, 2);
   };
 
+ 
   const getStatusBadge = (status) => {
     const styles = {
-      published: "bg-green-100 text-green-700",
-      draft: "bg-yellow-100 text-yellow-700",
+      published: "bg-emerald-100 text-emerald-700",
+      draft: "bg-amber-100 text-amber-700",
       archived: "bg-gray-100 text-gray-700",
-      active: "bg-green-100 text-green-700",
+      active: "bg-emerald-100 text-emerald-700",
       completed: "bg-blue-100 text-blue-700",
       inactive: "bg-gray-100 text-gray-700",
-      pending: "bg-yellow-100 text-yellow-700",
+      pending: "bg-amber-100 text-amber-700",
     };
     return styles[status] || styles.draft;
+  };
+
+  // Assessment handlers
+  const handleOpenCreateAssessment = (courseId) => {
+    setSelectedAssessmentId(courseId);
+    setEditingAssessment(null);
+    resetAssessmentForm();
+    setAssessmentSuccess(false);
+    setIsAssessmentModalOpen(true);
+  };
+
+  const handleOpenEditAssessment = (courseId, assessment) => {
+    setSelectedAssessmentId(courseId);
+    setEditingAssessment(assessment);
+    setAssessmentFormData({
+      title: assessment.title || "",
+      description: assessment.description || "",
+      passing_score: assessment.passing_score || 60,
+      duration_minutes: assessment.duration_minutes || 30,
+      status: assessment.status || "draft",
+    });
+    setAssessmentSuccess(false);
+    setIsAssessmentModalOpen(true);
+  };
+  const handleSelectCourse = (courseId) => {
+    // console.log("Course selected:", courseId);
+    setSelectedAssessmentId(courseId);
+  };
+
+  const handleOpenManageQuestions = (courseId, assessmentId) => {
+      // console.log("Managing questions for course:", courseId, "assessment:", assessmentId);
+    setSelectedAssessmentId(courseId);
+    setShowAddQuestion(true);
+    setEditingQuestion(null);
+    resetQuestionForm();
   };
 
   // Show loading state
@@ -1625,47 +1585,83 @@ const handlePdfUpload = async (e, lessonIndex) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
+       {/* Top Navigation */}
+      <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200/60 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-linear-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
+                <LayoutDashboard className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
+                <p className="text-xs text-gray-500 hidden sm:block">
+                  {isAdmin ? "Manage your courses and programs" : "Track your learning progress"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-gray-700">
+                  {isAdmin ? "Admin" : "Student"}
+                </span>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <LogOut className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left Column - Profile Info */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              {/* Profile Header */}
-              <div className="bg-linear-to-r from-red-600 to-red-700 px-6 py-8">
+           <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 overflow-hidden sticky top-24">
+              <div className="bg-gradient-to-br from-red-600 to-red-700 px-6 py-8">
                 <div className="flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 overflow-hidden mb-4">
-                    {profile.avatar_url ? (
-                      <Image
-                      width={96}
-    height={96}
-                      src={profile.avatar_url}
-                      alt={profile.full_name}
-                      className="w-full h-full object-cover"
-                      priority={false}
-                      quality={85}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-red-100 text-red-600 text-3xl font-bold">
-                        {getInitials(profile.full_name)}
-                      </div>
-                    )}
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full border-4 border-white/30 bg-white/10 overflow-hidden shadow-lg">
+                      {profile.avatar_url ? (
+                        <Image
+                          width={96}
+                          height={96}
+                          src={profile.avatar_url}
+                          alt={profile.full_name}
+                          className="w-full h-full object-cover"
+                          priority={false}
+                          quality={85}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold">
+                          {getInitials(profile.full_name)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    </div>
                   </div>
-                  <h2 className="text-xl font-bold text-white text-center">
+                  <h2 className="mt-4 text-lg font-bold text-white text-center">
                     {profile.full_name}
                   </h2>
                   <p className="text-sm text-red-100 text-center">
                     {profile.user_code}
                   </p>
-                  <div className="mt-2 flex gap-2">
+                  <div className="mt-3 flex gap-2 flex-wrap justify-center">
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white">
                       {profile.role_type?.join(", ") || "User"}
                     </span>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
                         profile.is_active
-                          ? "bg-green-500/30 text-green-100"
+                          ? "bg-emerald-500/30 text-emerald-100"
                           : "bg-red-500/30 text-red-100"
                       }`}
                     >
@@ -1675,59 +1671,39 @@ const handlePdfUpload = async (e, lessonIndex) => {
                 </div>
               </div>
 
-              {/* Profile Details */}
-              <div className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Email</p>
-                    <p className="text-sm text-gray-900">{profile.email}</p>
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <Mail className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400">Email</p>
+                    <p className="text-sm text-gray-700 truncate">{profile.email}</p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Mobile</p>
-                    <p className="text-sm text-gray-900">{profile.mobile}</p>
+                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <Phone className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400">Mobile</p>
+                    <p className="text-sm text-gray-700">{profile.mobile}</p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <GraduationCap className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Qualification</p>
-                    <p className="text-sm text-gray-900">
+                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                    <GraduationCap className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400">Qualification</p>
+                    <p className="text-sm text-gray-700 truncate">
                       {profile.highest_qualification || "Not specified"}
                     </p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <Building className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Organization</p>
-                    <p className="text-sm text-gray-900">
-                      {profile.current_organization || "Not specified"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="text-xs text-gray-500">Location</p>
-                    <p className="text-sm text-gray-900">
-                      {profile.city
-                        ? `${profile.city}, ${profile.state || ""}`
-                        : "Not specified"}
-                    </p>
-                  </div>
-                </div>
-
                 <Link
                   href="/profile"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors mt-4"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all mt-2"
                 >
                   <User className="w-4 h-4" />
                   View Full Profile
@@ -1738,7 +1714,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
           </div>
 
           {/* Right Column - Tabs */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             {/* Tab Navigation */}
             <div className="bg-white rounded-lg shadow mb-6">
               <div className="border-b border-gray-200">
@@ -1808,7 +1784,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Welcome
+                        Welcome{" "}
                         {profile?.full_name ? `, ${profile.full_name}` : ""}!
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
@@ -1817,7 +1793,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                           : "Track your learning progress, view enrolled programs, and manage your account."}
                       </p>
                     </div>
-                    {/* Role Badge */}
                     <div className="flex items-center gap-2">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -1831,10 +1806,9 @@ const handlePdfUpload = async (e, lessonIndex) => {
                     </div>
                   </div>
 
-                  {/* Stats Grid - Different for Admin and Student */}
+                  {/* Stats Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     {isAdmin ? (
-                      // Admin Stats - Only show if programs data is loaded
                       <>
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                           <div className="flex items-center gap-3 mb-2">
@@ -1852,7 +1826,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                             All courses and programs
                           </p>
                         </div>
-
                         <div className="p-4 bg-green-50 rounded-lg border border-green-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-green-100 rounded-full">
@@ -1872,7 +1845,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                             Publicly available programs
                           </p>
                         </div>
-
                         <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-yellow-100 rounded-full">
@@ -1892,7 +1864,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                             Programs in progress
                           </p>
                         </div>
-
                         <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-purple-100 rounded-full">
@@ -1914,7 +1885,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                         </div>
                       </>
                     ) : (
-                      // Student Stats - Only show enrolled courses data
                       <>
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                           <div className="flex items-center gap-3 mb-2">
@@ -1928,8 +1898,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                           <p className="text-2xl font-bold text-blue-600">
                             {
                               enrolledCourses.filter(
-                                (c) =>
-                                  c.enrollment_status === "active"
+                                (c) => c.enrollment_status === "active",
                               ).length
                             }
                           </p>
@@ -1937,7 +1906,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                             Active enrollments
                           </p>
                         </div>
-
                         <div className="p-4 bg-green-50 rounded-lg border border-green-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-green-100 rounded-full">
@@ -1950,14 +1918,14 @@ const handlePdfUpload = async (e, lessonIndex) => {
                           <p className="text-2xl font-bold text-green-600">
                             {
                               enrolledCourses.filter(
-                                (c) => c.enrollment_status === "completed").length
+                                (c) => c.enrollment_status === "completed",
+                              ).length
                             }
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             Completed programs
                           </p>
                         </div>
-
                         <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-yellow-100 rounded-full">
@@ -1971,7 +1939,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                             {
                               enrolledCourses.filter(
                                 (c) =>
-                                  (c.enrollment_status === "active") &&
+                                  c.enrollment_status === "active" &&
                                   c.progress > 0 &&
                                   c.progress < 100,
                               ).length
@@ -1981,7 +1949,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                             Programs in progress
                           </p>
                         </div>
-
                         <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-purple-100 rounded-full">
@@ -2013,7 +1980,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {isAdmin ? (
-                        // Admin Quick Actions
                         <>
                           <button
                             onClick={() => {
@@ -2058,7 +2024,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                           </Link>
                         </>
                       ) : (
-                        // Student Quick Actions
                         <>
                           <Link
                             href="/#programs"
@@ -2121,7 +2086,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                   </div>
                 </div>
               ) : activeTab === "my-courses" ? (
-                // My Courses Tab - Enrolled Courses
+                // My Courses Tab
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -2177,10 +2142,10 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 <Image
                                   src={course.thumbnail_url}
                                   alt={course.title}
-                                   width={192}
-                                   height={128}
-                                   quality={85}
-                                   priority={false}
+                                  width={192}
+                                  height={128}
+                                  quality={85}
+                                  priority={false}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
@@ -2208,7 +2173,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                   <p className="text-sm text-gray-600 line-clamp-2">
                                     {course.description}
                                   </p>
-
                                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                                     <span className="flex items-center gap-1">
                                       <BookOpen className="w-3 h-3" />
@@ -2268,7 +2232,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                   )}
                 </div>
               ) : activeTab === "programs" ? (
-                // Programs Tab (Admin only)
+                // Programs Tab
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -2353,11 +2317,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 name="title"
                                 value={programFormData.title}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${
-                                  programErrors.title
-                                    ? "border-red-300"
-                                    : "border-gray-300"
-                                } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.title ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                                 placeholder="Enter course title"
                               />
                               {programErrors.title && (
@@ -2366,7 +2326,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 </p>
                               )}
                             </div>
-
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Category *
@@ -2375,11 +2334,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 name="category"
                                 value={programFormData.category}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${
-                                  programErrors.category
-                                    ? "border-red-300"
-                                    : "border-gray-300"
-                                } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.category ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                               >
                                 <option value="">Select category</option>
                                 <option value="Web Development">
@@ -2398,7 +2353,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 </p>
                               )}
                             </div>
-
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Level *
@@ -2407,11 +2361,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 name="level"
                                 value={programFormData.level}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${
-                                  programErrors.level
-                                    ? "border-red-300"
-                                    : "border-gray-300"
-                                } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.level ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                               >
                                 <option value="">Select level</option>
                                 <option value="beginner">Beginner</option>
@@ -2441,7 +2391,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 <option value="offline">Offline</option>
                               </select>
                             </div>
-
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Duration *
@@ -2450,11 +2399,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 name="duration"
                                 value={programFormData.duration}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${
-                                  programErrors.duration
-                                    ? "border-red-300"
-                                    : "border-gray-300"
-                                } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.duration ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                               >
                                 <option value="">Select duration</option>
                                 <option value="1 month">1 month</option>
@@ -2471,7 +2416,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 </p>
                               )}
                             </div>
-
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Price (₹) *
@@ -2481,11 +2425,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 name="price"
                                 value={programFormData.price || ""}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${
-                                  programErrors.price
-                                    ? "border-red-300"
-                                    : "border-gray-300"
-                                } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.price ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                                 placeholder="0.00"
                                 min="0"
                                 step="0.01"
@@ -2496,7 +2436,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 </p>
                               )}
                             </div>
-
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Discount (%)
@@ -2516,7 +2455,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 Enter discount percentage (0-100)
                               </p>
                             </div>
-
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Status
@@ -2532,7 +2470,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 <option value="archived">Archived</option>
                               </select>
                             </div>
-
                             <div className="md:col-span-2">
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Course Description *
@@ -2542,11 +2479,7 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                 value={programFormData.description}
                                 onChange={handleProgramFormChange}
                                 rows="3"
-                                className={`w-full px-3 py-2 border ${
-                                  programErrors.description
-                                    ? "border-red-300"
-                                    : "border-gray-300"
-                                } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.description ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                                 placeholder="Describe your course..."
                               />
                               {programErrors.description && (
@@ -2588,7 +2521,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                     </h6>
                                     <div className="flex gap-2">
                                       {lesson.id && !lesson.is_new ? (
-                                        // For existing lessons, call updateLesson
                                         <button
                                           type="button"
                                           onClick={() => updateLesson(index)}
@@ -2602,7 +2534,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                           )}
                                         </button>
                                       ) : (
-                                        // For new lessons, call saveLesson
                                         <button
                                           type="button"
                                           onClick={() => saveLesson(index)}
@@ -2682,128 +2613,98 @@ const handlePdfUpload = async (e, lessonIndex) => {
                                         placeholder="Lesson description"
                                       />
                                     </div>
-
-                                    {/* Video Upload Section - Only show when content_type is video */}
                                     {(lesson.content_type === "video" ||
                                       lesson.content_type ===
                                         "interactive") && (
-                                      <>
-                                        <div className="md:col-span-2">
-                                          <label className="block text-xs font-medium text-gray-700 mb-1">
-                                            Video URL
-                                          </label>
-                                          <div className="flex gap-2">
-                                            <input
-                                              type="url"
-                                              value={lesson.video_url || ""}
-                                              onChange={(e) =>
-                                                handleLessonInputChange(
-                                                  index,
-                                                  "video_url",
-                                                  e.target.value,
-                                                )
-                                              }
-                                              className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                              placeholder="https://example.com/video.mp4"
-                                            />
-                                            <div className="relative">
-                                              <label className="cursor-pointer px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors text-sm border border-blue-200 whitespace-nowrap">
-                                                <Upload className="w-4 h-4 inline mr-1" />
-                                                Upload Video
-                                                <input
-                                                  type="file"
-                                                  className="hidden"
-                                                  accept=".mp4,.webm,.ogg,.mov"
-                                                  onChange={(e) =>
-                                                    handleVideoUpload(e, index)
-                                                  }
-                                                  disabled={uploadingVideo}
-                                                />
-                                              </label>
-                                              {uploadingVideo && (
-                                                <div className="absolute top-full right-0 mt-1 w-48 bg-white border rounded-md shadow-lg p-2 z-10">
-                                                  <div className="flex items-center gap-2">
-                                                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                                                    <span className="text-xs text-gray-600">
-                                                      {videoUploadProgress}%
-                                                    </span>
-                                                  </div>
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                          {lesson.video_url && (
-                                            <p className="mt-1 text-xs text-green-600 truncate">
-                                              ✓ Video uploaded
-                                            </p>
-                                          )}
-                                        </div>
-
-                                        {/* <div>
-                                          <label className="block text-xs font-medium text-gray-700 mb-1">
-                                            External Video URL
-                                          </label>
-                                          <input
-                                            type="url"
-                                            value={
-                                              lesson.external_video_url || ""
-                                            }
-                                            onChange={(e) =>
-                                              handleLessonInputChange(
-                                                index,
-                                                "external_video_url",
-                                                e.target.value,
-                                              )
-                                            }
-                                            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                            placeholder="https://video.com/watch?v=..."
-                                          />
-                                        </div> */}
-                                      </>
-                                    )}
-
-                                    {/* PDF Upload Section - Only show when content_type is PDF */}
-                                    {/* {lesson.content_type === "pdf" && ( */}
                                       <div className="md:col-span-2">
                                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                                          PDF File
+                                          Video URL
                                         </label>
                                         <div className="flex gap-2">
                                           <input
-                                            type="text"
-                                            value={lesson.pdf_url || ""}
+                                            type="url"
+                                            value={lesson.video_url || ""}
                                             onChange={(e) =>
                                               handleLessonInputChange(
                                                 index,
-                                                "pdf_url",
+                                                "video_url",
                                                 e.target.value,
                                               )
                                             }
                                             className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-                                            placeholder="PDF URL"
+                                            placeholder="https://example.com/video.mp4"
                                           />
-                                          <label className="cursor-pointer px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors text-sm border border-red-200 whitespace-nowrap">
-                                            <Upload className="w-4 h-4 inline mr-1" />
-                                            Upload PDF
-                                            <input
-                                              type="file"
-                                              className="hidden"
-                                              accept=".pdf"
-                                              onChange={(e) =>
-                                                handlePdfUpload(e, index)
-                                              }
-                                              disabled={uploadingPdf}
-                                            />
-                                          </label>
+                                          <div className="relative">
+                                            <label className="cursor-pointer px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors text-sm border border-blue-200 whitespace-nowrap">
+                                              <Upload className="w-4 h-4 inline mr-1" />
+                                              Upload Video
+                                              <input
+                                                type="file"
+                                                className="hidden"
+                                                accept=".mp4,.webm,.ogg,.mov"
+                                                onChange={(e) =>
+                                                  handleVideoUpload(e, index)
+                                                }
+                                                disabled={uploadingVideo}
+                                              />
+                                            </label>
+                                            {uploadingVideo && (
+                                              <div className="absolute top-full right-0 mt-1 w-48 bg-white border rounded-md shadow-lg p-2 z-10">
+                                                <div className="flex items-center gap-2">
+                                                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                                                  <span className="text-xs text-gray-600">
+                                                    {videoUploadProgress}%
+                                                  </span>
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
                                         </div>
-                                        {lesson.pdf_url && (
+                                        {lesson.video_url && (
                                           <p className="mt-1 text-xs text-green-600 truncate">
-                                            ✓ PDF uploaded
+                                            ✓ Video uploaded
                                           </p>
                                         )}
                                       </div>
-                                    {/* )} */}
-
+                                    )}
+                                    <div className="md:col-span-2">
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        PDF File
+                                      </label>
+                                      <div className="flex gap-2">
+                                        <input
+                                          type="text"
+                                          value={lesson.pdf_url || ""}
+                                          onChange={(e) =>
+                                            handleLessonInputChange(
+                                              index,
+                                              "pdf_url",
+                                              e.target.value,
+                                            )
+                                          }
+                                          className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                          placeholder="PDF URL"
+                                        />
+                                        <label className="cursor-pointer px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors text-sm border border-red-200 whitespace-nowrap">
+                                          <Upload className="w-4 h-4 inline mr-1" />
+                                          Upload PDF
+                                          <input
+                                            type="file"
+                                            className="hidden"
+                                            accept=".pdf"
+                                            onChange={(e) =>
+                                              handlePdfUpload(e, index)
+                                            }
+                                            disabled={uploadingPdf}
+                                          />
+                                        </label>
+                                      </div>
+                                      {lesson.pdf_url && (
+                                        <p className="mt-1 text-xs text-green-600 truncate">
+                                          ✓ PDF uploaded
+                                        </p>
+                                      )}
+                                    </div>
                                     <div>
                                       <label className="block text-xs font-medium text-gray-700 mb-1">
                                         Duration (seconds)
@@ -2883,112 +2784,109 @@ const handlePdfUpload = async (e, lessonIndex) => {
                           <h5 className="text-sm font-semibold text-gray-700 mb-3">
                             Course Media
                           </h5>
-                          <div className="">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Thumbnail Image
-                              </label>
-
-                              <div className="mt-1">
-                                {!programFormData.thumbnail ? (
-                                  <div className="flex items-center justify-center w-full">
-                                    <label
-                                      htmlFor="thumbnail-upload"
-                                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
-                                    >
-                                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        {uploadingThumbnail ? (
-                                          <>
-                                            <Loader2 className="w-8 h-8 mb-2 text-red-600 animate-spin" />
-                                            <p className="text-sm text-gray-500">
-                                              Uploading...
-                                            </p>
-                                            <div className="w-48 h-1.5 bg-gray-200 rounded-full mt-2">
-                                              <div
-                                                className="h-1.5 bg-red-600 rounded-full transition-all duration-300"
-                                                style={{
-                                                  width: `${thumbnailUploadProgress}%`,
-                                                }}
-                                              />
-                                            </div>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Upload className="w-8 h-8 mb-2 text-gray-500" />
-                                            <p className="mb-2 text-sm text-gray-500">
-                                              <span className="font-semibold">
-                                                Click to upload
-                                              </span>{" "}
-                                              or drag and drop
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                              PNG, JPG, or JPEG (MAX. 2MB)
-                                            </p>
-                                          </>
-                                        )}
-                                      </div>
-                                      <input
-                                        id="thumbnail-upload"
-                                        type="file"
-                                        className="hidden"
-                                        accept=".jpg,.jpeg,.png"
-                                        onChange={handleThumbnailUpload}
-                                        disabled={uploadingThumbnail}
-                                      />
-                                    </label>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Thumbnail Image
+                            </label>
+                            <div className="mt-1">
+                              {!programFormData.thumbnail ? (
+                                <div className="flex items-center justify-center w-full">
+                                  <label
+                                    htmlFor="thumbnail-upload"
+                                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                                  >
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                      {uploadingThumbnail ? (
+                                        <>
+                                          <Loader2 className="w-8 h-8 mb-2 text-red-600 animate-spin" />
+                                          <p className="text-sm text-gray-500">
+                                            Uploading...
+                                          </p>
+                                          <div className="w-48 h-1.5 bg-gray-200 rounded-full mt-2">
+                                            <div
+                                              className="h-1.5 bg-red-600 rounded-full transition-all duration-300"
+                                              style={{
+                                                width: `${thumbnailUploadProgress}%`,
+                                              }}
+                                            />
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                                          <p className="mb-2 text-sm text-gray-500">
+                                            <span className="font-semibold">
+                                              Click to upload
+                                            </span>{" "}
+                                            or drag and drop
+                                          </p>
+                                          <p className="text-xs text-gray-500">
+                                            PNG, JPG, or JPEG (MAX. 2MB)
+                                          </p>
+                                        </>
+                                      )}
+                                    </div>
+                                    <input
+                                      id="thumbnail-upload"
+                                      type="file"
+                                      className="hidden"
+                                      accept=".jpg,.jpeg,.png"
+                                      onChange={handleThumbnailUpload}
+                                      disabled={uploadingThumbnail}
+                                    />
+                                  </label>
+                                </div>
+                              ) : (
+                                <div className="relative group">
+                                  <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                    <Image
+                                      src={programFormData.thumbnail}
+                                      alt="Thumbnail"
+                                      loading="lazy"
+                                      width={800}
+                                      height={192}
+                                      className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProgramFormData((prev) => ({
+                                            ...prev,
+                                            thumbnail: "",
+                                          }));
+                                          setThumbnailFile(null);
+                                        }}
+                                        className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
+                                        title="Remove image"
+                                      >
+                                        <Trash2Icon className="w-5 h-5 text-white" />
+                                      </button>
+                                      <label className="cursor-pointer p-2 bg-blue-500 rounded-full hover:bg-blue-600 transition-colors">
+                                        <Upload className="w-5 h-5 text-white" />
+                                        <input
+                                          type="file"
+                                          className="hidden"
+                                          accept=".jpg,.jpeg,.png"
+                                          onChange={handleThumbnailUpload}
+                                          disabled={uploadingThumbnail}
+                                        />
+                                      </label>
+                                    </div>
                                   </div>
-                                ) : (
-                                  <div className="relative group">
-                                    <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                                      <Image
-                                        src={programFormData.thumbnail}
-                                        alt="Thumbnail"
-                                        loading="lazy"
-                                        width={800}
-                                        height={192}
-                                        className="w-full h-full object-cover"
-                                      />
-                                      <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            setProgramFormData((prev) => ({
-                                              ...prev,
-                                              thumbnail: "",
-                                            }));
-                                            setThumbnailFile(null);
-                                          }}
-                                          className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
-                                          title="Remove image"
-                                        >
-                                          <Trash2Icon className="w-5 h-5 text-white" />
-                                        </button>
-                                        <label className="cursor-pointer p-2 bg-blue-500 rounded-full hover:bg-blue-600 transition-colors">
-                                          <Upload className="w-5 h-5 text-white" />
-                                          <input
-                                            type="file"
-                                            className="hidden"
-                                            accept=".jpg,.jpeg,.png"
-                                            onChange={handleThumbnailUpload}
-                                            disabled={uploadingThumbnail}
-                                          />
-                                        </label>
+                                  {uploadingThumbnail && (
+                                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                                      <div className="text-center">
+                                        <Loader2 className="w-8 h-8 mb-2 text-white animate-spin mx-auto" />
+                                        <p className="text-sm text-white">
+                                          Uploading... {thumbnailUploadProgress}
+                                          %
+                                        </p>
                                       </div>
                                     </div>
-                                    {uploadingThumbnail && (
-                                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
-                                        <div className="text-center">
-                                          <Loader2 className="w-8 h-8 mb-2 text-white animate-spin mx-auto" />
-                                          <p className="text-sm text-white">
-                                            Uploading...{" "}
-                                            {thumbnailUploadProgress}%
-                                          </p>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -3057,111 +2955,69 @@ const handlePdfUpload = async (e, lessonIndex) => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {programs.map((program) => (
-                        <div
-                          key={program.id}
-                          className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex flex-col md:flex-row">
-                            {program.thumbnail_url && (
-                              <div className="md:w-48 h-32 bg-gray-200 shrink-0">
-                                <Image
-                                  src={program.thumbnail_url}
-                                  alt={program.title}
-                                  loading="lazy"
-                                  width={192}
-                                  height={128}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                            <div className="flex-1 p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                    <h4 className="font-semibold text-gray-900">
-                                      {program.title}
-                                    </h4>
-                                    <span
-                                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(program.status)}`}
-                                    >
-                                      {program.status}
-                                    </span>
-                                    {program.course_code && (
-                                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                        {program.course_code}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-gray-600 line-clamp-2">
-                                    {program.description}
-                                  </p>
-
-                                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                                    <span className="flex items-center gap-1">
-                                      <BookOpen className="w-3 h-3" />
-                                      {program.category}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      {program.duration}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Award className="w-3 h-3" />
-                                      {program.level}
-                                    </span>
-                                    <span className="flex items-center gap-1 font-semibold text-gray-700">
-                                      Rs.
-                                      {program.final_price ||
-                                        program.original_price}
-                                    </span>
-                                    {program.discount > 0 && (
-                                      <span className="flex items-center gap-1 text-green-600">
-                                        <span className="line-through text-gray-400">
-                                          Rs.{program.original_price}
-                                        </span>
-                                        {program.discount}% off
-                                      </span>
-                                    )}
-                                    {program.lessons &&
-                                      program.lessons.length > 0 && (
-                                        <span className="flex items-center gap-1">
-                                          <FileText className="w-3 h-3" />
-                                          {program.lessons.length} lessons
-                                        </span>
-                                      )}
-                                  </div>
-                                </div>
-                                {hasAdminOrInternalRoleFromSession() && (
-                                  <div className="flex gap-2 shrink-0 ml-4">
-                                    <button
-                                      onClick={() => handleEditProgram(program)}
-                                      className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                                      title="Edit"
-                                      disabled={programsLoading}
-                                    >
-                                      <Edit className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleDeleteProgram(program.id)
-                                      }
-                                      className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                                      title="Delete"
-                                    >
-                                      <Trash2Icon className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                      {programs.map((program) => {
+                        const assessment = assessments[program.id];
+                        return (
+                          <ProgramCard
+                            key={program.id}
+                            program={program}
+                            onSelectCourse={handleSelectCourse}
+                            assessment={assessment}
+                            getStatusBadge={getStatusBadge}
+                            onEditProgram={handleEditProgram}
+                            onDeleteProgram={handleDeleteProgram}
+                            onEditAssessment={handleOpenEditAssessment}
+                            onDeleteAssessment={handleDeleteAssessment}
+                            onCreateAssessment={handleOpenCreateAssessment}
+                            onManageQuestions={handleOpenManageQuestions}
+                            expandedAssessment={expandedAssessment}
+                            setExpandedAssessment={setExpandedAssessment}
+                            showAddQuestion={showAddQuestion}
+                            selectedAssessmentId={selectedAssessmentId}
+                            editingQuestion={editingQuestion}
+                            questionFormData={questionFormData}
+                            questionErrors={questionErrors}
+                            questionSaving={questionSaving}
+                            handleQuestionFormChange={(e) =>
+                              handleQuestionFormChange(
+                                e,
+                                setQuestionFormData,
+                                setQuestionErrors,
+                              )
+                            }
+                            handleQuestionSubmit={(courseId, assessmentId) =>
+    handleQuestionSubmit(
+      courseId,
+      assessmentId,
+      questionFormData,
+      editingQuestion,
+      setQuestionSaving,
+      resetQuestionForm,
+      () => {
+        // Close question form after successful submit
+        setShowAddQuestion(false);
+        // Refresh assessment data to show new question
+        fetchPrograms();
+      },
+      setEditingQuestion,
+      setQuestionErrors
+    )
+  }
+                            handleDeleteQuestion={handleDeleteQuestion}
+                            handleEditQuestion={handleEditQuestion}
+                            resetQuestionForm={resetQuestionForm}
+                            setShowAddQuestion={setShowAddQuestion}
+                            setEditingQuestion={setEditingQuestion}
+                            setQuestionFormData={setQuestionFormData} // ADD THIS - Pass setQuestionFormData
+                            QuestionForm={QuestionForm}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               ) : (
+                // Change Password Tab
                 <div>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-red-100 rounded-full">
@@ -3197,7 +3053,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                   )}
 
                   <form onSubmit={handleChangePassword} className="space-y-6">
-                    {/* Current Password */}
                     <div>
                       <label
                         htmlFor="old_password"
@@ -3242,7 +3097,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                       )}
                     </div>
 
-                    {/* New Password */}
                     <div>
                       <label
                         htmlFor="new_password"
@@ -3309,7 +3163,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                       )}
                     </div>
 
-                    {/* Confirm Password */}
                     <div>
                       <label
                         htmlFor="confirm_password"
@@ -3356,7 +3209,6 @@ const handlePdfUpload = async (e, lessonIndex) => {
                       )}
                     </div>
 
-                    {/* Password Requirements */}
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <p className="text-sm font-medium text-gray-700 mb-2">
                         Password Requirements:
@@ -3412,6 +3264,35 @@ const handlePdfUpload = async (e, lessonIndex) => {
           </div>
         </div>
       </div>
+
+      {/* Assessment Modal */}
+      <AssessmentModal
+        isOpen={isAssessmentModalOpen}
+        onClose={() => {
+          setIsAssessmentModalOpen(false);
+          resetAssessmentForm();
+          setEditingAssessment(null);
+          setAssessmentSuccess(false);
+        }}
+        editingAssessment={editingAssessment}
+        assessmentFormData={assessmentFormData}
+        assessmentErrors={assessmentErrors}
+        assessmentSaving={assessmentSaving}
+        assessmentSuccess={assessmentSuccess}
+        handleAssessmentFormChange={handleAssessmentFormChange}
+        handleAssessmentSubmit={(courseId) =>
+          handleAssessmentSubmit(
+            courseId,
+            assessmentFormData,
+            editingAssessment,
+          )
+        }
+        setAssessmentSuccess={setAssessmentSuccess}
+        resetAssessmentForm={resetAssessmentForm}
+        setEditingAssessment={setEditingAssessment}
+        courseId={selectedAssessmentId}
+        programs={programs}
+      />
     </div>
   );
 }

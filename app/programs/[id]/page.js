@@ -65,13 +65,13 @@ const ProgramDetailPage = () => {
   const [contentViewMode, setContentViewMode] = useState("video");
   const [lessonProgress, setLessonProgress] = useState({});
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
-  const [progressSaveStatus, setProgressSaveStatus] = useState('');
+  const [progressSaveStatus, setProgressSaveStatus] = useState("");
   const [loadingProgress, setLoadingProgress] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [controlsTimeout, setControlsTimeout] = useState(null);
-  
+
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const lastSavedTime = useRef(0);
@@ -111,11 +111,11 @@ const ProgramDetailPage = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      if (status === 'loading') {
+      if (status === "loading") {
         return;
       }
-      
-      if (status === 'unauthenticated') {
+
+      if (status === "unauthenticated") {
         return;
       }
 
@@ -131,13 +131,16 @@ const ProgramDetailPage = () => {
     setIsRouterReady(true);
   }, []);
 
-  const safeNavigate = useCallback((path) => {
-    if (isRouterReady && router) {
-      router.push(path);
-    } else {
-      window.location.href = path;
-    }
-  }, [isRouterReady, router]);
+  const safeNavigate = useCallback(
+    (path) => {
+      if (isRouterReady && router) {
+        router.push(path);
+      } else {
+        window.location.href = path;
+      }
+    },
+    [isRouterReady, router],
+  );
 
   useEffect(() => {
     if (programId) {
@@ -146,14 +149,38 @@ const ProgramDetailPage = () => {
   }, [programId]);
 
   useEffect(() => {
-    if (program && program.lessons && program.lessons.length > 0 && program.is_purchased) {
+    if (
+      program &&
+      program.lessons &&
+      program.lessons.length > 0 &&
+      program.is_purchased
+    ) {
       loadAllLessonProgress();
-      
-      const firstVideoLesson = program.lessons.find(lesson => lesson.video_url || lesson.external_video_url);
+
+      const firstVideoLesson = program.lessons.find(
+        (lesson) => lesson.video_url,
+      );
       if (firstVideoLesson) {
         setSelectedLesson(firstVideoLesson);
         setIsPlayerVisible(true);
         loadLessonProgress(firstVideoLesson.id);
+
+        const firstLessonProgress = lessonProgress[firstVideoLesson.id];
+        if (firstLessonProgress && firstLessonProgress.watched_seconds > 0) {
+          setCurrentTime(firstLessonProgress.watched_seconds);
+          // After video loads, seek to this position
+          if (videoRef.current) {
+            const handleLoad = () => {
+              videoRef.current.currentTime =
+                firstLessonProgress.watched_seconds;
+              videoRef.current.removeEventListener(
+                "loadedmetadata",
+                handleLoad,
+              );
+            };
+            videoRef.current.addEventListener("loadedmetadata", handleLoad);
+          }
+        }
         if (firstVideoLesson.pdf_url) {
           setContentViewMode("video");
         }
@@ -161,6 +188,23 @@ const ProgramDetailPage = () => {
         setSelectedLesson(program.lessons[0]);
         setIsPlayerVisible(true);
         loadLessonProgress(program.lessons[0].id);
+
+        const firstLessonProgress = lessonProgress[program.lessons[0].id];
+
+        if (firstLessonProgress && firstLessonProgress.watched_seconds > 0) {
+          setCurrentTime(firstLessonProgress.watched_seconds);
+          if (videoRef.current) {
+            const handleLoad = () => {
+              videoRef.current.currentTime =
+                firstLessonProgress.watched_seconds;
+              videoRef.current.removeEventListener(
+                "loadedmetadata",
+                handleLoad,
+              );
+            };
+            videoRef.current.addEventListener("loadedmetadata", handleLoad);
+          }
+        }
         if (program.lessons[0].pdf_url) {
           setContentViewMode("pdf");
         }
@@ -174,7 +218,12 @@ const ProgramDetailPage = () => {
       progressInterval.current = null;
     }
 
-    if (isPlaying && selectedLesson && program?.is_purchased && videoRef.current) {
+    if (
+      isPlaying &&
+      selectedLesson &&
+      program?.is_purchased &&
+      videoRef.current
+    ) {
       progressInterval.current = setInterval(() => {
         if (videoRef.current && currentTime > 0) {
           saveProgress(currentTime, false);
@@ -192,14 +241,18 @@ const ProgramDetailPage = () => {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (selectedLesson && currentTime > 0 && !completedLessons.includes(selectedLesson.id)) {
+      if (
+        selectedLesson &&
+        currentTime > 0 &&
+        !completedLessons.includes(selectedLesson.id)
+      ) {
         saveProgress(currentTime, false);
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [selectedLesson, currentTime, completedLessons]);
 
@@ -207,8 +260,8 @@ const ProgramDetailPage = () => {
     setLoading(true);
     setError(null);
     try {
-      if (status === 'loading') {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      if (status === "loading") {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       let currentSession = session;
@@ -217,7 +270,7 @@ const ProgramDetailPage = () => {
       }
 
       if (!currentSession?.accessToken) {
-        throw new Error('No access token available');
+        throw new Error("No access token available");
       }
 
       const response = await fetchApiResponse(
@@ -228,7 +281,7 @@ const ProgramDetailPage = () => {
             "Access-Token": currentSession.accessToken,
             "Refresh-Token": currentSession.refreshToken,
           },
-        }
+        },
       );
 
       if (response.meta?.status === 200 && response.data) {
@@ -282,13 +335,13 @@ const ProgramDetailPage = () => {
     try {
       const result = await progressApi.getLessonProgress(lessonId, session);
       if (result.success && result.data) {
-        setLessonProgress(prev => ({
+        setLessonProgress((prev) => ({
           ...prev,
-          [lessonId]: result.data
+          [lessonId]: result.data,
         }));
-        
+
         if (selectedLesson?.id === lessonId && result.data.completed) {
-          setCompletedLessons(prev => {
+          setCompletedLessons((prev) => {
             if (!prev.includes(lessonId)) {
               return [...prev, lessonId];
             }
@@ -303,7 +356,7 @@ const ProgramDetailPage = () => {
 
   const loadAllLessonProgress = async () => {
     if (!session?.accessToken || !program?.is_purchased || !program?.lessons) {
-      console.log('⚠️ Cannot load progress: missing required data');
+      console.log("⚠️ Cannot load progress: missing required data");
       return;
     }
 
@@ -315,9 +368,11 @@ const ProgramDetailPage = () => {
 
     for (const lesson of program.lessons) {
       try {
-        console.log(`📡 Fetching progress for lesson ${lesson.id}: ${lesson.title}`);
+        console.log(
+          `📡 Fetching progress for lesson ${lesson.id}: ${lesson.title}`,
+        );
         const result = await progressApi.getLessonProgress(lesson.id, session);
-        
+
         if (result.success && result.data) {
           progressMap[lesson.id] = result.data;
           if (result.data.completed) {
@@ -328,15 +383,18 @@ const ProgramDetailPage = () => {
           progressMap[lesson.id] = {
             watched_seconds: 0,
             completed: false,
-            lesson_id: lesson.id
+            lesson_id: lesson.id,
           };
         }
       } catch (error) {
-        console.error(`❌ Error loading progress for lesson ${lesson.id}:`, error);
+        console.error(
+          `❌ Error loading progress for lesson ${lesson.id}:`,
+          error,
+        );
         progressMap[lesson.id] = {
           watched_seconds: 0,
           completed: false,
-          lesson_id: lesson.id
+          lesson_id: lesson.id,
         };
       }
     }
@@ -344,75 +402,94 @@ const ProgramDetailPage = () => {
     setLessonProgress(progressMap);
     setCompletedLessons(completed);
     setLoadingProgress(false);
-    console.log(`✅ Loaded progress for ${Object.keys(progressMap).length} lessons`);
-    console.log(`📊 Completed lessons: ${completed.length}/${program.lessons.length}`);
+    console.log(
+      `✅ Loaded progress for ${Object.keys(progressMap).length} lessons`,
+    );
+    console.log(
+      `📊 Completed lessons: ${completed.length}/${program.lessons.length}`,
+    );
   };
 
-  const saveProgress = useCallback(async (watchedSeconds, completed = false) => {
-    if (!selectedLesson || !program?.is_purchased || !session?.accessToken) {
-      console.log('⚠️ Cannot save progress: missing required data');
-      return;
-    }
-    
-    if (completedLessons.includes(selectedLesson.id)) {
-      setProgressSaveStatus('saved');
-      return;
-    }
-    
-    if (!completed && Math.abs(watchedSeconds - lastSavedTime.current) < 2) {
-      return;
-    }
+  const saveProgress = useCallback(
+    async (watchedSeconds, completed = false) => {
+      if (!selectedLesson || !program?.is_purchased || !session?.accessToken) {
+        console.log("⚠️ Cannot save progress: missing required data");
+        return;
+      }
 
-    setIsUpdatingProgress(true);
-    setProgressSaveStatus('saving');
-    
-    try {
-      const data = {
-        watched_seconds: Math.floor(watchedSeconds)
-      };
-      
-      if (completed) {
-        data.completed = true;
+      if (completedLessons.includes(selectedLesson.id)) {
+        setProgressSaveStatus("saved");
+        return;
       }
-      
-      console.log(`💾 Saving progress for lesson ${selectedLesson.id}:`, data);
-      
-      const result = await progressApi.updateProgress(selectedLesson.id, data, session);
-      
-      if (result.success) {
-        lastSavedTime.current = watchedSeconds;
-        setProgressSaveStatus('saved');
-        console.log(`✅ Progress saved for lesson ${selectedLesson.id}`);
-        
-        setLessonProgress(prev => ({
-          ...prev,
-          [selectedLesson.id]: result.data
-        }));
-        
-        if (result.data.completed && !completedLessons.includes(selectedLesson.id)) {
-          setCompletedLessons(prev => [...prev, selectedLesson.id]);
-          console.log(`🎉 Lesson ${selectedLesson.id} marked as completed!`);
+
+      if (!completed && Math.abs(watchedSeconds - lastSavedTime.current) < 2) {
+        return;
+      }
+
+      setIsUpdatingProgress(true);
+      setProgressSaveStatus("saving");
+
+      try {
+        const data = {
+          watched_seconds: Math.floor(watchedSeconds),
+        };
+
+        if (completed) {
+          data.completed = true;
         }
-        
-        setTimeout(() => {
-          setProgressSaveStatus('');
-        }, 2000);
-      } else {
-        setProgressSaveStatus('error');
-        console.error("❌ Failed to save progress:", result.error);
+
+        console.log(
+          `💾 Saving progress for lesson ${selectedLesson.id}:`,
+          data,
+        );
+
+        const result = await progressApi.updateProgress(
+          selectedLesson.id,
+          data,
+          session,
+        );
+
+        if (result.success) {
+          lastSavedTime.current = watchedSeconds;
+          setProgressSaveStatus("saved");
+          console.log(`✅ Progress saved for lesson ${selectedLesson.id}`);
+
+          setLessonProgress((prev) => ({
+            ...prev,
+            [selectedLesson.id]: result.data,
+          }));
+
+          if (
+            result.data.completed &&
+            !completedLessons.includes(selectedLesson.id)
+          ) {
+            setCompletedLessons((prev) => [...prev, selectedLesson.id]);
+            console.log(`🎉 Lesson ${selectedLesson.id} marked as completed!`);
+          }
+
+          setTimeout(() => {
+            setProgressSaveStatus("");
+          }, 2000);
+        } else {
+          setProgressSaveStatus("error");
+          console.error("❌ Failed to save progress:", result.error);
+        }
+      } catch (error) {
+        setProgressSaveStatus("error");
+        console.error("❌ Error saving progress:", error);
+      } finally {
+        setIsUpdatingProgress(false);
       }
-    } catch (error) {
-      setProgressSaveStatus('error');
-      console.error("❌ Error saving progress:", error);
-    } finally {
-      setIsUpdatingProgress(false);
-    }
-  }, [selectedLesson, program?.is_purchased, session, completedLessons]);
+    },
+    [selectedLesson, program?.is_purchased, session, completedLessons],
+  );
 
   const handleVideoEnded = useCallback(async () => {
     setIsPlaying(false);
     if (selectedLesson && !completedLessons.includes(selectedLesson.id)) {
-      console.log(`🏁 Video ended for lesson ${selectedLesson.id}, marking as completed`);
+      console.log(
+        `🏁 Video ended for lesson ${selectedLesson.id}, marking as completed`,
+      );
       await saveProgress(duration, true);
     }
   }, [selectedLesson, completedLessons, duration, saveProgress]);
@@ -526,43 +603,49 @@ const ProgramDetailPage = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Space bar - toggle play/pause
-      if (e.key === ' ' && !e.target.matches('input, textarea, button')) {
+      if (e.key === " " && !e.target.matches("input, textarea, button")) {
         e.preventDefault();
         togglePlay();
       }
       // Arrow right - skip forward 10s
-      if (e.key === 'ArrowRight' && !e.target.matches('input, textarea')) {
+      if (e.key === "ArrowRight" && !e.target.matches("input, textarea")) {
         e.preventDefault();
         skipForward();
       }
       // Arrow left - skip backward 10s
-      if (e.key === 'ArrowLeft' && !e.target.matches('input, textarea')) {
+      if (e.key === "ArrowLeft" && !e.target.matches("input, textarea")) {
         e.preventDefault();
         skipBackward();
       }
       // F - fullscreen
-      if (e.key === 'f' && !e.target.matches('input, textarea')) {
+      if (e.key === "f" && !e.target.matches("input, textarea")) {
         e.preventDefault();
         toggleFullscreen();
       }
       // M - mute
-      if (e.key === 'm' && !e.target.matches('input, textarea')) {
+      if (e.key === "m" && !e.target.matches("input, textarea")) {
         e.preventDefault();
         toggleMute();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isPlaying]);
 
   const selectLesson = (lesson) => {
-    if (selectedLesson && currentTime > 0 && !completedLessons.includes(selectedLesson.id)) {
+    // Save progress of current lesson if needed
+    if (
+      selectedLesson &&
+      currentTime > 0 &&
+      !completedLessons.includes(selectedLesson.id)
+    ) {
       saveProgress(currentTime, false);
     }
 
+    // Set new lesson
     setSelectedLesson(lesson);
     setIsPlaying(false);
     setCurrentTime(0);
@@ -570,12 +653,14 @@ const ProgramDetailPage = () => {
     setSelectedPdfUrl(null);
     setIsPlayerVisible(true);
     lastSavedTime.current = 0;
-    
+
+    // Load progress for the new lesson
     loadLessonProgress(lesson.id);
-    
+
+    // Determine content type
     const hasVideo = lesson.video_url || lesson.external_video_url;
     const hasPdf = lesson.pdf_url;
-    
+
     if (hasVideo && hasPdf) {
       setContentViewMode("video");
       setIsPlayerVisible(true);
@@ -588,9 +673,26 @@ const ProgramDetailPage = () => {
       setContentViewMode("video");
       setIsPlayerVisible(true);
     }
-    
+
+    // Handle video loading and seeking
     if (videoRef.current) {
       videoRef.current.load();
+
+      // After video loads, seek to saved progress
+      const handleLoadedMetadata = () => {
+        const savedProgress = lessonProgress[lesson.id];
+        if (savedProgress && savedProgress.watched_seconds > 0) {
+          videoRef.current.currentTime = savedProgress.watched_seconds;
+          setCurrentTime(savedProgress.watched_seconds);
+        }
+        // Remove listener after first load
+        videoRef.current.removeEventListener(
+          "loadedmetadata",
+          handleLoadedMetadata,
+        );
+      };
+
+      videoRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
     }
   };
 
@@ -610,7 +712,10 @@ const ProgramDetailPage = () => {
     setShowPdf(false);
     setSelectedPdfUrl(null);
     setContentViewMode("video");
-    if (selectedLesson && (selectedLesson.video_url || selectedLesson.external_video_url)) {
+    if (
+      selectedLesson &&
+      (selectedLesson.video_url || selectedLesson.external_video_url)
+    ) {
       setIsPlayerVisible(true);
     }
   };
@@ -626,7 +731,10 @@ const ProgramDetailPage = () => {
         setIsPlaying(false);
         handleVideoPause();
       }
-    } else if (mode === "video" && (selectedLesson?.video_url || selectedLesson?.external_video_url)) {
+    } else if (
+      mode === "video" &&
+      (selectedLesson?.video_url || selectedLesson?.external_video_url)
+    ) {
       setContentViewMode("video");
       setShowPdf(false);
       setSelectedPdfUrl(null);
@@ -651,9 +759,12 @@ const ProgramDetailPage = () => {
   const getLessonProgressPercentage = (lessonId) => {
     const progress = lessonProgress[lessonId];
     if (!progress) return 0;
-    const lesson = program?.lessons?.find(l => l.id === lessonId);
+    const lesson = program?.lessons?.find((l) => l.id === lessonId);
     if (!lesson || !lesson.duration_seconds) return 0;
-    return Math.min((progress.watched_seconds / lesson.duration_seconds) * 100, 100);
+    return Math.min(
+      (progress.watched_seconds / lesson.duration_seconds) * 100,
+      100,
+    );
   };
 
   const handleEnrollClick = () => {
@@ -713,8 +824,9 @@ const ProgramDetailPage = () => {
     : 0;
   const isLessonPurchased = program.is_purchased;
 
-  const hasBothVideoAndPdf = selectedLesson && 
-    (selectedLesson.video_url || selectedLesson.external_video_url) && 
+  const hasBothVideoAndPdf =
+    selectedLesson &&
+    (selectedLesson.video_url || selectedLesson.external_video_url) &&
     selectedLesson.pdf_url;
 
   return (
@@ -760,7 +872,7 @@ const ProgramDetailPage = () => {
           {/* Left Sidebar - Lessons List */}
           <div
             className={`${
-              isSidebarOpen ? 'block' : 'hidden'
+              isSidebarOpen ? "block" : "hidden"
             } lg:block w-full lg:w-96 flex-shrink-0`}
           >
             <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-24 max-h-[calc(100vh-120px)]">
@@ -792,12 +904,16 @@ const ProgramDetailPage = () => {
                   <div className="space-y-1">
                     {program.lessons.map((lesson, index) => {
                       const isSelected = selectedLesson?.id === lesson.id;
-                      const isLocked = !isLessonPurchased && !lesson.is_free_preview;
+                      const isLocked =
+                        !isLessonPurchased && !lesson.is_free_preview;
                       const isCompleted = completedLessons.includes(lesson.id);
-                      const hasVideo = lesson.video_url || lesson.external_video_url;
+                      const hasVideo =
+                        lesson.video_url || lesson.external_video_url;
                       const hasPdf = lesson.pdf_url;
-                      const progressPercent = getLessonProgressPercentage(lesson.id);
-                      
+                      const progressPercent = getLessonProgressPercentage(
+                        lesson.id,
+                      );
+
                       return (
                         <div
                           key={lesson.id || index}
@@ -807,13 +923,13 @@ const ProgramDetailPage = () => {
                             }
                           }}
                           className={`flex items-start gap-3 p-3 rounded-lg transition-all cursor-pointer ${
-                            !isLocked 
-                              ? 'hover:bg-red-50' 
-                              : 'cursor-not-allowed opacity-60'
+                            !isLocked
+                              ? "hover:bg-red-50"
+                              : "cursor-not-allowed opacity-60"
                           } ${
-                            isSelected 
-                              ? 'bg-red-50 border-2 border-red-200 shadow-sm' 
-                              : 'hover:bg-gray-50'
+                            isSelected
+                              ? "bg-red-50 border-2 border-red-200 shadow-sm"
+                              : "hover:bg-gray-50"
                           }`}
                         >
                           <div className="shrink-0">
@@ -826,11 +942,13 @@ const ProgramDetailPage = () => {
                                 <Lock className="w-4 h-4" />
                               </div>
                             ) : (
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                isSelected 
-                                  ? 'bg-red-600 text-white' 
-                                  : 'bg-gray-200 text-gray-600'
-                              }`}>
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                  isSelected
+                                    ? "bg-red-600 text-white"
+                                    : "bg-gray-200 text-gray-600"
+                                }`}
+                              >
                                 {index + 1}
                               </div>
                             )}
@@ -838,24 +956,31 @@ const ProgramDetailPage = () => {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className={`text-sm font-medium ${
-                                isSelected ? 'text-red-600' : 'text-gray-900'
-                              }`}>
+                              <h4
+                                className={`text-sm font-medium ${
+                                  isSelected ? "text-red-600" : "text-gray-900"
+                                }`}
+                              >
                                 {lesson.title}
                               </h4>
                             </div>
-                            
-                            {isLessonPurchased && !isLocked && progressPercent > 0 && !isCompleted && (
-                              <div className="mt-1">
-                                <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-red-500 rounded-full transition-all duration-300"
-                                    style={{ width: `${Math.min(progressPercent, 100)}%` }}
-                                  />
+
+                            {isLessonPurchased &&
+                              !isLocked &&
+                              progressPercent > 0 &&
+                              !isCompleted && (
+                                <div className="mt-1">
+                                  <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-red-500 rounded-full transition-all duration-300"
+                                      style={{
+                                        width: `${Math.min(progressPercent, 100)}%`,
+                                      }}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                            
+                              )}
+
                             <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                               {hasVideo && (
                                 <span className="flex items-center gap-1">
@@ -927,28 +1052,84 @@ const ProgramDetailPage = () => {
                 <div className="p-4 border-t border-gray-200 bg-gray-50">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">
-                      Progress: {completedLessons.length}/{program.lessons.length}
+                      Progress: {completedLessons.length}/
+                      {program.lessons.length}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-gray-600">
-                        {Math.round((completedLessons.length / program.lessons.length) * 100)}%
+                        {(() => {
+                          // Calculate total watched progress across all lessons
+                          let totalWatched = 0;
+                          let totalDuration = 0;
+
+                          program.lessons.forEach((lesson) => {
+                            const progress = lessonProgress[lesson.id];
+                            if (progress) {
+                              totalWatched += progress.watched_seconds || 0;
+                            }
+                            if (lesson.duration_seconds) {
+                              totalDuration += lesson.duration_seconds;
+                            }
+                          });
+
+                          // If no duration data, fall back to completed lessons count
+                          if (totalDuration === 0) {
+                            return Math.round(
+                              (completedLessons.length /
+                                program.lessons.length) *
+                                100,
+                            );
+                          }
+
+                          return Math.min(
+                            Math.round((totalWatched / totalDuration) * 100),
+                            100,
+                          );
+                        })()}
+                        %
                       </span>
-                      {progressSaveStatus === 'saving' && (
+                      {progressSaveStatus === "saving" && (
                         <Loader2 className="w-4 h-4 text-red-600 animate-spin" />
                       )}
-                      {progressSaveStatus === 'saved' && (
+                      {progressSaveStatus === "saved" && (
                         <CheckCircle className="w-4 h-4 text-green-600" />
                       )}
-                      {progressSaveStatus === 'error' && (
+                      {progressSaveStatus === "error" && (
                         <X className="w-4 h-4 text-red-600" />
                       )}
                     </div>
                   </div>
                   <div className="w-full h-2 bg-gray-200 rounded-full mt-2 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-300"
+                      className="h-full bg-linear-to-r from-red-500 to-red-600 rounded-full transition-all duration-300"
                       style={{
-                        width: `${(completedLessons.length / program.lessons.length) * 100}%`
+                        width: `${(() => {
+                          let totalWatched = 0;
+                          let totalDuration = 0;
+
+                          program.lessons.forEach((lesson) => {
+                            const progress = lessonProgress[lesson.id];
+                            if (progress) {
+                              totalWatched += progress.watched_seconds || 0;
+                            }
+                            if (lesson.duration_seconds) {
+                              totalDuration += lesson.duration_seconds;
+                            }
+                          });
+
+                          if (totalDuration === 0) {
+                            return (
+                              (completedLessons.length /
+                                program.lessons.length) *
+                              100
+                            );
+                          }
+
+                          return Math.min(
+                            (totalWatched / totalDuration) * 100,
+                            100,
+                          );
+                        })()}%`,
                       }}
                     />
                   </div>
@@ -991,14 +1172,17 @@ const ProgramDetailPage = () => {
                   </div>
                 )}
 
-                <div 
-                  ref={playerRef} 
+                <div
+                  ref={playerRef}
                   className="relative bg-black"
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                 >
                   {/* PDF Viewer */}
-                  {(contentViewMode === "pdf" || (!selectedLesson?.video_url && !selectedLesson?.external_video_url && selectedLesson?.pdf_url)) && (
+                  {(contentViewMode === "pdf" ||
+                    (!selectedLesson?.video_url &&
+                      !selectedLesson?.external_video_url &&
+                      selectedLesson?.pdf_url)) && (
                     <div className="relative w-full aspect-video bg-gray-100">
                       {selectedLesson?.pdf_url ? (
                         <iframe
@@ -1016,217 +1200,248 @@ const ProgramDetailPage = () => {
                   )}
 
                   {/* Video Player */}
-                  {contentViewMode === "video" && selectedLesson && (selectedLesson.video_url || selectedLesson.external_video_url) && (
-                    <div className="relative w-full aspect-video bg-black">
-                      <video
-                        ref={videoRef}
-                        className="w-full h-full"
-                        onTimeUpdate={handleTimeUpdate}
-                        onLoadedMetadata={handleTimeUpdate}
-                        onEnded={handleVideoEnded}
-                        onPause={handleVideoPause}
-                        controls={false}
-                        src={selectedLesson.video_url || selectedLesson.external_video_url}
-                        poster={program.thumbnail_url}
-                        onClick={togglePlay}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
+                  {contentViewMode === "video" &&
+                    selectedLesson &&
+                    (selectedLesson.video_url ||
+                      selectedLesson.external_video_url) && (
+                      <div className="relative w-full aspect-video bg-black">
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full"
+                          onTimeUpdate={handleTimeUpdate}
+                          onLoadedMetadata={handleTimeUpdate}
+                          onEnded={handleVideoEnded}
+                          onPause={handleVideoPause}
+                          controls={false}
+                          src={
+                            selectedLesson.video_url ||
+                            selectedLesson.external_video_url
+                          }
+                          poster={program.thumbnail_url}
+                          onClick={togglePlay}
+                        >
+                          Your browser does not support the video tag.
+                        </video>
 
-                      {/* Progress overlay - show current progress */}
-                      {lessonProgress[selectedLesson?.id] && (
-                        <div className="absolute top-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                          {Math.min((lessonProgress[selectedLesson.id].watched_seconds / (duration || 1)) * 100, 100).toFixed(0)}%
-                        </div>
-                      )}
+                        {/* Progress overlay - show current progress */}
+                        {lessonProgress[selectedLesson?.id] && (
+                          <div className="absolute top-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            {Math.min(
+                              (lessonProgress[selectedLesson.id]
+                                .watched_seconds /
+                                (duration || 1)) *
+                                100,
+                              100,
+                            ).toFixed(0)}
+                            %
+                          </div>
+                        )}
 
-                      {/* Speed indicator */}
-                      {playbackRate !== 1 && (
-                        <div className="absolute top-4 left-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                          {playbackRate}x
-                        </div>
-                      )}
+                        {/* Speed indicator */}
+                        {playbackRate !== 1 && (
+                          <div className="absolute top-4 left-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            {playbackRate}x
+                          </div>
+                        )}
 
-                      {/* Center Play/Pause Button - Shows when controls are visible or video is paused */}
-                      {(showControls || !isPlaying) && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <button
-                            onClick={togglePlay}
-                            className="pointer-events-auto bg-black/50 hover:bg-black/70 rounded-full p-4 transition-all duration-200 transform hover:scale-110"
-                          >
-                            {isPlaying ? (
-                              <Pause className="w-12 h-12 text-white" />
-                            ) : (
-                              <Play className="w-12 h-12 text-white ml-1" />
-                            )}
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Skip buttons - visible with controls */}
-                      {showControls && (
-                        <>
-                          <button
-                            onClick={skipBackward}
-                            className="absolute left-8 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-3 transition-all duration-200"
-                          >
-                            <Rewind className="w-6 h-6 text-white" />
-                            <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-white text-[10px]">10s</span>
-                          </button>
-                          <button
-                            onClick={skipForward}
-                            className="absolute right-8 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-3 transition-all duration-200"
-                          >
-                            <FastForward className="w-6 h-6 text-white" />
-                            <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-white text-[10px]">10s</span>
-                          </button>
-                        </>
-                      )}
-
-                      {/* Video Controls Overlay */}
-                      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${
-                        showControls ? 'opacity-100' : 'opacity-0'
-                      }`}>
-                        {/* Progress Bar */}
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="text-white text-xs font-mono">
-                            {formatTime(currentTime)}
-                          </span>
-                          <input
-                            type="range"
-                            min="0"
-                            max={duration || 100}
-                            value={currentTime}
-                            onChange={handleSeek}
-                            className="flex-1 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer hover:h-1.5 transition-all
-                              [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
-                              [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
-                          />
-                          <span className="text-white text-xs font-mono">
-                            {formatTime(duration)}
-                          </span>
-                        </div>
-
-                        {/* Controls */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {/* Play/Pause */}
+                        {/* Center Play/Pause Button - Shows when controls are visible or video is paused */}
+                        {(showControls || !isPlaying) && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <button
                               onClick={togglePlay}
-                              className="text-white hover:text-red-500 transition-colors p-1"
+                              className="pointer-events-auto bg-black/50 hover:bg-black/70 rounded-full p-4 transition-all duration-200 transform hover:scale-110"
                             >
                               {isPlaying ? (
-                                <Pause className="w-5 h-5" />
+                                <Pause className="w-12 h-12 text-white" />
                               ) : (
-                                <Play className="w-5 h-5" />
+                                <Play className="w-12 h-12 text-white ml-1" />
                               )}
                             </button>
+                          </div>
+                        )}
 
-                            {/* Skip Backward */}
+                        {/* Skip buttons - visible with controls */}
+                        {showControls && (
+                          <>
                             <button
                               onClick={skipBackward}
-                              className="text-white hover:text-red-500 transition-colors p-1"
+                              className="absolute left-8 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-3 transition-all duration-200"
                             >
-                              <Rewind className="w-5 h-5" />
+                              <Rewind className="w-6 h-6 text-white" />
+                              <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-white text-[10px]">
+                                10s
+                              </span>
                             </button>
-
-                            {/* Skip Forward */}
                             <button
                               onClick={skipForward}
-                              className="text-white hover:text-red-500 transition-colors p-1"
+                              className="absolute right-8 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-3 transition-all duration-200"
                             >
-                              <FastForward className="w-5 h-5" />
+                              <FastForward className="w-6 h-6 text-white" />
+                              <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-white text-[10px]">
+                                10s
+                              </span>
                             </button>
+                          </>
+                        )}
 
-                            {/* Volume */}
+                        {/* Video Controls Overlay */}
+                        <div
+                          className={`absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${
+                            showControls ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          {/* Progress Bar */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="text-white text-xs font-mono">
+                              {formatTime(currentTime)}
+                            </span>
+                            <input
+                              type="range"
+                              min="0"
+                              max={duration || 100}
+                              value={currentTime}
+                              onChange={handleSeek}
+                              className="flex-1 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer hover:h-1.5 transition-all
+                              [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
+                              [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
+                            />
+                            <span className="text-white text-xs font-mono">
+                              {formatTime(duration)}
+                            </span>
+                          </div>
+
+                          {/* Controls */}
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
+                              {/* Play/Pause */}
                               <button
-                                onClick={toggleMute}
+                                onClick={togglePlay}
                                 className="text-white hover:text-red-500 transition-colors p-1"
                               >
-                                {isMuted ? (
-                                  <VolumeX className="w-5 h-5" />
+                                {isPlaying ? (
+                                  <Pause className="w-5 h-5" />
                                 ) : (
-                                  <Volume2 className="w-5 h-5" />
+                                  <Play className="w-5 h-5" />
                                 )}
                               </button>
-                              <input
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.1"
-                                value={volume}
-                                onChange={handleVolumeChange}
-                                className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer
+
+                              {/* Skip Backward */}
+                              <button
+                                onClick={skipBackward}
+                                className="text-white hover:text-red-500 transition-colors p-1"
+                              >
+                                <Rewind className="w-5 h-5" />
+                              </button>
+
+                              {/* Skip Forward */}
+                              <button
+                                onClick={skipForward}
+                                className="text-white hover:text-red-500 transition-colors p-1"
+                              >
+                                <FastForward className="w-5 h-5" />
+                              </button>
+
+                              {/* Volume */}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={toggleMute}
+                                  className="text-white hover:text-red-500 transition-colors p-1"
+                                >
+                                  {isMuted ? (
+                                    <VolumeX className="w-5 h-5" />
+                                  ) : (
+                                    <Volume2 className="w-5 h-5" />
+                                  )}
+                                </button>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="1"
+                                  step="0.1"
+                                  value={volume}
+                                  onChange={handleVolumeChange}
+                                  className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer
                                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 
                                   [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full 
                                   [&::-webkit-slider-thumb]:bg-red-600"
-                              />
+                                />
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-2">
-                            {/* Playback Speed */}
-                            <div className="relative">
+                            <div className="flex items-center gap-2">
+                              {/* Playback Speed */}
+                              <div className="relative">
+                                <button
+                                  onClick={() =>
+                                    setShowSpeedMenu(!showSpeedMenu)
+                                  }
+                                  className="text-white hover:text-red-500 transition-colors p-1 flex items-center gap-1 text-sm"
+                                >
+                                  <Settings className="w-5 h-5" />
+                                  <span className="hidden sm:inline">
+                                    {playbackRate}x
+                                  </span>
+                                </button>
+
+                                {showSpeedMenu && (
+                                  <div className="absolute bottom-full right-0 mb-2 bg-gray-800 rounded-lg shadow-lg p-1 min-w-[120px] z-50">
+                                    {speedOptions.map((speed) => (
+                                      <button
+                                        key={speed}
+                                        onClick={() =>
+                                          changePlaybackSpeed(speed)
+                                        }
+                                        className={`w-full text-left px-3 py-1.5 text-sm rounded transition-colors ${
+                                          playbackRate === speed
+                                            ? "bg-red-600 text-white"
+                                            : "text-white hover:bg-gray-700"
+                                        }`}
+                                      >
+                                        {speed}x
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Fullscreen */}
                               <button
-                                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                                className="text-white hover:text-red-500 transition-colors p-1 flex items-center gap-1 text-sm"
+                                onClick={toggleFullscreen}
+                                className="text-white hover:text-red-500 transition-colors p-1"
                               >
-                                <Settings className="w-5 h-5" />
-                                <span className="hidden sm:inline">{playbackRate}x</span>
+                                {isFullscreen ? (
+                                  <Minimize className="w-5 h-5" />
+                                ) : (
+                                  <Maximize className="w-5 h-5" />
+                                )}
                               </button>
-                              
-                              {showSpeedMenu && (
-                                <div className="absolute bottom-full right-0 mb-2 bg-gray-800 rounded-lg shadow-lg p-1 min-w-[120px] z-50">
-                                  {speedOptions.map((speed) => (
-                                    <button
-                                      key={speed}
-                                      onClick={() => changePlaybackSpeed(speed)}
-                                      className={`w-full text-left px-3 py-1.5 text-sm rounded transition-colors ${
-                                        playbackRate === speed
-                                          ? 'bg-red-600 text-white'
-                                          : 'text-white hover:bg-gray-700'
-                                      }`}
-                                    >
-                                      {speed}x
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
                             </div>
-
-                            {/* Fullscreen */}
-                            <button
-                              onClick={toggleFullscreen}
-                              className="text-white hover:text-red-500 transition-colors p-1"
-                            >
-                              {isFullscreen ? (
-                                <Minimize className="w-5 h-5" />
-                              ) : (
-                                <Maximize className="w-5 h-5" />
-                              )}
-                            </button>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Keyboard shortcuts hint */}
-                      {showControls && (
-                        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white/50 text-xs hidden md:block">
-                          Space: Play/Pause • ← →: Skip 10s • F: Fullscreen • M: Mute
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        {/* Keyboard shortcuts hint */}
+                        {showControls && (
+                          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white/50 text-xs hidden md:block">
+                            Space: Play/Pause • ← →: Skip 10s • F: Fullscreen •
+                            M: Mute
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                   {/* No content available */}
-                  {(!selectedLesson || (!selectedLesson.video_url && !selectedLesson.external_video_url && !selectedLesson.pdf_url)) && (
+                  {(!selectedLesson ||
+                    (!selectedLesson.video_url &&
+                      !selectedLesson.external_video_url &&
+                      !selectedLesson.pdf_url)) && (
                     <div className="relative w-full aspect-video bg-gray-900 flex items-center justify-center">
                       <div className="text-center text-white">
                         {program.lessons && program.lessons.length > 0 ? (
                           <>
                             <Video className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                            <p className="text-lg font-medium">Select a lesson to start learning</p>
+                            <p className="text-lg font-medium">
+                              Select a lesson to start learning
+                            </p>
                             <p className="text-sm text-gray-400 mt-1">
                               Choose a lesson from the curriculum on the left
                             </p>
@@ -1234,7 +1449,9 @@ const ProgramDetailPage = () => {
                         ) : (
                           <>
                             <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                            <p className="text-lg font-medium">No lessons available</p>
+                            <p className="text-lg font-medium">
+                              No lessons available
+                            </p>
                             <p className="text-sm text-gray-400 mt-1">
                               This course does not have any lessons yet
                             </p>
@@ -1273,30 +1490,65 @@ const ProgramDetailPage = () => {
                             </span>
                           )}
                         </div>
+
                         {selectedLesson.description && (
                           <p className="text-sm text-gray-600 mt-1">
                             {selectedLesson.description}
                           </p>
                         )}
-                        <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500">
+
+                        {/* Progress Display */}
+                        <div className="mt-2 flex items-center gap-4 text-xs">
+                          <span className="text-gray-500">Progress:</span>
+                          <span className="font-medium text-blue-600">
+                            {(() => {
+                              const progress =
+                                lessonProgress[selectedLesson.id];
+                              if (!progress || !selectedLesson.duration_seconds)
+                                return "0%";
+                              const percentage = Math.min(
+                                (progress.watched_seconds /
+                                  selectedLesson.duration_seconds) *
+                                  100,
+                                100,
+                              );
+                              return `${Math.round(percentage)}%`;
+                            })()}
+                          </span>
+                          {isUpdatingProgress && (
+                            <Loader2 className="w-3 h-3 text-red-600 animate-spin" />
+                          )}
+                          {progressSaveStatus === "saved" && (
+                            <CheckCircle className="w-3 h-3 text-green-600" />
+                          )}
+                          {progressSaveStatus === "error" && (
+                            <X className="w-3 h-3 text-red-600" />
+                          )}
+                          <span className="text-gray-400">
+                            (
+                            {formatTime(
+                              lessonProgress[selectedLesson.id]
+                                ?.watched_seconds || 0,
+                            )}{" "}
+                            / {formatTime(selectedLesson.duration_seconds || 0)}
+                            )
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
                           {selectedLesson.duration_seconds && (
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              Duration: {Math.floor(selectedLesson.duration_seconds / 60)} min
+                              Duration:{" "}
+                              {Math.floor(
+                                selectedLesson.duration_seconds / 60,
+                              )}{" "}
+                              min
                             </span>
                           )}
                           {selectedLesson.is_free_preview && (
-                            <span className="text-green-600">✓ Free Preview</span>
-                          )}
-                          {lessonProgress[selectedLesson.id] && (
-                            <span className="text-blue-600">
-                              Progress: {Math.min((lessonProgress[selectedLesson.id].watched_seconds / (selectedLesson.duration_seconds || 1)) * 100, 100).toFixed(0)}%
-                            </span>
-                          )}
-                          {isUpdatingProgress && (
-                            <span className="flex items-center gap-1 text-gray-400">
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              Saving...
+                            <span className="text-green-600">
+                              ✓ Free Preview
                             </span>
                           )}
                           {playbackRate !== 1 && (
@@ -1304,39 +1556,58 @@ const ProgramDetailPage = () => {
                               Speed: {playbackRate}x
                             </span>
                           )}
+                          {currentTime > 0 && (
+                            <span className="text-gray-400">
+                              Current: {formatTime(currentTime)}
+                            </span>
+                          )}
                         </div>
                       </div>
+
                       <div className="flex gap-2 ml-4">
-                        {selectedLesson.pdf_url && contentViewMode === "video" && (
-                          <button
-                            onClick={() => switchContentView("pdf")}
-                            className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
-                          >
-                            <FileText className="w-4 h-4" />
-                            View PDF
-                          </button>
-                        )}
-                        {(selectedLesson.video_url || selectedLesson.external_video_url) && contentViewMode === "pdf" && (
-                          <button
-                            onClick={() => switchContentView("video")}
-                            className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
-                          >
-                            <Play className="w-4 h-4" />
-                            View Video
-                          </button>
-                        )}
+                        {selectedLesson.pdf_url &&
+                          contentViewMode === "video" && (
+                            <button
+                              onClick={() => switchContentView("pdf")}
+                              className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                            >
+                              <FileText className="w-4 h-4" />
+                              View PDF
+                            </button>
+                          )}
+                        {(selectedLesson.video_url ||
+                          selectedLesson.external_video_url) &&
+                          contentViewMode === "pdf" && (
+                            <button
+                              onClick={() => switchContentView("video")}
+                              className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
+                            >
+                              <Play className="w-4 h-4" />
+                              View Video
+                            </button>
+                          )}
                         {isLessonPurchased && (
                           <button
                             onClick={() => {
-                              const currentIndex = program.lessons.findIndex(l => l.id === selectedLesson.id);
+                              const currentIndex = program.lessons.findIndex(
+                                (l) => l.id === selectedLesson.id,
+                              );
                               if (currentIndex < program.lessons.length - 1) {
-                                if (currentTime > 0 && !completedLessons.includes(selectedLesson.id)) {
+                                if (
+                                  currentTime > 0 &&
+                                  !completedLessons.includes(selectedLesson.id)
+                                ) {
                                   saveProgress(currentTime, false);
                                 }
                                 selectLesson(program.lessons[currentIndex + 1]);
                               }
                             }}
-                            disabled={program.lessons.findIndex(l => l.id === selectedLesson.id) === program.lessons.length - 1}
+                            disabled={
+                              program.lessons.findIndex(
+                                (l) => l.id === selectedLesson.id,
+                              ) ===
+                              program.lessons.length - 1
+                            }
                             className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Next Lesson →
@@ -1429,7 +1700,9 @@ const ProgramDetailPage = () => {
                       <div>
                         <p className="text-xs text-gray-500">Fee</p>
                         <div className="flex items-baseline gap-2">
-                          <p className="font-bold text-gray-900">{program.fee}</p>
+                          <p className="font-bold text-gray-900">
+                            {program.fee}
+                          </p>
                           {hasDiscount && (
                             <span className="text-xs text-gray-400 line-through">
                               ₹{program.original_price}
@@ -1453,7 +1726,9 @@ const ProgramDetailPage = () => {
                   <div className="pt-6 border-t border-gray-200">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm text-gray-500">Ready to enroll?</p>
+                        <p className="text-sm text-gray-500">
+                          Ready to enroll?
+                        </p>
                         <p className="text-2xl font-bold text-gray-900">
                           {program.fee}
                         </p>
@@ -1504,7 +1779,7 @@ const ProgramDetailPage = () => {
             <div className="p-4 border-t border-gray-200 flex justify-between">
               <button
                 onClick={() => {
-                  window.open(selectedPdfUrl, '_blank');
+                  window.open(selectedPdfUrl, "_blank");
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >

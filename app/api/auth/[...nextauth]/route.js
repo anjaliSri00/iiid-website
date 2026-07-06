@@ -76,7 +76,7 @@ export const authOptions = {
             credentials.session_id
           ) {
             // Mobile OTP Verification Login
-            console.log("Attempting mobile OTP login for:", credentials.mobile);
+            // console.log("Attempting mobile OTP login for:", credentials.mobile);
 
             response = await serverFetch(`${baseUrl}/api/v1/users/login`, {
               method: "POST",
@@ -89,7 +89,7 @@ export const authOptions = {
               }),
             });
 
-            console.log("Mobile OTP login response:", response);
+            // console.log("Mobile OTP login response:", response);
 
             if (response.meta?.status === 200) {
               return {
@@ -107,7 +107,7 @@ export const authOptions = {
             }
           } else if (credentials.email && credentials.password) {
             // Email/password login
-            console.log("Attempting email/password login for:", credentials.email);
+            // console.log("Attempting email/password login for:", credentials.email);
 
             response = await serverFetch(`${baseUrl}/api/v1/users/login`, {
               method: "POST",
@@ -118,7 +118,7 @@ export const authOptions = {
               }),
             });
 
-            console.log("Email login response status:", response.data);
+            // console.log("Email login response status:", response.data);
 
             if (response.meta?.status === 200) {
               return {
@@ -155,7 +155,7 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        console.log("JWT callback - new user:", user.id);
+        // console.log("JWT callback - new user:", user.id);
         return {
           ...token,
           accessToken: user.accessToken,
@@ -187,7 +187,7 @@ export const authOptions = {
       }
     },
     async session({ session, token }) {
-      console.log("Session callback - userId:", token.userId);
+      // console.log("Session callback - userId:", token.userId);
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.user = {
