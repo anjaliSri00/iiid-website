@@ -1033,30 +1033,44 @@ export default function DashboardPage() {
         const unsavedLessons = programFormData.lessons.filter(
           (lesson) => lesson.is_new,
         );
-        if (unsavedLessons.length > 0) {
-          const hasCourseChanges = checkForCourseChanges();
-          if (hasCourseChanges) await updateCourse();
-          savedCourseId = editingProgram.id;
-          await saveUnsavedLessons(savedCourseId);
-          toast.success("Program updated with new lessons!");
-          setProgramSuccess(true);
-          setShowCreateProgram(false);
-          setEditingProgram(null);
-          resetProgramForm();
-          await fetchPrograms();
-          setProgramSaving(false);
-          return;
+         if (unsavedLessons.length > 0) {
+        const hasCourseChanges = checkForCourseChanges();
+        if (hasCourseChanges) {
+          try {
+            await updateCourse();
+          } catch (error) {
+            // Error is already shown in updateCourse
+            setProgramSaving(false);
+            return;
+          }
         }
+        savedCourseId = editingProgram.id;
+        await saveUnsavedLessons(savedCourseId);
+        toast.success("Program updated with new lessons!");
+        setProgramSuccess(true);
+        setShowCreateProgram(false);
+        setEditingProgram(null);
+        resetProgramForm();
+        await fetchPrograms();
+        setProgramSaving(false);
+        return;
+      }
 
         const changedFields = getChangedFields();
         if (Object.keys(changedFields).length > 0) {
+           try {
           await updateCourse(changedFields);
-          toast.success("Program updated successfully!");
+          // toast.success("Program updated successfully!");
           setProgramSuccess(true);
           setShowCreateProgram(false);
           setEditingProgram(null);
           resetProgramForm();
           await fetchPrograms();
+        } catch (error) {
+          // Error is already shown in updateCourse
+          setProgramSaving(false);
+          return;
+        }
         } else {
           toast.info("No changes to update");
           setShowCreateProgram(false);
@@ -1181,8 +1195,12 @@ export default function DashboardPage() {
     return changedFields;
   };
 
-  const updateCourse = async (changedFields) => {
-    if (!editingProgram || Object.keys(changedFields).length === 0) return;
+ // In dashboard/page.js
+
+const updateCourse = async (changedFields) => {
+  if (!editingProgram || Object.keys(changedFields).length === 0) return;
+  
+  try {
     const response = await fetchApiResponse(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/update/${editingProgram.id}`,
       {
@@ -1195,11 +1213,42 @@ export default function DashboardPage() {
         body: JSON.stringify(changedFields),
       },
     );
-    if (response.meta?.status === 200) {
-      toast.success(response.meta.message || "Course update successfully!")
-      // toast.error(response.meta?.message || "Failed to update program");
+
+    // Check if response has meta property
+    if (!response || !response.meta) {
+      toast.error("Invalid response from server");
+      throw new Error("Invalid response from server");
     }
-  };
+
+    if (response.meta.status === 200) {
+      return response; // Success - return response
+    } 
+    // else {
+    //   // Handle different error status codes
+    //   let errorMessage = response.meta.message || "Failed to update program";
+      
+    //   // You can add specific error messages based on status
+    //   if (response.meta.status === 400) {
+    //     errorMessage = "Invalid data provided. Please check your inputs.";
+    //   } else if (response.meta.status === 404) {
+    //     errorMessage = "Course not found. It may have been deleted.";
+    //   } else if (response.meta.status === 409) {
+    //     errorMessage = "Conflict occurred. Please try again.";
+    //   }
+      
+    //   toast.error(errorMessage);
+    //   throw new Error(errorMessage);
+    // }
+  } catch (error) {
+    console.error('Update course error:', error);
+    // If error is already handled above, re-throw
+    if (error.message) {
+      throw error;
+    }
+    toast.error("Failed to update program. Please try again.");
+    throw error;
+  }
+};
 
   const handleLessonInputChange = (index, field, value) => {
     setProgramFormData((prev) => ({

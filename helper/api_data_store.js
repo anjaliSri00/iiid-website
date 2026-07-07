@@ -10,8 +10,6 @@ async function fetchApiResponse(url, options, showLoginModal) {
 
   try {
     const res = await fetch(url, options);
-
-
     const data = await res.json();
     if (!url.includes('/login') && data.meta.status === 401) {
       signOut({ redirect: false });
