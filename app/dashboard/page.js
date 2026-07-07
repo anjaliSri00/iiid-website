@@ -1195,8 +1195,9 @@ export default function DashboardPage() {
         body: JSON.stringify(changedFields),
       },
     );
-    if (response.meta?.status !== 200) {
-      toast.error(response.meta?.message || "Failed to update program");
+    if (response.meta?.status === 200) {
+      toast.success(response.meta.message || "Course update successfully!")
+      // toast.error(response.meta?.message || "Failed to update program");
     }
   };
 
