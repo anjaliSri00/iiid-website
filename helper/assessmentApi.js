@@ -80,7 +80,6 @@ export const assessmentApi = {
           },
         }
       );
-      console.log(response, "-----------------------------------getAsssesssment")
       return response;
     } catch (error) {
       console.error("Error fetching assessment:", error);

@@ -12,13 +12,7 @@ import {
   FileCheck,
   Plus,
   ChevronDown,
-  ChevronRight,
-  Users,
   Star,
-  Calendar,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
 } from "lucide-react";
 
 const ProgramCard = ({
@@ -29,8 +23,6 @@ const ProgramCard = ({
   onDeleteProgram,
   onEditAssessment,
   onDeleteAssessment,
-  onCreateAssessment,
-  onManageQuestions,
   onSelectCourse,
   expandedAssessment,
   setExpandedAssessment,
@@ -49,6 +41,7 @@ const ProgramCard = ({
   setEditingQuestion,
   QuestionForm,
   setQuestionFormData,
+  isEditingMode, // New prop to check if course is being edited
 }) => {
   const isExpanded = expandedAssessment === program.id;
   const [isHovered, setIsHovered] = useState(false);
@@ -79,7 +72,7 @@ const ProgramCard = ({
     >
       <div className="flex flex-col md:flex-row">
         {/* Thumbnail */}
-        <div className="relative md:w-56 h-48 bg-gradient-to-br from-gray-100 to-gray-200 shrink-0 overflow-hidden">
+        <div className="relative md:w-56 h-50 bg-linear-to-br from-gray-100 to-gray-200 shrink-0 overflow-hidden">
           {program.thumbnail_url ? (
             <Image
               src={program.thumbnail_url}
@@ -93,17 +86,14 @@ const ProgramCard = ({
               <BookOpen className="w-12 h-12 text-gray-400" />
             </div>
           )}
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
           
-          {/* Status Badge on Image */}
           <div className="absolute top-3 left-3">
             <span className={`px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${getStatusColor(program.status)}`}>
               {program.status}
             </span>
           </div>
           
-          {/* Course Code */}
           {program.course_code && (
             <div className="absolute bottom-3 left-3">
               <span className="px-2.5 py-1 bg-black/50 backdrop-blur-sm text-white text-xs font-medium rounded-full">
@@ -117,18 +107,21 @@ const ProgramCard = ({
         <div className="flex-1 p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              {/* Title and Actions */}
               <div className="flex items-center gap-2 mb-1">
                 <h4 className="text-lg font-semibold text-gray-900 truncate">
                   {program.title}
                 </h4>
+                {isEditingMode && (
+                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                    Editing
+                  </span>
+                )}
               </div>
               
               <p className="text-sm text-gray-600 line-clamp-2 mb-3">
                 {program.description}
               </p>
 
-              {/* Program Details */}
               <div className="flex flex-wrap items-center gap-3 text-xs">
                 <span className="flex items-center gap-1.5 text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full">
                   <BookOpen className="w-3.5 h-3.5" />
@@ -163,7 +156,6 @@ const ProgramCard = ({
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-1 shrink-0">
               <button
                 onClick={() => onEditProgram(program)}
@@ -182,13 +174,13 @@ const ProgramCard = ({
             </div>
           </div>
 
-          {/* Assessment Section */}
-          <div className="mt-4 pt-4 border-t border-gray-200/60">
-            <div 
-              className="flex items-center justify-between cursor-pointer group/assessment hover:bg-gray-50/80 px-3 py-2 rounded-xl transition-all -mx-3"
-              onClick={toggleAssessment}
-            >
-              <div className="flex items-center gap-3">
+          {/* Assessment Section - Updated */}
+          <div className="border-t border-gray-200/60">
+            <div className="flex items-center justify-between">
+              <div 
+                className="flex items-center gap-3 cursor-pointer group/assessment hover:bg-gray-50/80 px-3 py-2 rounded-xl transition-all -mx-3 flex-1"
+                onClick={toggleAssessment}
+              >
                 <div className={`p-1.5 rounded-lg ${assessment ? 'bg-emerald-50' : 'bg-gray-100'} transition-colors`}>
                   <FileCheck className={`w-4 h-4 ${assessment ? 'text-emerald-600' : 'text-gray-400'}`} />
                 </div>
@@ -203,28 +195,7 @@ const ProgramCard = ({
                     • {assessment.questions.length} questions
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                {assessment && isExpanded && (
-                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => {
-                        onSelectCourse(program.id);
-                        onEditAssessment(program.id, assessment);
-                      }}
-                      className="text-xs text-blue-600 hover:text-blue-700 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => onDeleteAssessment(program.id, assessment.id)}
-                      className="text-xs text-red-600 hover:text-red-700 px-2.5 py-1 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ml-auto ${isExpanded ? 'rotate-180' : ''}`} />
               </div>
             </div>
 
@@ -232,7 +203,7 @@ const ProgramCard = ({
             {isExpanded && (
               <div className="mt-3 animate-slideDown">
                 {assessment ? (
-                  <div className="p-4 bg-gradient-to-br from-gray-50/80 to-white rounded-xl border border-gray-200/60">
+                  <div className="p-4 bg-linear-to-br from-gray-50/80 to-white rounded-xl border border-gray-200/60">
                     {/* Assessment Details Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="bg-white rounded-lg p-3 border border-gray-100">
@@ -255,6 +226,33 @@ const ProgramCard = ({
                       </div>
                     </div>
 
+                    {/* Edit/Delete Assessment Buttons - Only show in editing mode */}
+                    {isEditingMode && (
+                      <div className="mt-3 flex items-center justify-end gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectCourse(program.id);
+                            onEditAssessment(program.id, assessment);
+                          }}
+                          className="text-xs text-blue-600 hover:text-blue-700 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-1"
+                        >
+                          <Edit className="w-3 h-3" />
+                          Edit Assessment
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteAssessment(program.id, assessment.id);
+                          }}
+                          className="text-xs text-red-600 hover:text-red-700 px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1"
+                        >
+                          <Trash2Icon className="w-3 h-3" />
+                          Delete Assessment
+                        </button>
+                      </div>
+                    )}
+
                     {/* Questions Section */}
                     <div className="mt-4">
                       <div className="flex items-center justify-between mb-3">
@@ -262,17 +260,6 @@ const ProgramCard = ({
                           <FileText className="w-4 h-4 text-gray-400" />
                           Questions ({assessment.questions?.length || 0})
                         </h6>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectCourse(program.id);
-                            onManageQuestions(program.id, assessment.id);
-                          }}
-                          className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-700 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          Add Question
-                        </button>
                       </div>
 
                       {/* Questions List */}
@@ -318,24 +305,34 @@ const ProgramCard = ({
                                     </span>
                                   </div>
                                 </div>
-                                <div className="flex gap-1 shrink-0">
-                                  <button
-                                    onClick={() => {
-                                      handleEditQuestion(question, setEditingQuestion, setQuestionFormData, setShowAddQuestion);
-                                    }}
-                                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                    title="Edit Question"
-                                  >
-                                    <Edit className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteQuestion(program.id, question.id)}
-                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Delete Question"
-                                  >
-                                    <Trash2Icon className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
+                                {/* Question Edit/Delete - Only show in editing mode */}
+                                {isEditingMode && (
+                                  <div className="flex gap-1 shrink-0">
+                                    <button
+                                      onClick={() => {
+                                        handleEditQuestion(
+                                          question, 
+                                          setEditingQuestion, 
+                                          setQuestionFormData, 
+                                          setShowAddQuestion,
+                                          onSelectCourse,
+                                          program.id
+                                        );
+                                      }}
+                                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                      title="Edit Question"
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteQuestion(program.id, question.id)}
+                                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                      title="Delete Question"
+                                    >
+                                      <Trash2Icon className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -344,12 +341,14 @@ const ProgramCard = ({
                         <div className="text-center py-6 bg-white rounded-xl border border-dashed border-gray-200">
                           <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                           <p className="text-sm text-gray-400">No questions added yet</p>
-                          <p className="text-xs text-gray-300 mt-0.5">Click "Add Question" to get started</p>
+                          <p className="text-xs text-gray-300 mt-0.5">
+                            {isEditingMode ? 'Click "Add Question" to get started' : 'Questions will appear here'}
+                          </p>
                         </div>
                       )}
 
-                      {/* Question Form */}
-                      {showAddQuestion && selectedAssessmentId === program.id && assessment && (
+                      {/* Question Form - Only show in editing mode */}
+                      {isEditingMode && showAddQuestion && selectedAssessmentId === program.id && assessment && (
                         <div className="mt-4">
                           {QuestionForm && (
                             <QuestionForm
@@ -373,16 +372,13 @@ const ProgramCard = ({
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => {
-                      onSelectCourse(program.id);
-                      onCreateAssessment(program.id);
-                    }}
-                    className="w-full py-4 text-sm text-red-600 hover:text-red-700 font-medium border-2 border-dashed border-red-200 hover:border-red-300 bg-red-50/30 hover:bg-red-50 rounded-xl transition-all flex items-center justify-center gap-2 group/create"
-                  >
-                    <Plus className="w-4 h-4 transition-transform group-hover/create:rotate-90" />
-                    Create Assessment for this course
-                  </button>
+                  <div className="text-center py-6 bg-white rounded-xl border border-dashed border-gray-200">
+                    <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">No assessment created yet</p>
+                    <p className="text-xs text-gray-300 mt-0.5">
+                      {isEditingMode ? 'Click "Create Assessment" to get started' : 'Assessment will appear here'}
+                    </p>
+                  </div>
                 )}
               </div>
             )}

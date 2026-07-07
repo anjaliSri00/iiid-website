@@ -20,15 +20,13 @@ async function fetchApiResponse(url, options, showLoginModal) {
       if (data.meta.message === "Tokens are not valid for this user") {
         signOut({ redirect: false });
         showLoginModal?.();
-      } else if (!url.includes('/signup') && !url.includes('/onboard')) {
-        // Don't show toast for signup and onboard endpoints, let component handle it
+      } else if (!url.includes('/signup')) {
         toast.error(data.meta.message);
       }
     }
 
     return data;
   } catch (error) {
-    // console.error("Error in fetchApiResponse:", error);
     throw error; // Re-throw the error to be caught in calling function
   }
 }

@@ -129,9 +129,10 @@ export const useAssessmentOperations = (
         
         // Refresh programs to get updated data
         if (fetchPrograms) await fetchPrograms();
-      } else {
-        toast.error(response.meta?.message || "Failed to save assessment");
-      }
+      } 
+      // else {
+      //   toast.error(response.meta?.message || "Failed to save assessment");
+      // }
     } catch (error) {
       console.error("Error saving assessment:", error);
       toast.error("Failed to save assessment");
@@ -153,14 +154,15 @@ export const useAssessmentOperations = (
           [courseId]: null
         }));
         if (fetchPrograms) await fetchPrograms();
-      } else {
-        toast.error(response.meta?.message || "Failed to delete assessment");
-      }
+      } 
+      // else {
+      //   toast.error(response.meta?.message || "Failed to delete assessment");
+      // }
     } catch (error) {
       console.error("Error deleting assessment:", error);
       toast.error("Failed to delete assessment");
     }
-  };
+  };  
 
   // Handle edit assessment
   const handleEditAssessment = (assessment) => {

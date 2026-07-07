@@ -39,6 +39,7 @@ import {
   Calendar,
   LayoutDashboard,
   LogOut,
+  FileCheck,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import fetchApiResponse from "@/helper/api_data_store";
@@ -313,19 +314,6 @@ export default function DashboardPage() {
     handleDeleteQuestion,
     handleEditQuestion,
   } = questionOps;
-
-  // Fetch single assessment
-  const fetchSingleAssessment = async (courseId) => {
-    if (!courseId) return;
-    setAssessmentsLoading(true);
-    try {
-      await fetchAssessment(courseId);
-    } catch (error) {
-      console.error("Error fetching assessment:", error);
-    } finally {
-      setAssessmentsLoading(false);
-    }
-  };
 
   // ==================== Existing Functions ====================
   const fetchProfile = async () => {
@@ -655,11 +643,12 @@ export default function DashboardPage() {
           setThumbnailUploadProgress(100);
           toast.success("Thumbnail uploaded successfully!");
         } else {
-          throw new Error("No URL returned from server");
+          toast.error("No URL returned from server");
         }
-      } else {
-        throw new Error(response.meta?.message || "Upload failed");
-      }
+      } 
+      // else {
+      //  toast.error(response.meta?.message || "Upload failed");
+      // }
     } catch (error) {
       console.error("Error uploading thumbnail:", error);
       toast.error("Failed to upload thumbnail");
@@ -1124,7 +1113,8 @@ export default function DashboardPage() {
           setEditingProgram(null);
           resetProgramForm();
           await fetchPrograms();
-        } else {
+        } 
+        else {
           toast.error(response.meta?.message || "Failed to create program");
         }
         setProgramSaving(false);
@@ -1132,7 +1122,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error("Error saving program:", error);
-      toast.error("Failed to save program");
+      // toast.error("Failed to save program");
       setProgramErrors({ general: "Failed to save program" });
       setProgramSaving(false);
     }
@@ -1206,7 +1196,7 @@ export default function DashboardPage() {
       },
     );
     if (response.meta?.status !== 200) {
-      throw new Error(response.meta?.message || "Failed to update program");
+      toast.error(response.meta?.message || "Failed to update program");
     }
   };
 
@@ -1490,7 +1480,6 @@ export default function DashboardPage() {
       .slice(0, 2);
   };
 
- 
   const getStatusBadge = (status) => {
     const styles = {
       published: "bg-emerald-100 text-emerald-700",
@@ -1526,13 +1515,12 @@ export default function DashboardPage() {
     setAssessmentSuccess(false);
     setIsAssessmentModalOpen(true);
   };
+
   const handleSelectCourse = (courseId) => {
-    // console.log("Course selected:", courseId);
     setSelectedAssessmentId(courseId);
   };
 
   const handleOpenManageQuestions = (courseId, assessmentId) => {
-      // console.log("Managing questions for course:", courseId, "assessment:", assessmentId);
     setSelectedAssessmentId(courseId);
     setShowAddQuestion(true);
     setEditingQuestion(null);
@@ -1586,7 +1574,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
-       {/* Top Navigation */}
+      {/* Top Navigation */}
       <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200/60 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -1597,7 +1585,9 @@ export default function DashboardPage() {
               <div>
                 <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
                 <p className="text-xs text-gray-500 hidden sm:block">
-                  {isAdmin ? "Manage your courses and programs" : "Track your learning progress"}
+                  {isAdmin
+                    ? "Manage your courses and programs"
+                    : "Track your learning progress"}
                 </p>
               </div>
             </div>
@@ -1622,9 +1612,9 @@ export default function DashboardPage() {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left Column - Profile Info */}
-           <div className="lg:col-span-1">
+          <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 overflow-hidden sticky top-24">
-              <div className="bg-gradient-to-br from-red-600 to-red-700 px-6 py-8">
+              <div className="bg-linear-to-br from-red-600 to-red-700 px-6 py-8">
                 <div className="flex flex-col items-center">
                   <div className="relative">
                     <div className="w-24 h-24 rounded-full border-4 border-white/30 bg-white/10 overflow-hidden shadow-lg">
@@ -1678,7 +1668,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400">Email</p>
-                    <p className="text-sm text-gray-700 truncate">{profile.email}</p>
+                    <p className="text-sm text-gray-700 truncate">
+                      {profile.email}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
@@ -2467,7 +2459,6 @@ export default function DashboardPage() {
                               >
                                 <option value="draft">Draft</option>
                                 <option value="published">Published</option>
-                                <option value="archived">Archived</option>
                               </select>
                             </div>
                             <div className="md:col-span-2">
@@ -2491,6 +2482,269 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
+                        {/* Assessment Section - Added inside the form */}
+{editingProgram && (
+  <div className="border-b border-gray-200 pb-4">
+    <div className="flex items-center justify-between mb-3">
+      <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <FileCheck className="w-4 h-4 text-red-500" />
+        Assessment
+      </h5>
+      {editingProgram && (
+                <div className="border-t border-gray-100 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            const assessment = assessments[editingProgram.id];
+            if (assessment) {
+              handleOpenEditAssessment(editingProgram.id, assessment);
+            } else {
+              handleOpenCreateAssessment(editingProgram.id);
+            }
+          }}
+          className="flex items-center gap-1.5 text-sm bg-red-50 p-2 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+        >
+          {assessments[editingProgram.id] ? (
+            <>
+              <Edit className="w-4 h-4" />
+              Edit Assessment
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4" />
+              Create Assessment
+            </>
+          )}
+        </button>
+         <button
+            type="button"
+            onClick={() => {
+              const assessment = assessments[editingProgram.id];
+              if (assessment) {
+                  handleDeleteAssessment(editingProgram.id, assessment.id);
+              }
+            }}
+            className="text-xs text-red-600 hover:text-red-700 px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1"
+          >
+            <Trash2Icon className="w-4 h-4" />
+          </button>
+          </div>
+      )}
+    </div>
+    
+    {assessments[editingProgram.id] ? (
+      <div className="p-4 bg-white rounded-lg border border-gray-200">
+        {/* Assessment Details */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <p className="text-xs text-gray-400">Title</p>
+            <p className="text-sm font-medium text-gray-700">
+              {assessments[editingProgram.id].title}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400">Passing Score</p>
+            <p className="text-sm font-medium text-emerald-600">
+              {assessments[editingProgram.id].passing_score}%
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400">Duration</p>
+            <p className="text-sm font-medium text-blue-600">
+              {assessments[editingProgram.id].duration_minutes} min
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-400">Status</p>
+            <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessments[editingProgram.id].status)}`}>
+              {assessments[editingProgram.id].status}
+            </span>
+          </div>
+        </div>
+        
+        {/* Questions List */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-gray-700">
+              Questions ({assessments[editingProgram.id].questions?.length || 0})
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                const assessment = assessments[editingProgram.id];
+                if (assessment) {
+                  setSelectedAssessmentId(editingProgram.id);
+                  setShowAddQuestion(true);
+                  setEditingQuestion(null);
+                  resetQuestionForm();
+                }
+              }}
+              className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <Plus className="w-3 h-3" />
+              Add Question
+            </button>
+          </div>
+          
+          {/* Questions List */}
+          {assessments[editingProgram.id].questions && assessments[editingProgram.id].questions.length > 0 ? (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {assessments[editingProgram.id].questions.map((question, idx) => (
+                <div 
+                  key={question.id || idx} 
+                  className="bg-gray-50 p-3 rounded-lg border border-gray-200"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-5 h-5 bg-red-50 text-red-600 text-xs font-bold rounded-full">
+                          {idx + 1}
+                        </span>
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {question.question_text}
+                        </p>
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap gap-2 text-xs">
+                        <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                          A: {question.option_a}
+                        </span>
+                        <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                          B: {question.option_b}
+                        </span>
+                        {question.option_c && (
+                          <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                            C: {question.option_c}
+                          </span>
+                        )}
+                        {question.option_d && (
+                          <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                            D: {question.option_d}
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
+                          ✓ {question.correct_option}
+                        </span>
+                        <span className="px-2 py-0.5 bg-blue-50 rounded text-blue-600">
+                          {question.marks || 1} mark{question.marks > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingQuestion(question);
+                          setQuestionFormData({
+                            question_text: question.question_text || "",
+                            option_a: question.option_a || "",
+                            option_b: question.option_b || "",
+                            option_c: question.option_c || "",
+                            option_d: question.option_d || "",
+                            correct_option: question.correct_option || "A",
+                            marks: question.marks || 1,
+                            order_number: question.order_number || idx + 1,
+                            status: question.status || "draft",
+                          });
+                          setSelectedAssessmentId(editingProgram.id);
+                          setShowAddQuestion(true);
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit Question"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                            await handleDeleteQuestion(editingProgram.id, question.id);
+                            const courseDetails = await fetchCourseDetails(editingProgram.id);
+                            if (courseDetails && courseDetails.assessment) {
+                              setAssessments(prev => ({
+                                ...prev,
+                                [editingProgram.id]: courseDetails.assessment
+                              }));
+                            }
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete Question"
+                      >
+                        <Trash2Icon className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+              <p className="text-sm text-gray-400">No questions added yet</p>
+              <p className="text-xs text-gray-300 mt-0.5">Click "Add Question" to get started</p>
+            </div>
+          )}
+        </div>
+
+        {/* Question Form - Show when "Add Question" is clicked */}
+        {showAddQuestion && selectedAssessmentId === editingProgram.id && assessments[editingProgram.id] && (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            {QuestionForm && (
+              <QuestionForm
+                editingQuestion={editingQuestion}
+                questionFormData={questionFormData}
+                questionErrors={questionErrors}
+                questionSaving={questionSaving}
+                handleQuestionFormChange={(e) =>
+                  handleQuestionFormChange(e, setQuestionFormData, setQuestionErrors)
+                }
+                handleQuestionSubmit={async () => {
+                  const assessment = assessments[editingProgram.id];
+                  if (assessment) {
+                    await handleQuestionSubmit(
+                      editingProgram.id,
+                      assessment.id,
+                      questionFormData,
+                      editingQuestion,
+                      setQuestionSaving,
+                      resetQuestionForm,
+                      async () => {
+                        // Close question form
+                        setShowAddQuestion(false);
+                        // Refresh the specific course details to update the assessment
+                        const courseDetails = await fetchCourseDetails(editingProgram.id);
+                        if (courseDetails && courseDetails.assessment) {
+                          setAssessments(prev => ({
+                            ...prev,
+                            [editingProgram.id]: courseDetails.assessment
+                          }));
+                        }
+                        // Also refresh all programs
+                        await fetchPrograms();
+                      },
+                      setEditingQuestion,
+                      setQuestionErrors
+                    );
+                  }
+                }}
+                setShowAddQuestion={setShowAddQuestion}
+                setEditingQuestion={setEditingQuestion}
+                resetQuestionForm={resetQuestionForm}
+                courseId={editingProgram.id}
+                assessmentId={assessments[editingProgram.id]?.id}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    ) : (
+      <div className="text-center py-6 bg-white rounded-lg border border-dashed border-gray-200">
+        <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+        <p className="text-sm text-gray-400">No assessment created yet</p>
+        <p className="text-xs text-gray-300 mt-0.5">
+          Click "Create Assessment" to add one
+        </p>
+      </div>
+    )}
+  </div>
+)}
                         {/* Lessons Section */}
                         <div className="border-b border-gray-200 pb-4">
                           <div className="flex items-center justify-between mb-3">
@@ -2592,7 +2846,6 @@ export default function DashboardPage() {
                                       >
                                         <option value="video">Video</option>
                                         <option value="pdf">PDF</option>
-                                        <option value="text">Text</option>
                                       </select>
                                     </div>
                                     <div className="md:col-span-2">
@@ -2986,30 +3239,43 @@ export default function DashboardPage() {
                               )
                             }
                             handleQuestionSubmit={(courseId, assessmentId) =>
-    handleQuestionSubmit(
-      courseId,
-      assessmentId,
-      questionFormData,
-      editingQuestion,
-      setQuestionSaving,
-      resetQuestionForm,
-      () => {
-        // Close question form after successful submit
-        setShowAddQuestion(false);
-        // Refresh assessment data to show new question
-        fetchPrograms();
-      },
-      setEditingQuestion,
-      setQuestionErrors
-    )
-  }
-                            handleDeleteQuestion={handleDeleteQuestion}
+                              handleQuestionSubmit(
+                                courseId,
+                                assessmentId,
+                                questionFormData,
+                                editingQuestion,
+                                setQuestionSaving,
+                                resetQuestionForm,
+                                () => {
+                                  setShowAddQuestion(false);
+                                  fetchPrograms();
+                                },
+                                setEditingQuestion,
+                                setQuestionErrors,
+                              )
+                            }
+                            // handleDeleteQuestion={handleDeleteQuestion}
+                             handleDeleteQuestion={async (courseId, questionId) => {
+    // Call delete question
+    await handleDeleteQuestion(courseId, questionId);
+    // Refresh programs to get updated assessment data
+    await fetchPrograms();
+    // Also refresh the specific course details
+    const courseDetails = await fetchCourseDetails(courseId);
+    if (courseDetails && courseDetails.assessment) {
+      setAssessments(prev => ({
+        ...prev,
+        [courseId]: courseDetails.assessment
+      }));
+    }
+  }}
                             handleEditQuestion={handleEditQuestion}
                             resetQuestionForm={resetQuestionForm}
                             setShowAddQuestion={setShowAddQuestion}
                             setEditingQuestion={setEditingQuestion}
-                            setQuestionFormData={setQuestionFormData} // ADD THIS - Pass setQuestionFormData
+                            setQuestionFormData={setQuestionFormData}
                             QuestionForm={QuestionForm}
+                            isEditingMode={false}
                           />
                         );
                       })}

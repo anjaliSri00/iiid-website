@@ -73,9 +73,9 @@ export const useQuestionOperations = (session, fetchAssessment, setAssessments) 
           changedFields.status = questionFormData.status;
         }
         // Note: order_number is not in the form, but if you want to support it:
-        // if (questionFormData.order_number !== editingQuestion.order_number) {
-        //   changedFields.order_number = parseInt(questionFormData.order_number) || 0;
-        // }
+        if (questionFormData.order_number !== editingQuestion.order_number) {
+          changedFields.order_number = parseInt(questionFormData.order_number) || 0;
+        }
 
         // Check if any fields changed
         if (Object.keys(changedFields).length === 0) {
@@ -102,7 +102,7 @@ export const useQuestionOperations = (session, fetchAssessment, setAssessments) 
           option_d: questionFormData.option_d || "",
           correct_option: questionFormData.correct_option,
           marks: parseFloat(questionFormData.marks) || 1,
-          order_number: 1, // Default order number
+          order_number: questionFormData.order_number, // Default order number
           status: questionFormData.status || "draft",
         };
         
@@ -197,12 +197,19 @@ export const useQuestionOperations = (session, fetchAssessment, setAssessments) 
   };
 
   // Handle edit question
-  const handleEditQuestion = (question, setEditingQuestion, setQuestionFormData, setShowAddQuestion) => {
-    // console.log("✏️ Editing question:", question);
+  const handleEditQuestion = (question, setEditingQuestion, setQuestionFormData, setShowAddQuestion, setSelectedAssessmentId, courseId ) => {
+      console.log("✏️ Editing question:", question);
+    console.log("Course ID (program.id):", courseId);
+    console.log("Assessment ID:", question.assessment_id);
 
     if (typeof setEditingQuestion !== 'function') {
       console.error("setEditingQuestion is not a function!", setEditingQuestion);
       return;
+    }
+    
+    // Set the selected course ID (program.id) - NOT the assessment ID
+    if (setSelectedAssessmentId && typeof setSelectedAssessmentId === 'function' && courseId) {
+      setSelectedAssessmentId(courseId);
     }
     
     // Set the question data in the form
@@ -216,6 +223,7 @@ export const useQuestionOperations = (session, fetchAssessment, setAssessments) 
       correct_option: question.correct_option || "",
       marks: question.marks || 1,
       status: question.status || "draft",
+      order_number:question.order_number,
     });
     setShowAddQuestion(true);
   };

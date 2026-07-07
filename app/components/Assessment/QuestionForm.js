@@ -46,7 +46,7 @@ export const QuestionForm = ({
         </button>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="space-y-3">
         {/* Question Text */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -210,6 +210,7 @@ export const QuestionForm = ({
           <button
             type="submit"
             disabled={questionSaving}
+            onClick={handleSubmit}
             className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
           >
             {questionSaving ? (
@@ -231,7 +232,7 @@ export const QuestionForm = ({
             Cancel
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

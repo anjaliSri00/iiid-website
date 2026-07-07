@@ -544,7 +544,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
+                {/* <div className="flex items-start gap-3">
                   <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">Member Since</p>
@@ -555,6 +555,28 @@ export default function ProfilePage() {
                         year: 'numeric'
                       })}
                     </p>
+                  </div>
+                </div> */}
+                   <div className="flex items-start gap-3">
+                  <Briefcase className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-gray-500">Years of Experience</p>
+                    {isEditing ? (
+                      <select
+                        name="years_of_experience"
+                        value={editedData.years_of_experience || ''}
+                        onChange={handleChange}
+                        className="text-sm text-gray-900 bg-transparent border-b-2 border-red-500 focus:outline-none px-2 py-1 w-full"
+                      >
+                        <option value="">Select experience</option>
+                        <option value="fresher">Fresher</option>
+                        <option value="1">1-5 Years</option>
+                        <option value="5-10">5-10 Years</option>
+                        <option value="10+">10+ Years</option>
+                      </select>
+                    ) : (
+                      <p className="text-sm text-gray-900">{profile.years_of_experience || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -610,28 +632,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <Briefcase className="w-5 h-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-gray-500">Years of Experience</p>
-                    {isEditing ? (
-                      <select
-                        name="years_of_experience"
-                        value={editedData.years_of_experience || ''}
-                        onChange={handleChange}
-                        className="text-sm text-gray-900 bg-transparent border-b-2 border-red-500 focus:outline-none px-2 py-1 w-full"
-                      >
-                        <option value="">Select experience</option>
-                        <option value="fresher">Fresher</option>
-                        <option value="1">1-5 Years</option>
-                        <option value="5-10">5-10 Years</option>
-                        <option value="10+">10+ Years</option>
-                      </select>
-                    ) : (
-                      <p className="text-sm text-gray-900">{profile.years_of_experience || 'Not specified'}</p>
-                    )}
-                  </div>
-                </div>
+             
               </div>
 
               {/* Address Information */}
@@ -826,12 +827,12 @@ export default function ProfilePage() {
             </div>
 
             {/* Update Status */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
+            {/* <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <UserCheck className="w-4 h-4" />
                 <span>Last updated: {new Date(profile.updated_at).toLocaleString('en-IN')}</span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
