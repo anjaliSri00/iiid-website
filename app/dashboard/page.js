@@ -42,7 +42,9 @@ import {
   FileCheck,
   CreditCard,
   DollarSign,
-  RefreshCw
+  RefreshCw,
+  IndianRupee,
+  Receipt
 } from "lucide-react";
 import { toast } from "react-toastify";
 import fetchApiResponse from "@/helper/api_data_store";
@@ -57,6 +59,7 @@ import ProgramCard from "../components/Assessment/ProgramCard";
 import AdminManagement from "../components/ui/AdminManagement";
 import PaymentManagement from "../components/ui/PaymentManagement";
 import { adminService } from "@/helper/services/adminService";
+import { paymentService } from "@/helper/services/paymentService";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -84,6 +87,7 @@ export default function DashboardPage() {
     publishedCourses: 0,
     draftCourses: 0,
     totalLessons: 0,
+      recentPayments: [],
     recentUsers: [],
     recentEnrollments: [],
     enrollmentGrowth: 0,
@@ -258,18 +262,34 @@ export default function DashboardPage() {
   }, [programs.length]);
 
   // Helper function to calculate growth
-  const calculateGrowth = (data) => {
-    if (!data || data.length < 2) return 0;
-    const now = new Date();
-    const lastMonth = new Date(now.setMonth(now.getMonth() - 1));
-    
-    const recent = data.filter(item => new Date(item.created_at || item.enrolled_at) > lastMonth);
-    const total = data.length;
-    
-    return total > 0 ? Math.round((recent.length / total) * 100) : 0;
-  };
+ const calculateGrowth = (data) => {
+  if (!data || data.length < 2) return 0;
+  const now = new Date();
+  const lastMonth = new Date(now);
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+  
+  const recent = data.filter(item => {
+    const date = new Date(item.created_at || item.enrolled_at);
+    return date > lastMonth;
+  });
+  const total = data.length;
+  
+  return total > 0 ? Math.round((recent.length / total) * 100) : 0;
+};
 
-  // Fetch admin statistics
+  // Add this function near other helper functions (around line 200-300)
+
+// Format currency in Indian Rupees
+const formatCurrency = (amount) => {
+  if (!amount) return "₹0";
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(parseFloat(amount));
+};
+
   const fetchAdminStats = async () => {
     if (!isAdmin) return;
     
@@ -279,10 +299,27 @@ export default function DashboardPage() {
       const usersResult = await adminService.listUsers({}, session);
       // Fetch enrollments
       const enrollmentsResult = await adminService.listEnrollments({}, session);
+      // Fetch payments
+      const paymentsResult = await paymentService.listPayments(session);
       
       if (usersResult.success && enrollmentsResult.success) {
         const users = usersResult.data || [];
         const enrollments = enrollmentsResult.data || [];
+        let payments = [];
+        
+        // Process payments data
+        if (paymentsResult.success) {
+          let paymentsData = paymentsResult.data || [];
+          // Ensure we have an array
+          if (!Array.isArray(paymentsData)) {
+            if (typeof paymentsData === 'object' && paymentsData !== null) {
+              paymentsData = Object.values(paymentsData).flat();
+            } else {
+              paymentsData = [];
+            }
+          }
+          payments = paymentsData;
+        }
         
         // Calculate stats
         const activeUsers = users.filter(u => u.is_active).length;
@@ -315,6 +352,37 @@ export default function DashboardPage() {
           (e.status === 'completed' || e.enrollment_status === 'completed')
         ).length;
         
+        // Calculate payment statistics
+        const successfulPayments = payments.filter(p => 
+          p.status?.toLowerCase() === 'success' || 
+          p.status?.toLowerCase() === 'captured' ||
+          p.status?.toLowerCase() === 'completed'
+        ).length;
+        
+        const failedPayments = payments.filter(p => 
+          p.status?.toLowerCase() === 'failed' || 
+          p.status?.toLowerCase() === 'failure'
+        ).length;
+        
+        const pendingPayments = payments.filter(p => 
+          p.status?.toLowerCase() === 'pending' || 
+          p.status?.toLowerCase() === 'initiated'
+        ).length;
+        
+        const refundedPayments = payments.filter(p => 
+          p.status?.toLowerCase() === 'refunded'
+        ).length;
+        
+        // Calculate total revenue from payments (only successful ones)
+        const totalRevenue = payments.reduce((total, p) => {
+          const status = p.status?.toLowerCase();
+          if (status === 'success' || status === 'captured' || status === 'completed') {
+            const amount = parseFloat(p.amount_paid) || parseFloat(p.amount) || 0;
+            return total + amount;
+          }
+          return total;
+        }, 0);
+        
         // Get recent users (last 5)
         const recentUsers = [...users]
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -325,8 +393,10 @@ export default function DashboardPage() {
           .sort((a, b) => new Date(b.enrolled_at) - new Date(a.enrolled_at))
           .slice(0, 5);
         
-        // Calculate total revenue from programs
-        const totalRevenue = programs.reduce((total, p) => total + (p.final_price || 0), 0);
+        // Get recent payments (last 5)
+        const recentPayments = [...payments]
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 5);
         
         setAdminStats({
           totalUsers: users.length,
@@ -345,11 +415,17 @@ export default function DashboardPage() {
           totalLessons: programs.reduce((total, p) => total + (p.lessons?.length || 0), 0),
           recentUsers,
           recentEnrollments,
+          recentPayments,
           enrollmentGrowth: calculateGrowth(enrollments),
           userGrowth: calculateGrowth(users),
+          // Payment statistics
           totalRevenue,
-          totalPayments: enrollments.length,
-          successfulPayments: activeEnrollments + completedEnrollments,
+          totalPayments: payments.length,
+          successfulPayments,
+          failedPayments,
+          pendingPayments,
+          refundedPayments,
+          averageAmount: payments.length > 0 ? totalRevenue / payments.length : 0,
         });
       }
     } catch (error) {
@@ -358,7 +434,6 @@ export default function DashboardPage() {
       setStatsLoading(false);
     }
   };
-
   const fetchAllPrograms = async () => {
     try {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`;
@@ -2137,7 +2212,10 @@ export default function DashboardPage() {
                         <Users className="w-4 h-4 inline mr-2" />
                         Management
                       </button>
-                      <button
+                     
+                    </>
+                  )}
+                   <button
                         onClick={() => setActiveTab("payments")}
                         className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                           activeTab === "payments"
@@ -2148,8 +2226,6 @@ export default function DashboardPage() {
                         <CreditCard className="w-4 h-4 inline mr-2" />
                         Payments
                       </button>
-                    </>
-                  )}
                   <button
                     onClick={() => setActiveTab("password")}
                     className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
@@ -2214,306 +2290,368 @@ export default function DashboardPage() {
                       ) : (
                         <>
                           {/* Main Stats Grid */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-blue-200 rounded-lg">
-                                  <Users className="w-5 h-5 text-blue-700" />
-                                </div>
-                                <span className="text-xs font-medium text-blue-600 bg-blue-200 px-2 py-0.5 rounded-full">
-                                  +{adminStats.userGrowth}%
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Total Users</h4>
-                              <p className="text-2xl font-bold text-blue-700">
-                                {adminStats.totalUsers}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-emerald-600">
-                                  Active: {adminStats.activeUsers}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                  Inactive: {adminStats.inactiveUsers}
-                                </span>
-                              </div>
-                            </div>
 
-                            <div className="p-4 bg-linear-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-emerald-200 rounded-lg">
-                                  <BookOpen className="w-5 h-5 text-emerald-700" />
-                                </div>
-                                <span className="text-xs font-medium text-emerald-600 bg-emerald-200 px-2 py-0.5 rounded-full">
-                                  {adminStats.publishedCourses} Published
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Total Courses</h4>
-                              <p className="text-2xl font-bold text-emerald-700">
-                                {adminStats.totalCourses}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-amber-600">
-                                  Draft: {adminStats.draftCourses}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                  Lessons: {adminStats.totalLessons}
-                                </span>
-                              </div>
-                            </div>
+{/* Main Stats Grid */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+    <div className="flex items-center justify-between mb-2">
+      <div className="p-2 bg-blue-200 rounded-lg">
+        <Users className="w-5 h-5 text-blue-700" />
+      </div>
+      <span className="text-xs font-medium text-blue-600 bg-blue-200 px-2 py-0.5 rounded-full">
+        +{adminStats.userGrowth}%
+      </span>
+    </div>
+    <h4 className="text-sm font-medium text-gray-600">Total Users</h4>
+    <p className="text-2xl font-bold text-blue-700">
+      {adminStats.totalUsers}
+    </p>
+    <div className="flex gap-3 mt-1">
+      <span className="text-xs text-emerald-600">
+        Active: {adminStats.activeUsers}
+      </span>
+      <span className="text-xs text-gray-400">
+        Inactive: {adminStats.inactiveUsers}
+      </span>
+    </div>
+  </div>
 
-                            <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-purple-200 rounded-lg">
-                                  <GraduationCap className="w-5 h-5 text-purple-700" />
-                                </div>
-                                <span className="text-xs font-medium text-purple-600 bg-purple-200 px-2 py-0.5 rounded-full">
-                                  +{adminStats.enrollmentGrowth}%
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Enrollments</h4>
-                              <p className="text-2xl font-bold text-purple-700">
-                                {adminStats.totalEnrollments}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-emerald-600">
-                                  Active: {adminStats.activeEnrollments}
-                                </span>
-                                <span className="text-xs text-amber-600">
-                                  Pending: {adminStats.pendingEnrollments}
-                                </span>
-                              </div>
-                            </div>
+  <div className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
+    <div className="flex items-center justify-between mb-2">
+      <div className="p-2 bg-emerald-200 rounded-lg">
+        <BookOpen className="w-5 h-5 text-emerald-700" />
+      </div>
+      <span className="text-xs font-medium text-emerald-600 bg-emerald-200 px-2 py-0.5 rounded-full">
+        {adminStats.publishedCourses} Published
+      </span>
+    </div>
+    <h4 className="text-sm font-medium text-gray-600">Total Courses</h4>
+    <p className="text-2xl font-bold text-emerald-700">
+      {adminStats.totalCourses}
+    </p>
+    <div className="flex gap-3 mt-1">
+      <span className="text-xs text-amber-600">
+        Draft: {adminStats.draftCourses}
+      </span>
+      <span className="text-xs text-gray-400">
+        Lessons: {adminStats.totalLessons}
+      </span>
+    </div>
+  </div>
 
-                            <div className="p-4 bg-gradient-to-br from-rose-50 to-rose-100 rounded-xl border border-rose-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-rose-200 rounded-lg">
-                                  <DollarSign className="w-5 h-5 text-rose-700" />
-                                </div>
-                                <span className="text-xs font-medium text-rose-600 bg-rose-200 px-2 py-0.5 rounded-full">
-                                  Revenue
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Total Revenue</h4>
-                              <p className="text-2xl font-bold text-rose-700">
-                                ₹ 0
-                                {/* ₹{adminStats.totalRevenue?.toLocaleString() || 0} */}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-blue-600">
-                                  Payments: {adminStats.totalPayments}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                  Successful: {adminStats.successfulPayments}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+  <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+    <div className="flex items-center justify-between mb-2">
+      <div className="p-2 bg-purple-200 rounded-lg">
+        <GraduationCap className="w-5 h-5 text-purple-700" />
+      </div>
+      <span className="text-xs font-medium text-purple-600 bg-purple-200 px-2 py-0.5 rounded-full">
+        +{adminStats.enrollmentGrowth}%
+      </span>
+    </div>
+    <h4 className="text-sm font-medium text-gray-600">Enrollments</h4>
+    <p className="text-2xl font-bold text-purple-700">
+      {adminStats.totalEnrollments}
+    </p>
+    <div className="flex gap-3 mt-1">
+      <span className="text-xs text-emerald-600">
+        Active: {adminStats.activeEnrollments}
+      </span>
+      <span className="text-xs text-amber-600">
+        Pending: {adminStats.pendingEnrollments}
+      </span>
+    </div>
+  </div>
 
-                          {/* User Role Distribution */}
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <h4 className="text-sm font-medium text-gray-700 mb-3">User Roles</h4>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Students</span>
-                                  <span className="text-sm font-semibold text-blue-600">
-                                    {adminStats.studentsCount}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-blue-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalUsers > 0 ? (adminStats.studentsCount / adminStats.totalUsers) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Instructors</span>
-                                  <span className="text-sm font-semibold text-purple-600">
-                                    {adminStats.instructorsCount}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-purple-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalUsers > 0 ? (adminStats.instructorsCount / adminStats.totalUsers) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Admins</span>
-                                  <span className="text-sm font-semibold text-red-600">
-                                    {adminStats.adminsCount}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-red-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalUsers > 0 ? (adminStats.adminsCount / adminStats.totalUsers) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
+  <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
+    <div className="flex items-center justify-between mb-2">
+      <div className="p-2 bg-amber-200 rounded-lg">
+        <IndianRupee className="w-5 h-5 text-amber-700" />
+      </div>
+      <span className="text-xs font-medium text-amber-600 bg-amber-200 px-2 py-0.5 rounded-full">
+        {adminStats.totalPayments} Payments
+      </span>
+    </div>
+    <h4 className="text-sm font-medium text-gray-600">Total Revenue</h4>
+    <p className="text-2xl font-bold text-amber-700">
+      {formatCurrency(adminStats.totalRevenue)}
+    </p>
+    <div className="flex gap-3 mt-1">
+      <span className="text-xs text-emerald-600">
+        Success: {adminStats.successfulPayments}
+      </span>
+      <span className="text-xs text-red-600">
+        Failed: {adminStats.failedPayments}
+      </span>
+    </div>
+  </div>
+</div>
 
-                            {/* Enrollment Status Distribution */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <h4 className="text-sm font-medium text-gray-700 mb-3">Enrollment Status</h4>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Active</span>
-                                  <span className="text-sm font-semibold text-emerald-600">
-                                    {adminStats.activeEnrollments}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-emerald-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalEnrollments > 0 ? (adminStats.activeEnrollments / adminStats.totalEnrollments) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Pending</span>
-                                  <span className="text-sm font-semibold text-amber-600">
-                                    {adminStats.pendingEnrollments}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-amber-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalEnrollments > 0 ? (adminStats.pendingEnrollments / adminStats.totalEnrollments) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Completed</span>
-                                  <span className="text-sm font-semibold text-rose-600">
-                                    {adminStats.completedEnrollments}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-rose-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalEnrollments > 0 ? (adminStats.completedEnrollments / adminStats.totalEnrollments) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
+{/* Payment Status Distribution */}
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+  {/* Existing User Role Distribution */}
+  <div className="bg-white p-4 rounded-xl border border-gray-200">
+    <h4 className="text-sm font-medium text-gray-700 mb-3">User Roles</h4>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Students</span>
+        <span className="text-sm font-semibold text-blue-600">
+          {adminStats.studentsCount}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-blue-500 h-2 rounded-full transition-all"
+          style={{ 
+            width: `${adminStats.totalUsers > 0 ? (adminStats.studentsCount / adminStats.totalUsers) * 100 : 0}%` 
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Instructors</span>
+        <span className="text-sm font-semibold text-purple-600">
+          {adminStats.instructorsCount}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-purple-500 h-2 rounded-full transition-all"
+          style={{ 
+            width: `${adminStats.totalUsers > 0 ? (adminStats.instructorsCount / adminStats.totalUsers) * 100 : 0}%` 
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Admins</span>
+        <span className="text-sm font-semibold text-red-600">
+          {adminStats.adminsCount}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-red-500 h-2 rounded-full transition-all"
+          style={{ 
+            width: `${adminStats.totalUsers > 0 ? (adminStats.adminsCount / adminStats.totalUsers) * 100 : 0}%` 
+          }}
+        />
+      </div>
+    </div>
+  </div>
 
-                            {/* Quick Stats */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Stats</h4>
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Total Revenue</span>
-                                  <span className="text-sm font-semibold text-gray-900">
-                                    ₹{adminStats.totalRevenue?.toLocaleString() || 0}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Active Users</span>
-                                  <span className="text-sm font-semibold text-emerald-600">
-                                    {adminStats.activeUsers}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Published Courses</span>
-                                  <span className="text-sm font-semibold text-blue-600">
-                                    {adminStats.publishedCourses}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Total Lessons</span>
-                                  <span className="text-sm font-semibold text-purple-600">
-                                    {adminStats.totalLessons}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+  {/* Payment Status Distribution */}
+  <div className="bg-white p-4 rounded-xl border border-gray-200">
+    <h4 className="text-sm font-medium text-gray-700 mb-3">Payment Status</h4>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Successful</span>
+        <span className="text-sm font-semibold text-emerald-600">
+          {adminStats.successfulPayments || 0}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-emerald-500 h-2 rounded-full transition-all"
+          style={{ 
+            width: `${adminStats.totalPayments > 0 ? (adminStats.successfulPayments / adminStats.totalPayments) * 100 : 0}%` 
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Pending</span>
+        <span className="text-sm font-semibold text-amber-600">
+          {adminStats.pendingPayments || 0}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-amber-500 h-2 rounded-full transition-all"
+          style={{ 
+            width: `${adminStats.totalPayments > 0 ? (adminStats.pendingPayments / adminStats.totalPayments) * 100 : 0}%` 
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Failed</span>
+        <span className="text-sm font-semibold text-red-600">
+          {adminStats.failedPayments || 0}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-red-500 h-2 rounded-full transition-all"
+          style={{ 
+            width: `${adminStats.totalPayments > 0 ? (adminStats.failedPayments / adminStats.totalPayments) * 100 : 0}%` 
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Refunded</span>
+        <span className="text-sm font-semibold text-purple-600">
+          {adminStats.refundedPayments || 0}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div 
+          className="bg-purple-500 h-2 rounded-full transition-all"
+          style={{ 
+            width: `${adminStats.totalPayments > 0 ? (adminStats.refundedPayments / adminStats.totalPayments) * 100 : 0}%` 
+          }}
+        />
+      </div>
+    </div>
+  </div>
 
-                          {/* Recent Activity */}
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            {/* Recent Users */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-sm font-medium text-gray-700">Recent Users</h4>
-                                <button
-                                  onClick={() => setActiveTab("admin")}
-                                  className="text-xs text-red-600 hover:text-red-700"
-                                >
-                                  View All
-                                </button>
-                              </div>
-                              {adminStats.recentUsers.length > 0 ? (
-                                <div className="space-y-3">
-                                  {adminStats.recentUsers.map((user) => (
-                                    <div key={user.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                                      <div className="w-8 h-8 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center text-red-700 text-xs font-semibold flex-shrink-0">
-                                        {user.full_name?.charAt(0).toUpperCase() || "U"}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                          {user.full_name || "N/A"}
-                                        </p>
-                                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                                      </div>
-                                      <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(user.is_active ? 'active' : 'inactive')}`}>
-                                        {user.is_active ? "Active" : "Inactive"}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-400 text-center py-4">No recent users</p>
-                              )}
-                            </div>
+  {/* Quick Stats - Updated with payment info */}
+  <div className="bg-white p-4 rounded-xl border border-gray-200">
+    <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Stats</h4>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+        <span className="text-sm text-gray-600">Total Revenue</span>
+        <span className="text-sm font-semibold text-emerald-600">
+          {formatCurrency(adminStats.totalRevenue)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+        <span className="text-sm text-gray-600">Total Payments</span>
+        <span className="text-sm font-semibold text-blue-600">
+          {adminStats.totalPayments || 0}
+        </span>
+      </div>
+      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+        <span className="text-sm text-gray-600">Avg Payment Amount</span>
+        <span className="text-sm font-semibold text-purple-600">
+          {formatCurrency(adminStats.averageAmount)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+        <span className="text-sm text-gray-600">Active Users</span>
+        <span className="text-sm font-semibold text-emerald-600">
+          {adminStats.activeUsers}
+        </span>
+      </div>
+      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+        <span className="text-sm text-gray-600">Published Courses</span>
+        <span className="text-sm font-semibold text-blue-600">
+          {adminStats.publishedCourses}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
 
-                            {/* Recent Enrollments */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-sm font-medium text-gray-700">Recent Enrollments</h4>
-                                <button
-                                  onClick={() => setActiveTab("admin")}
-                                  className="text-xs text-red-600 hover:text-red-700"
-                                >
-                                  View All
-                                </button>
-                              </div>
-                              {adminStats.recentEnrollments.length > 0 ? (
-                                <div className="space-y-3">
-                                  {adminStats.recentEnrollments.map((enrollment, idx) => (
-                                    <div key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs font-semibold flex-shrink-0">
-                                        {enrollment.user_name?.charAt(0).toUpperCase() || "U"}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                          {enrollment.user_name || "N/A"}
-                                        </p>
-                                        <p className="text-xs text-gray-500 truncate">
-                                          {enrollment.course_title || enrollment.course_name || "Course"}
-                                        </p>
-                                      </div>
-                                      <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(enrollment.status || enrollment.enrollment_status)}`}>
-                                        {enrollment.status || enrollment.enrollment_status || "Pending"}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-400 text-center py-4">No recent enrollments</p>
-                              )}
-                            </div>
-                          </div>
+{/* Recent Activity - Added Recent Payments */}
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  {/* Recent Users */}
+  <div className="bg-white p-4 rounded-xl border border-gray-200">
+    <div className="flex items-center justify-between mb-3">
+      <h4 className="text-sm font-medium text-gray-700">Recent Users</h4>
+      <button
+        onClick={() => setActiveTab("admin")}
+        className="text-xs text-red-600 hover:text-red-700"
+      >
+        View All
+      </button>
+    </div>
+    {adminStats.recentUsers?.length > 0 ? (
+      <div className="space-y-3">
+        {adminStats.recentUsers.map((user) => (
+          <div key={user.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+            <div className="w-8 h-8 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center text-red-700 text-xs font-semibold flex-shrink-0">
+              {user.full_name?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user.full_name || "N/A"}
+              </p>
+              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+            </div>
+            <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(user.is_active ? 'active' : 'inactive')}`}>
+              {user.is_active ? "Active" : "Inactive"}
+            </span>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p className="text-sm text-gray-400 text-center py-4">No recent users</p>
+    )}
+  </div>
+
+  {/* Recent Enrollments */}
+  <div className="bg-white p-4 rounded-xl border border-gray-200">
+    <div className="flex items-center justify-between mb-3">
+      <h4 className="text-sm font-medium text-gray-700">Recent Enrollments</h4>
+      <button
+        onClick={() => setActiveTab("admin")}
+        className="text-xs text-red-600 hover:text-red-700"
+      >
+        View All
+      </button>
+    </div>
+    {adminStats.recentEnrollments?.length > 0 ? (
+      <div className="space-y-3">
+        {adminStats.recentEnrollments.map((enrollment, idx) => (
+          <div key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs font-semibold flex-shrink-0">
+              {enrollment.user_name?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {enrollment.user_name || "N/A"}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {enrollment.course_title || enrollment.course_name || "Course"}
+              </p>
+            </div>
+            <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(enrollment.status || enrollment.enrollment_status)}`}>
+              {enrollment.status || enrollment.enrollment_status || "Pending"}
+            </span>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p className="text-sm text-gray-400 text-center py-4">No recent enrollments</p>
+    )}
+  </div>
+
+  {/* Recent Payments */}
+  <div className="bg-white p-4 rounded-xl border border-gray-200">
+    <div className="flex items-center justify-between mb-3">
+      <h4 className="text-sm font-medium text-gray-700">Recent Payments</h4>
+      <button
+        onClick={() => setActiveTab("payments")}
+        className="text-xs text-red-600 hover:text-red-700"
+      >
+        View All
+      </button>
+    </div>
+    {adminStats.recentPayments?.length > 0 ? (
+      <div className="space-y-3">
+        {adminStats.recentPayments.map((payment, idx) => (
+          <div key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+            <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 text-xs font-semibold flex-shrink-0">
+              <Receipt className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {payment.payment_code || `PAY-${payment.id}`}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {formatCurrency(payment.amount_paid || payment.price)}
+                {payment.user_id && ` • User #${payment.user_id}`}
+              </p>
+            </div>
+            <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(payment.status)}`}>
+              {payment.status || "Pending"}
+            </span>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p className="text-sm text-gray-400 text-center py-4">No recent payments</p>
+    )}
+  </div>
+</div>
+
+                      
 
                         
                         </>
@@ -4147,7 +4285,7 @@ export default function DashboardPage() {
               ) : activeTab === "payments" ? (
                 // Payments Tab
                 <div>
-                  <div className="flex items-center justify-between mb-6">
+                  {/* <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
                         Payment Management
@@ -4156,7 +4294,7 @@ export default function DashboardPage() {
                         View and manage all payments
                       </p>
                     </div>
-                  </div>
+                  </div> */}
                   <PaymentManagement 
                     session={session}
                     onStatsUpdate={(stats) => {
