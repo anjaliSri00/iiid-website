@@ -81,10 +81,10 @@ export default function Header() {
               <Link href="/apply-online" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
                 Apply Online
               </Link>
-              <Link href="/#about" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
+              <Link href="#about" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
                 About
               </Link>
-              <Link href="/#programs" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
+              <Link href="#programs" className="text-gray-600 hover:text-red-600 transition-colors font-medium">
                 Programs
               </Link>
             </nav>
@@ -218,7 +218,7 @@ export default function Header() {
                   About
                 </Link>
                 <Link 
-                  href="/#programs" 
+                  href="#programs" 
                   className="text-gray-600 hover:text-red-600 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >

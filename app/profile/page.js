@@ -29,11 +29,14 @@ export default function ProfilePage() {
   const [deletingDocument, setDeletingDocument] = useState({});
 
   // Redirect if not authenticated
+  // Guard against session hydration timing to prevent redirect loops.
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated' && !session?.user?.id) {
       router.push('/login');
     }
-  }, [status, router]);
+  }, [status, router, session]);
+
 
   // Fetch profile data
   useEffect(() => {

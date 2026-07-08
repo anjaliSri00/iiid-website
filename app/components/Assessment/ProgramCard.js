@@ -1,6 +1,7 @@
 // components/Assessment/ProgramCard.js
+"use client";
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import Image from "next/image";
 import {
   BookOpen,
@@ -14,6 +15,7 @@ import {
   ChevronDown,
   Star,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const ProgramCard = ({
   program,
@@ -45,6 +47,7 @@ const ProgramCard = ({
 }) => {
   const isExpanded = expandedAssessment === program.id;
   const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
 
   const toggleAssessment = () => {
     setExpandedAssessment(isExpanded ? null : program.id);
@@ -68,6 +71,7 @@ const ProgramCard = ({
     <div 
       className="group bg-white rounded-2xl border border-gray-200/60 overflow-hidden hover:shadow-xl hover:border-red-200/60 transition-all duration-300"
       onMouseEnter={() => setIsHovered(true)}
+      onClick={()=> router.push(`/programs/${program.id}`)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex flex-col md:flex-row">

@@ -142,11 +142,14 @@ export default function DashboardPage() {
   const isAdmin = hasAdminOrInternalRoleFromSession();
 
   // Redirect if not authenticated
+  // Guard against session hydration timing to prevent redirect loops.
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (status === "loading") return;
+    if (status === "unauthenticated" && !session?.user?.id) {
       router.push("/login?redirect=/dashboard");
     }
-  }, [status, router]);
+  }, [status, router, session]);
+
 
   // Fetch profile data and conditional data based on role
   useEffect(() => {

@@ -836,12 +836,12 @@ const ProgramDetailPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Link
-                href="/#programs"
+              <button
+              onClick={()=> router.back()}
                 className="text-gray-600 hover:text-red-600 transition-colors"
               >
                 <ArrowLeft size={24} />
-              </Link>
+              </button>
               <div className="hidden sm:block">
                 <h1 className="text-lg font-semibold text-gray-900 truncate max-w-md">
                   {program.title}
