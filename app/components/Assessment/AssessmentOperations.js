@@ -164,6 +164,57 @@ export const useAssessmentOperations = (
     }
   };  
 
+    // Activate assessment
+  const handleActivateAssessment = async (courseId, assessmentId) => {
+    if (!confirm("Are you sure you want to activate this assessment?")) return;
+
+    try {
+      const response = await assessmentApi.activateAssessment(courseId, assessmentId, session);
+      if (response.meta?.status === 200) {
+        toast.success("Assessment activated successfully!");
+        // Update the assessment in state
+        if (response.data) {
+          setAssessments(prev => ({
+            ...prev,
+            [courseId]: response.data
+          }));
+        }
+        if (fetchPrograms) await fetchPrograms();
+      } else {
+        toast.error(response.meta?.message || "Failed to activate assessment");
+      }
+    } catch (error) {
+      console.error("Error activating assessment:", error);
+      toast.error("Failed to activate assessment");
+    }
+  };
+
+  // Deactivate assessment
+  const handleDeactivateAssessment = async (courseId, assessmentId) => {
+    if (!confirm("Are you sure you want to deactivate this assessment?")) return;
+
+    try {
+      const response = await assessmentApi.deactivateAssessment(courseId,assessmentId, session);
+      if (response.meta?.status === 200) {
+        toast.success("Assessment deactivated successfully!");
+        // Update the assessment in state
+        if (response.data) {
+          setAssessments(prev => ({
+            ...prev,
+            [courseId]: response.data
+          }));
+        }
+        if (fetchPrograms) await fetchPrograms();
+      } else {
+        toast.error(response.meta?.message || "Failed to deactivate assessment");
+      }
+    } catch (error) {
+      console.error("Error deactivating assessment:", error);
+      toast.error("Failed to deactivate assessment");
+    }
+  };
+
+
   // Handle edit assessment
   const handleEditAssessment = (assessment) => {
     setEditingAssessment(assessment);
@@ -181,6 +232,8 @@ export const useAssessmentOperations = (
     handleAssessmentFormChange,
     handleAssessmentSubmit,
     handleDeleteAssessment,
+    handleActivateAssessment,
+    handleDeactivateAssessment,
     handleEditAssessment,
   };
 };

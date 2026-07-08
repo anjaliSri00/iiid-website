@@ -67,6 +67,47 @@ export const assessmentApi = {
     }
   },
 
+  
+  // Activate assessment
+  activateAssessment: async (courseId,assessmentId, session) => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}/activate`,
+        {
+          method: "PATCH",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error activating assessment:", error);
+      throw error;
+    }
+  },
+
+  // Deactivate assessment
+  deactivateAssessment: async (courseId,assessmentId, session) => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}/deactivate`,
+        {
+          method: "PATCH",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error deactivating assessment:", error);
+      throw error;
+    }
+  },
+
   // Get assessment details
   getAssessment: async (courseId, session) => {
     try {

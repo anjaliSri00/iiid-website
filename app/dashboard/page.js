@@ -48,7 +48,6 @@ import Image from "next/image";
 import { useAssessmentState } from "../components/Assessment/AssessmentState";
 import { useAssessmentOperations } from "../components/Assessment/AssessmentOperations";
 import { useQuestionOperations } from "../components/Assessment/QuestionOperations";
-import AssessmentForm from "../components/Assessment/AssessmentForm";
 import { QuestionForm } from "../components/Assessment/QuestionForm";
 import AssessmentModal from "../components/Assessment/AssessmentModal";
 import ProgramCard from "../components/Assessment/ProgramCard";
@@ -113,7 +112,6 @@ export default function DashboardPage() {
   const [enrolledCoursesLoading, setEnrolledCoursesLoading] = useState(false);
 
   // Lesson states
-  const [editingLesson, setEditingLesson] = useState(null);
   const [lessonSaving, setLessonSaving] = useState(false);
   const [lessonErrors, setLessonErrors] = useState({});
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -121,7 +119,15 @@ export default function DashboardPage() {
   const [videoFile, setVideoFile] = useState(null);
   const [originalLessons, setOriginalLessons] = useState({});
 
-  const [assessmentsLoading, setAssessmentsLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    category: "",
+    level: "",
+    status: "",
+    search: "",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [filteredPrograms, setFilteredPrograms] = useState([]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const hasAdminOrInternalRoleFromSession = () => {
     if (!session || !session.user) return false;
@@ -150,32 +156,88 @@ export default function DashboardPage() {
     }
   }, [status, router, session]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isAdmin) {
+        // When search changes, update filters and fetch
+        const newFilters = { ...filters, search: debouncedSearch };
+        setFilters(newFilters);
+        fetchPrograms(newFilters);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [debouncedSearch, isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin && (filters.category || filters.level || filters.status)) {
+      fetchPrograms(filters);
+    }
+  }, [filters.category, filters.level, filters.status]);
+
+  const clearFilters = () => {
+    const emptyFilters = {
+      category: "",
+      level: "",
+      status: "",
+      search: "",
+    };
+    setFilters(emptyFilters);
+    setDebouncedSearch("");
+    setShowFilters(false);
+    fetchPrograms(emptyFilters);
+  };
+
+  // Add function to get unique categories and levels from programs
+  const getUniqueValues = (key) => {
+    const values = programs
+      .map((p) => p[key])
+      .filter(Boolean)
+      .map((v) => v.toLowerCase());
+    return [...new Set(values)];
+  };
 
   // Fetch profile data and conditional data based on role
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       fetchProfile();
       if (isAdmin) {
-        fetchPrograms();
+        fetchPrograms(filters);
       } else {
         fetchEnrolledCourses();
       }
     }
   }, [status, session, isAdmin]);
 
-  const fetchPrograms = async () => {
+  const fetchPrograms = async (filterParams = {}) => {
     setProgramsLoading(true);
     try {
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`,
-        {
-          method: "GET",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
+      // Build query string from filter params
+      const queryParams = new URLSearchParams();
+
+      if (filterParams.category) {
+        queryParams.append("category", filterParams.category);
+      }
+      if (filterParams.level) {
+        queryParams.append("level", filterParams.level);
+      }
+      if (filterParams.status) {
+        queryParams.append("status", filterParams.status);
+      }
+      if (filterParams.search) {
+        queryParams.append("search", filterParams.search);
+      }
+
+      const queryString = queryParams.toString();
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list${queryString ? `?${queryString}` : ""}`;
+
+      const response = await fetchApiResponse(url, {
+        method: "GET",
+        headers: {
+          "Access-Token": session?.accessToken,
+          "Refresh-Token": session?.refreshToken,
         },
-      );
+      });
 
       if (response.meta?.status === 200 && response.data) {
         const courses = Array.isArray(response.data) ? response.data : [];
@@ -218,6 +280,7 @@ export default function DashboardPage() {
                   thumbnail_url: course.thumbnail_url,
                   status: course.status,
                   mode: course.mode,
+                  is_active: course.is_active,
                   course_code: course.course_code,
                   created_at: course.created_at,
                   updated_at: course.updated_at,
@@ -226,24 +289,37 @@ export default function DashboardPage() {
                   ...course,
                 };
               }
-              return { ...course, lessons: [], assessment: null };
+              return {
+                ...course,
+                lessons: [],
+                assessment: null,
+                is_active: course.is_active,
+              };
             } catch (error) {
               console.error(
                 `Error fetching details for course ${course.id}:`,
                 error,
               );
-              return { ...course, lessons: [], assessment: null };
+              return {
+                ...course,
+                lessons: [],
+                assessment: null,
+                is_active: course.is_active,
+              };
             }
           }),
         );
         setPrograms(mappedPrograms);
+        setFilteredPrograms(mappedPrograms);
       } else {
         console.error("Programs fetch failed:", response.meta?.message);
         setPrograms([]);
+        setFilteredPrograms([]);
       }
     } catch (error) {
       console.error("Error fetching programs:", error);
       setPrograms([]);
+      setFilteredPrograms([]);
     } finally {
       setProgramsLoading(false);
     }
@@ -288,7 +364,7 @@ export default function DashboardPage() {
     session,
     assessments,
     setAssessments,
-    fetchPrograms,
+    () => fetchPrograms(filters),
     setAssessmentFormData,
     setAssessmentErrors,
     setAssessmentSaving,
@@ -648,7 +724,7 @@ export default function DashboardPage() {
         } else {
           toast.error("No URL returned from server");
         }
-      } 
+      }
       // else {
       //  toast.error(response.meta?.message || "Upload failed");
       // }
@@ -1036,44 +1112,44 @@ export default function DashboardPage() {
         const unsavedLessons = programFormData.lessons.filter(
           (lesson) => lesson.is_new,
         );
-         if (unsavedLessons.length > 0) {
-        const hasCourseChanges = checkForCourseChanges();
-        if (hasCourseChanges) {
+        if (unsavedLessons.length > 0) {
+          const hasCourseChanges = checkForCourseChanges();
+          if (hasCourseChanges) {
+            try {
+              await updateCourse();
+            } catch (error) {
+              // Error is already shown in updateCourse
+              setProgramSaving(false);
+              return;
+            }
+          }
+          savedCourseId = editingProgram.id;
+          await saveUnsavedLessons(savedCourseId);
+          toast.success("Program updated with new lessons!");
+          setProgramSuccess(true);
+          setShowCreateProgram(false);
+          setEditingProgram(null);
+          resetProgramForm();
+          await fetchPrograms(filters);
+          setProgramSaving(false);
+          return;
+        }
+
+        const changedFields = getChangedFields();
+        if (Object.keys(changedFields).length > 0) {
           try {
-            await updateCourse();
+            await updateCourse(changedFields);
+            // toast.success("Program updated successfully!");
+            setProgramSuccess(true);
+            setShowCreateProgram(false);
+            setEditingProgram(null);
+            resetProgramForm();
+            await fetchPrograms(filters);
           } catch (error) {
             // Error is already shown in updateCourse
             setProgramSaving(false);
             return;
           }
-        }
-        savedCourseId = editingProgram.id;
-        await saveUnsavedLessons(savedCourseId);
-        toast.success("Program updated with new lessons!");
-        setProgramSuccess(true);
-        setShowCreateProgram(false);
-        setEditingProgram(null);
-        resetProgramForm();
-        await fetchPrograms();
-        setProgramSaving(false);
-        return;
-      }
-
-        const changedFields = getChangedFields();
-        if (Object.keys(changedFields).length > 0) {
-           try {
-          await updateCourse(changedFields);
-          // toast.success("Program updated successfully!");
-          setProgramSuccess(true);
-          setShowCreateProgram(false);
-          setEditingProgram(null);
-          resetProgramForm();
-          await fetchPrograms();
-        } catch (error) {
-          // Error is already shown in updateCourse
-          setProgramSaving(false);
-          return;
-        }
         } else {
           toast.info("No changes to update");
           setShowCreateProgram(false);
@@ -1129,9 +1205,8 @@ export default function DashboardPage() {
           setShowCreateProgram(false);
           setEditingProgram(null);
           resetProgramForm();
-          await fetchPrograms();
-        } 
-        else {
+          await fetchPrograms(filters);
+        } else {
           toast.error(response.meta?.message || "Failed to create program");
         }
         setProgramSaving(false);
@@ -1198,60 +1273,44 @@ export default function DashboardPage() {
     return changedFields;
   };
 
- // In dashboard/page.js
+  // In dashboard/page.js
 
-const updateCourse = async (changedFields) => {
-  if (!editingProgram || Object.keys(changedFields).length === 0) return;
-  
-  try {
-    const response = await fetchApiResponse(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/update/${editingProgram.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Token": session?.accessToken,
-          "Refresh-Token": session?.refreshToken,
+  const updateCourse = async (changedFields) => {
+    if (!editingProgram || Object.keys(changedFields).length === 0) return;
+
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/update/${editingProgram.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+          body: JSON.stringify(changedFields),
         },
-        body: JSON.stringify(changedFields),
-      },
-    );
+      );
 
-    // Check if response has meta property
-    if (!response || !response.meta) {
-      toast.error("Invalid response from server");
-      throw new Error("Invalid response from server");
-    }
+      // Check if response has meta property
+      if (!response || !response.meta) {
+        toast.error("Invalid response from server");
+        throw new Error("Invalid response from server");
+      }
 
-    if (response.meta.status === 200) {
-      return response; // Success - return response
-    } 
-    // else {
-    //   // Handle different error status codes
-    //   let errorMessage = response.meta.message || "Failed to update program";
-      
-    //   // You can add specific error messages based on status
-    //   if (response.meta.status === 400) {
-    //     errorMessage = "Invalid data provided. Please check your inputs.";
-    //   } else if (response.meta.status === 404) {
-    //     errorMessage = "Course not found. It may have been deleted.";
-    //   } else if (response.meta.status === 409) {
-    //     errorMessage = "Conflict occurred. Please try again.";
-    //   }
-      
-    //   toast.error(errorMessage);
-    //   throw new Error(errorMessage);
-    // }
-  } catch (error) {
-    console.error('Update course error:', error);
-    // If error is already handled above, re-throw
-    if (error.message) {
+      if (response.meta.status === 200) {
+        return response; // Success - return response
+      }
+    } catch (error) {
+      console.error("Update course error:", error);
+      // If error is already handled above, re-throw
+      if (error.message) {
+        throw error;
+      }
+      toast.error("Failed to update program. Please try again.");
       throw error;
     }
-    toast.error("Failed to update program. Please try again.");
-    throw error;
-  }
-};
+  };
 
   const handleLessonInputChange = (index, field, value) => {
     setProgramFormData((prev) => ({
@@ -1513,13 +1572,63 @@ const updateCourse = async (changedFields) => {
       );
       if (response.meta?.status === 200) {
         toast.success("Program deleted successfully!");
-        await fetchPrograms();
+        await fetchPrograms(filters);
       } else {
         toast.error(response.meta?.message || "Failed to delete program");
       }
     } catch (error) {
       console.error("Error deleting program:", error);
       toast.error("Failed to delete program");
+    }
+  };
+
+  // Activate course
+  const handleActivateCourse = async (courseId) => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/activate`,
+        {
+          method: "PATCH",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        },
+      );
+
+      if (response.meta?.status === 200) {
+        toast.success("Course activated successfully!");
+        // Refresh programs to get updated data
+        await fetchPrograms(filters);
+      }
+    } catch (error) {
+      console.error("Error activating course:", error);
+      toast.error("Failed to activate course");
+    }
+  };
+
+  // Deactivate course
+  const handleDeactivateCourse = async (courseId) => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/deactivate`,
+        {
+          method: "PATCH",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        },
+      );
+
+      if (response.meta?.status === 200) {
+        toast.success("Course deactivated successfully!");
+        // Refresh programs to get updated data
+        await fetchPrograms(filters);
+      }
+    } catch (error) {
+      console.error("Error deactivating course:", error);
+      toast.error("Failed to deactivate course");
     }
   };
 
@@ -1557,7 +1666,10 @@ const updateCourse = async (changedFields) => {
 
   const handleOpenEditAssessment = (courseId, assessment) => {
     setSelectedAssessmentId(courseId);
-    setEditingAssessment(assessment);
+    setEditingAssessment({
+      ...assessment,
+      id: assessment.id,
+    });
     setAssessmentFormData({
       title: assessment.title || "",
       description: assessment.description || "",
@@ -1667,7 +1779,7 @@ const updateCourse = async (changedFields) => {
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 overflow-hidden sticky top-24">
-              <div className="bg-linear-to-br from-red-600 to-red-700 px-6 py-8">
+              <div className="bg-linear-to-br from-slate-50 via-red-50 to-rose-50 border-red-200/30 px-6 py-8">
                 <div className="flex flex-col items-center">
                   <div className="relative">
                     <div className="w-24 h-24 rounded-full border-4 border-white/30 bg-white/10 overflow-hidden shadow-lg">
@@ -1691,20 +1803,20 @@ const updateCourse = async (changedFields) => {
                       <CheckCircle className="w-3 h-3 text-white" />
                     </div>
                   </div>
-                  <h2 className="mt-4 text-lg font-bold text-white text-center">
+                  <h2 className="mt-4 text-lg font-bold text-red-700 text-center">
                     {profile.full_name}
                   </h2>
-                  <p className="text-sm text-red-100 text-center">
+                  <p className="text-sm text-red-800 text-center">
                     {profile.user_code}
                   </p>
                   <div className="mt-3 flex gap-2 flex-wrap justify-center">
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white">
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-white text-red-800 uppercase">
                       {profile.role_type?.join(", ") || "User"}
                     </span>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      className={`px-3 py-1 rounded-full text-xs uppercase font-medium ${
                         profile.is_active
-                          ? "bg-emerald-500/30 text-emerald-100"
+                          ? "bg-emerald-700 text-emerald-100"
                           : "bg-red-500/30 text-red-100"
                       }`}
                     >
@@ -2288,18 +2400,180 @@ const updateCourse = async (changedFields) => {
                         Create and manage your courses and programs
                       </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        setShowCreateProgram(true);
-                        setEditingProgram(null);
-                        resetProgramForm();
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Create Program
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {/* Search Bar */}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search programs..."
+                          value={debouncedSearch}
+                          onChange={(e) => setDebouncedSearch(e.target.value)}
+                          className="w-48 md:w-64 px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                        />
+                        {debouncedSearch && (
+                          <button
+                            onClick={() => {
+                              setDebouncedSearch("");
+                              const newFilters = { ...filters, search: "" };
+                              setFilters(newFilters);
+                              fetchPrograms(newFilters);
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Filter Toggle Button */}
+                      <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                          showFilters || Object.values(filters).some((f) => f)
+                            ? "bg-red-50 border-red-200 text-red-600"
+                            : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                          />
+                        </svg>
+                        <span className="text-sm">Filters</span>
+                        {Object.values(filters).some((f) => f) && (
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowCreateProgram(true);
+                          setEditingProgram(null);
+                          resetProgramForm();
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Create Program
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Filter Panel */}
+                  {showFilters && (
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-medium text-gray-700">
+                          Filters
+                        </h4>
+                        <button
+                          onClick={clearFilters}
+                          className="text-sm text-red-600 hover:text-red-700"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {/* Category Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Category
+                          </label>
+                          <select
+                            value={filters.category}
+                            onChange={(e) => {
+                              const newFilters = {
+                                ...filters,
+                                category: e.target.value,
+                              };
+                              setFilters(newFilters);
+                              fetchPrograms(newFilters);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                          >
+                            <option value="">All Categories</option>
+                            {getUniqueValues("category").map((category) => (
+                              <option key={category} value={category}>
+                                {category.charAt(0).toUpperCase() +
+                                  category.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Level Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Level
+                          </label>
+                          <select
+                            value={filters.level}
+                            onChange={(e) => {
+                              const newFilters = {
+                                ...filters,
+                                level: e.target.value,
+                              };
+                              setFilters(newFilters);
+                              fetchPrograms(newFilters);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                          >
+                            <option value="">All Levels</option>
+                            {getUniqueValues("level").map((level) => (
+                              <option key={level} value={level}>
+                                {level.charAt(0).toUpperCase() + level.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Status Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Status
+                          </label>
+                          <select
+                            value={filters.status}
+                            onChange={(e) => {
+                              const newFilters = {
+                                ...filters,
+                                status: e.target.value,
+                              };
+                              setFilters(newFilters);
+                              fetchPrograms(newFilters);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                          >
+                            <option value="">All Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="deactivated">Deactivated</option>
+                          </select>
+                        </div>
+
+                        {/* Results Count */}
+                        <div className="flex items-end">
+                          <div className="w-full p-2 bg-white rounded-md border border-gray-200">
+                            <p className="text-sm text-gray-600">
+                              <span className="font-semibold">
+                                {filteredPrograms.length}
+                              </span>{" "}
+                              program{filteredPrograms.length !== 1 ? "s" : ""}{" "}
+                              found
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Create/Edit Program Form */}
                   {showCreateProgram && (
@@ -2536,268 +2810,359 @@ const updateCourse = async (changedFields) => {
                         </div>
 
                         {/* Assessment Section - Added inside the form */}
-{editingProgram && (
-  <div className="border-b border-gray-200 pb-4">
-    <div className="flex items-center justify-between mb-3">
-      <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-        <FileCheck className="w-4 h-4 text-red-500" />
-        Assessment
-      </h5>
-      {editingProgram && (
-                <div className="border-t border-gray-100 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            const assessment = assessments[editingProgram.id];
-            if (assessment) {
-              handleOpenEditAssessment(editingProgram.id, assessment);
-            } else {
-              handleOpenCreateAssessment(editingProgram.id);
-            }
-          }}
-          className="flex items-center gap-1.5 text-sm bg-red-50 p-2 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
-        >
-          {assessments[editingProgram.id] ? (
-            <>
-              <Edit className="w-4 h-4" />
-              Edit Assessment
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              Create Assessment
-            </>
-          )}
-        </button>
-         <button
-            type="button"
-            onClick={() => {
-              const assessment = assessments[editingProgram.id];
-              if (assessment) {
-                  handleDeleteAssessment(editingProgram.id, assessment.id);
-              }
-            }}
-            className="text-xs text-red-600 hover:text-red-700 px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1"
-          >
-            <Trash2Icon className="w-4 h-4" />
-          </button>
-          </div>
-      )}
-    </div>
-    
-    {assessments[editingProgram.id] ? (
-      <div className="p-4 bg-white rounded-lg border border-gray-200">
-        {/* Assessment Details */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
-            <p className="text-xs text-gray-400">Title</p>
-            <p className="text-sm font-medium text-gray-700">
-              {assessments[editingProgram.id].title}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400">Passing Score</p>
-            <p className="text-sm font-medium text-emerald-600">
-              {assessments[editingProgram.id].passing_score}%
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400">Duration</p>
-            <p className="text-sm font-medium text-blue-600">
-              {assessments[editingProgram.id].duration_minutes} min
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400">Status</p>
-            <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessments[editingProgram.id].status)}`}>
-              {assessments[editingProgram.id].status}
-            </span>
-          </div>
-        </div>
-        
-        {/* Questions List */}
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium text-gray-700">
-              Questions ({assessments[editingProgram.id].questions?.length || 0})
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                const assessment = assessments[editingProgram.id];
-                if (assessment) {
-                  setSelectedAssessmentId(editingProgram.id);
-                  setShowAddQuestion(true);
-                  setEditingQuestion(null);
-                  resetQuestionForm();
-                }
-              }}
-              className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
-            >
-              <Plus className="w-3 h-3" />
-              Add Question
-            </button>
-          </div>
-          
-          {/* Questions List */}
-          {assessments[editingProgram.id].questions && assessments[editingProgram.id].questions.length > 0 ? (
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {assessments[editingProgram.id].questions.map((question, idx) => (
-                <div 
-                  key={question.id || idx} 
-                  className="bg-gray-50 p-3 rounded-lg border border-gray-200"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-5 h-5 bg-red-50 text-red-600 text-xs font-bold rounded-full">
-                          {idx + 1}
-                        </span>
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {question.question_text}
-                        </p>
-                      </div>
-                      <div className="mt-1.5 flex flex-wrap gap-2 text-xs">
-                        <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                          A: {question.option_a}
-                        </span>
-                        <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                          B: {question.option_b}
-                        </span>
-                        {question.option_c && (
-                          <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                            C: {question.option_c}
-                          </span>
-                        )}
-                        {question.option_d && (
-                          <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                            D: {question.option_d}
-                          </span>
-                        )}
-                        <span className="px-2 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
-                          ✓ {question.correct_option}
-                        </span>
-                        <span className="px-2 py-0.5 bg-blue-50 rounded text-blue-600">
-                          {question.marks || 1} mark{question.marks > 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingQuestion(question);
-                          setQuestionFormData({
-                            question_text: question.question_text || "",
-                            option_a: question.option_a || "",
-                            option_b: question.option_b || "",
-                            option_c: question.option_c || "",
-                            option_d: question.option_d || "",
-                            correct_option: question.correct_option || "A",
-                            marks: question.marks || 1,
-                            order_number: question.order_number || idx + 1,
-                            status: question.status || "draft",
-                          });
-                          setSelectedAssessmentId(editingProgram.id);
-                          setShowAddQuestion(true);
-                        }}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit Question"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                            await handleDeleteQuestion(editingProgram.id, question.id);
-                            const courseDetails = await fetchCourseDetails(editingProgram.id);
-                            if (courseDetails && courseDetails.assessment) {
-                              setAssessments(prev => ({
-                                ...prev,
-                                [editingProgram.id]: courseDetails.assessment
-                              }));
-                            }
-                        }}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Question"
-                      >
-                        <Trash2Icon className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-              <p className="text-sm text-gray-400">No questions added yet</p>
-              <p className="text-xs text-gray-300 mt-0.5">Click "Add Question" to get started</p>
-            </div>
-          )}
-        </div>
+                        {editingProgram && (
+                          <div className="border-b border-gray-200 pb-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <FileCheck className="w-4 h-4 text-red-500" />
+                                Assessment
+                              </h5>
+                              {editingProgram && (
+                                <div className="border-t border-gray-100 flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const assessment =
+                                        assessments[editingProgram.id];
+                                      if (assessment) {
+                                        handleOpenEditAssessment(
+                                          editingProgram.id,
+                                          assessment,
+                                        );
+                                      } else {
+                                        handleOpenCreateAssessment(
+                                          editingProgram.id,
+                                        );
+                                      }
+                                    }}
+                                    className="flex items-center gap-1.5 text-sm bg-red-50 p-2 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+                                  >
+                                    {assessments[editingProgram.id] ? (
+                                      <>
+                                        <Edit className="w-4 h-4" />
+                                        Edit Assessment
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="w-4 h-4" />
+                                        Create Assessment
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const assessment =
+                                        assessments[editingProgram.id];
+                                      if (assessment) {
+                                        handleDeleteAssessment(
+                                          editingProgram.id,
+                                          assessment.id,
+                                        );
+                                      }
+                                    }}
+                                    className="text-xs text-red-600 hover:text-red-700 px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1"
+                                  >
+                                    <Trash2Icon className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
 
-        {/* Question Form - Show when "Add Question" is clicked */}
-        {showAddQuestion && selectedAssessmentId === editingProgram.id && assessments[editingProgram.id] && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            {QuestionForm && (
-              <QuestionForm
-                editingQuestion={editingQuestion}
-                questionFormData={questionFormData}
-                questionErrors={questionErrors}
-                questionSaving={questionSaving}
-                handleQuestionFormChange={(e) =>
-                  handleQuestionFormChange(e, setQuestionFormData, setQuestionErrors)
-                }
-                handleQuestionSubmit={async () => {
-                  const assessment = assessments[editingProgram.id];
-                  if (assessment) {
-                    await handleQuestionSubmit(
-                      editingProgram.id,
-                      assessment.id,
-                      questionFormData,
-                      editingQuestion,
-                      setQuestionSaving,
-                      resetQuestionForm,
-                      async () => {
-                        // Close question form
-                        setShowAddQuestion(false);
-                        // Refresh the specific course details to update the assessment
-                        const courseDetails = await fetchCourseDetails(editingProgram.id);
-                        if (courseDetails && courseDetails.assessment) {
-                          setAssessments(prev => ({
-                            ...prev,
-                            [editingProgram.id]: courseDetails.assessment
-                          }));
-                        }
-                        // Also refresh all programs
-                        await fetchPrograms();
-                      },
-                      setEditingQuestion,
-                      setQuestionErrors
-                    );
-                  }
-                }}
-                setShowAddQuestion={setShowAddQuestion}
-                setEditingQuestion={setEditingQuestion}
-                resetQuestionForm={resetQuestionForm}
-                courseId={editingProgram.id}
-                assessmentId={assessments[editingProgram.id]?.id}
-              />
-            )}
-          </div>
-        )}
-      </div>
-    ) : (
-      <div className="text-center py-6 bg-white rounded-lg border border-dashed border-gray-200">
-        <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-        <p className="text-sm text-gray-400">No assessment created yet</p>
-        <p className="text-xs text-gray-300 mt-0.5">
-          Click "Create Assessment" to add one
-        </p>
-      </div>
-    )}
-  </div>
-)}
+                            {assessments[editingProgram.id] ? (
+                              <div className="p-4 bg-white rounded-lg border border-gray-200">
+                                {/* Assessment Details */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                  <div>
+                                    <p className="text-xs text-gray-400">
+                                      Title
+                                    </p>
+                                    <p className="text-sm font-medium text-gray-700">
+                                      {assessments[editingProgram.id].title}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-400">
+                                      Passing Score
+                                    </p>
+                                    <p className="text-sm font-medium text-emerald-600">
+                                      {
+                                        assessments[editingProgram.id]
+                                          .passing_score
+                                      }
+                                      %
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-400">
+                                      Duration
+                                    </p>
+                                    <p className="text-sm font-medium text-blue-600">
+                                      {
+                                        assessments[editingProgram.id]
+                                          .duration_minutes
+                                      }{" "}
+                                      min
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-400">
+                                      Status
+                                    </p>
+                                    <span
+                                      className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessments[editingProgram.id].status)}`}
+                                    >
+                                      {assessments[editingProgram.id].status}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Questions List */}
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <p className="text-sm font-medium text-gray-700">
+                                      Questions (
+                                      {assessments[editingProgram.id].questions
+                                        ?.length || 0}
+                                      )
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const assessment =
+                                          assessments[editingProgram.id];
+                                        if (assessment) {
+                                          setSelectedAssessmentId(
+                                            editingProgram.id,
+                                          );
+                                          setShowAddQuestion(true);
+                                          setEditingQuestion(null);
+                                          resetQuestionForm();
+                                        }
+                                      }}
+                                      className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
+                                    >
+                                      <Plus className="w-3 h-3" />
+                                      Add Question
+                                    </button>
+                                  </div>
+
+                                  {/* Questions List */}
+                                  {assessments[editingProgram.id].questions &&
+                                  assessments[editingProgram.id].questions
+                                    .length > 0 ? (
+                                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                                      {assessments[
+                                        editingProgram.id
+                                      ].questions.map((question, idx) => (
+                                        <div
+                                          key={question.id || idx}
+                                          className="bg-gray-50 p-3 rounded-lg border border-gray-200"
+                                        >
+                                          <div className="flex items-start justify-between gap-3">
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-2">
+                                                <span className="inline-flex items-center justify-center w-5 h-5 bg-red-50 text-red-600 text-xs font-bold rounded-full">
+                                                  {idx + 1}
+                                                </span>
+                                                <p className="text-sm font-medium text-gray-900 truncate">
+                                                  {question.question_text}
+                                                </p>
+                                              </div>
+                                              <div className="mt-1.5 flex flex-wrap gap-2 text-xs">
+                                                <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                  A: {question.option_a}
+                                                </span>
+                                                <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                  B: {question.option_b}
+                                                </span>
+                                                {question.option_c && (
+                                                  <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                    C: {question.option_c}
+                                                  </span>
+                                                )}
+                                                {question.option_d && (
+                                                  <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                    D: {question.option_d}
+                                                  </span>
+                                                )}
+                                                <span className="px-2 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
+                                                  ✓ {question.correct_option}
+                                                </span>
+                                                <span className="px-2 py-0.5 bg-blue-50 rounded text-blue-600">
+                                                  {question.marks || 1} mark
+                                                  {question.marks > 1
+                                                    ? "s"
+                                                    : ""}
+                                                </span>
+                                              </div>
+                                            </div>
+                                            <div className="flex gap-1 shrink-0">
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  setEditingQuestion(question);
+                                                  setQuestionFormData({
+                                                    question_text:
+                                                      question.question_text ||
+                                                      "",
+                                                    option_a:
+                                                      question.option_a || "",
+                                                    option_b:
+                                                      question.option_b || "",
+                                                    option_c:
+                                                      question.option_c || "",
+                                                    option_d:
+                                                      question.option_d || "",
+                                                    correct_option:
+                                                      question.correct_option ||
+                                                      "A",
+                                                    marks: question.marks || 1,
+                                                    order_number:
+                                                      question.order_number ||
+                                                      idx + 1,
+                                                    status:
+                                                      question.status ||
+                                                      "draft",
+                                                  });
+                                                  setSelectedAssessmentId(
+                                                    editingProgram.id,
+                                                  );
+                                                  setShowAddQuestion(true);
+                                                }}
+                                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                title="Edit Question"
+                                              >
+                                                <Edit className="w-3.5 h-3.5" />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={async () => {
+                                                  await handleDeleteQuestion(
+                                                    editingProgram.id,
+                                                    question.id,
+                                                  );
+                                                  const courseDetails =
+                                                    await fetchCourseDetails(
+                                                      editingProgram.id,
+                                                    );
+                                                  if (
+                                                    courseDetails &&
+                                                    courseDetails.assessment
+                                                  ) {
+                                                    setAssessments((prev) => ({
+                                                      ...prev,
+                                                      [editingProgram.id]:
+                                                        courseDetails.assessment,
+                                                    }));
+                                                  }
+                                                }}
+                                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Delete Question"
+                                              >
+                                                <Trash2Icon className="w-3.5 h-3.5" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                      <p className="text-sm text-gray-400">
+                                        No questions added yet
+                                      </p>
+                                      <p className="text-xs text-gray-300 mt-0.5">
+                                        Click "Add Question" to get started
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Question Form - Show when "Add Question" is clicked */}
+                                {showAddQuestion &&
+                                  selectedAssessmentId === editingProgram.id &&
+                                  assessments[editingProgram.id] && (
+                                    <div className="mt-4 pt-4 border-t border-gray-100">
+                                      {QuestionForm && (
+                                        <QuestionForm
+                                          editingQuestion={editingQuestion}
+                                          questionFormData={questionFormData}
+                                          questionErrors={questionErrors}
+                                          questionSaving={questionSaving}
+                                          handleQuestionFormChange={(e) =>
+                                            handleQuestionFormChange(
+                                              e,
+                                              setQuestionFormData,
+                                              setQuestionErrors,
+                                            )
+                                          }
+                                          handleQuestionSubmit={async () => {
+                                            const assessment =
+                                              assessments[editingProgram.id];
+                                            if (assessment) {
+                                              await handleQuestionSubmit(
+                                                editingProgram.id,
+                                                assessment.id,
+                                                questionFormData,
+                                                editingQuestion,
+                                                setQuestionSaving,
+                                                resetQuestionForm,
+                                                async () => {
+                                                  // Close question form
+                                                  setShowAddQuestion(false);
+                                                  // Refresh the specific course details to update the assessment
+                                                  const courseDetails =
+                                                    await fetchCourseDetails(
+                                                      editingProgram.id,
+                                                    );
+                                                  if (
+                                                    courseDetails &&
+                                                    courseDetails.assessment
+                                                  ) {
+                                                    setAssessments((prev) => ({
+                                                      ...prev,
+                                                      [editingProgram.id]:
+                                                        courseDetails.assessment,
+                                                    }));
+                                                  }
+                                                  // Also refresh all programs
+                                                  await fetchPrograms(filters);
+                                                },
+                                                setEditingQuestion,
+                                                setQuestionErrors,
+                                              );
+                                            }
+                                          }}
+                                          setShowAddQuestion={
+                                            setShowAddQuestion
+                                          }
+                                          setEditingQuestion={
+                                            setEditingQuestion
+                                          }
+                                          resetQuestionForm={resetQuestionForm}
+                                          courseId={editingProgram.id}
+                                          assessmentId={
+                                            assessments[editingProgram.id]?.id
+                                          }
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                              </div>
+                            ) : (
+                              <div className="text-center py-6 bg-white rounded-lg border border-dashed border-gray-200">
+                                <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                <p className="text-sm text-gray-400">
+                                  No assessment created yet
+                                </p>
+                                <p className="text-xs text-gray-300 mt-0.5">
+                                  Click "Create Assessment" to add one
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         {/* Lessons Section */}
                         <div className="border-b border-gray-200 pb-4">
                           <div className="flex items-center justify-between mb-3">
@@ -3238,30 +3603,64 @@ const updateCourse = async (changedFields) => {
                       <Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto" />
                       <p className="mt-2 text-gray-500">Loading programs...</p>
                     </div>
-                  ) : programs.length === 0 ? (
+                  ) : filteredPrograms.length === 0 ? (
                     <div className="text-center py-12">
-                      <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">
-                        {hasAdminOrInternalRoleFromSession()
-                          ? "No programs created yet"
-                          : "No programs available at the moment"}
-                      </p>
-                      {hasAdminOrInternalRoleFromSession() && (
-                        <button
-                          onClick={() => {
-                            setShowCreateProgram(true);
-                            setEditingProgram(null);
-                            resetProgramForm();
-                          }}
-                          className="mt-4 text-red-600 hover:text-red-700"
-                        >
-                          Create your first program
-                        </button>
+                      {filters.search ||
+                      filters.category ||
+                      filters.level ||
+                      filters.status ? (
+                        <div>
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg
+                              className="w-8 h-8 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                              />
+                            </svg>
+                          </div>
+                          <p className="text-gray-500 mb-2">
+                            No programs match your filters
+                          </p>
+                          <button
+                            onClick={clearFilters}
+                            className="text-red-600 hover:text-red-700 text-sm"
+                          >
+                            Clear all filters
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500">
+                            {hasAdminOrInternalRoleFromSession()
+                              ? "No programs created yet"
+                              : "No programs available at the moment"}
+                          </p>
+                          {hasAdminOrInternalRoleFromSession() && (
+                            <button
+                              onClick={() => {
+                                setShowCreateProgram(true);
+                                setEditingProgram(null);
+                                resetProgramForm();
+                              }}
+                              className="mt-4 text-red-600 hover:text-red-700"
+                            >
+                              Create your first program
+                            </button>
+                          )}
+                        </div>
                       )}
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {programs.map((program) => {
+                      {filteredPrograms.map((program) => {
                         const assessment = assessments[program.id];
                         return (
                           <ProgramCard
@@ -3276,6 +3675,14 @@ const updateCourse = async (changedFields) => {
                             onDeleteAssessment={handleDeleteAssessment}
                             onCreateAssessment={handleOpenCreateAssessment}
                             onManageQuestions={handleOpenManageQuestions}
+                            onActivateAssessment={
+                              assessmentOps.handleActivateAssessment
+                            }
+                            onDeactivateAssessment={
+                              assessmentOps.handleDeactivateAssessment
+                            }
+                            onActivateCourse={handleActivateCourse}
+                            onDeactivateCourse={handleDeactivateCourse}
                             expandedAssessment={expandedAssessment}
                             setExpandedAssessment={setExpandedAssessment}
                             showAddQuestion={showAddQuestion}
@@ -3301,27 +3708,31 @@ const updateCourse = async (changedFields) => {
                                 resetQuestionForm,
                                 () => {
                                   setShowAddQuestion(false);
-                                  fetchPrograms();
+                                  fetchPrograms(filters);
                                 },
                                 setEditingQuestion,
                                 setQuestionErrors,
                               )
                             }
                             // handleDeleteQuestion={handleDeleteQuestion}
-                             handleDeleteQuestion={async (courseId, questionId) => {
-    // Call delete question
-    await handleDeleteQuestion(courseId, questionId);
-    // Refresh programs to get updated assessment data
-    await fetchPrograms();
-    // Also refresh the specific course details
-    const courseDetails = await fetchCourseDetails(courseId);
-    if (courseDetails && courseDetails.assessment) {
-      setAssessments(prev => ({
-        ...prev,
-        [courseId]: courseDetails.assessment
-      }));
-    }
-  }}
+                            handleDeleteQuestion={async (
+                              courseId,
+                              questionId,
+                            ) => {
+                              // Call delete question
+                              await handleDeleteQuestion(courseId, questionId);
+                              // Refresh programs to get updated assessment data
+                              await fetchPrograms(filters);
+                              // Also refresh the specific course details
+                              const courseDetails =
+                                await fetchCourseDetails(courseId);
+                              if (courseDetails && courseDetails.assessment) {
+                                setAssessments((prev) => ({
+                                  ...prev,
+                                  [courseId]: courseDetails.assessment,
+                                }));
+                              }
+                            }}
                             handleEditQuestion={handleEditQuestion}
                             resetQuestionForm={resetQuestionForm}
                             setShowAddQuestion={setShowAddQuestion}
@@ -3329,6 +3740,7 @@ const updateCourse = async (changedFields) => {
                             setQuestionFormData={setQuestionFormData}
                             QuestionForm={QuestionForm}
                             isEditingMode={false}
+                            setSelectedAssessmentId={setSelectedAssessmentId}
                           />
                         );
                       })}

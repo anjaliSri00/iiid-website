@@ -45,7 +45,7 @@ const ProgramDetailPage = () => {
   const router = useRouter();
   const [isRouterReady, setIsRouterReady] = useState(false);
 
-  const [program, setProgram] = useState(null);
+  const [program, setProgram] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
