@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import fetchApiResponse from "@/helper/api_data_store";
 import { useRouter } from "next/navigation";
-import { progressApi } from "@/helper/progressApi";
+import { progressApi } from "@/helper/services/progressApi";
 import { useApi } from "@/helper/hooks/useApi";
 
 const ProgramDetailPage = () => {

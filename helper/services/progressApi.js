@@ -1,5 +1,5 @@
 // @/helper/progressApi.js
-import fetchApiResponse from "./api_data_store";
+import fetchApiResponse from "../api_data_store";
 
 export const progressApi = {
   // Update lesson progress

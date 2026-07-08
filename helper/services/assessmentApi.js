@@ -1,6 +1,6 @@
 // helper/assessmentApi.js
 
-import fetchApiResponse from "./api_data_store";
+import fetchApiResponse from "../api_data_store";
 
 export const assessmentApi = {
   // Create a new assessment

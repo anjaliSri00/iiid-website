@@ -1,7 +1,7 @@
 // components/Assessment/QuestionOperations.js
 
 import { toast } from "react-toastify";
-import { assessmentApi } from "@/helper/assessmentApi";
+import { assessmentApi } from "@/helper/services/assessmentApi";
 
 export const useQuestionOperations = (session, fetchAssessment, setAssessments) => {
   

@@ -607,7 +607,7 @@ const CheckoutPage = () => {
                     </div>
 
                     {/* Coupon Code */}
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    {/* <div className="bg-gray-50 rounded-lg p-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Coupon Code
                       </label>
@@ -634,7 +634,7 @@ const CheckoutPage = () => {
                           Apply
                         </button>
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* User Info Summary */}
                     <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">

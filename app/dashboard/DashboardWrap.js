@@ -1,4 +1,4 @@
-// app/dashboard/page.js - Complete Updated Version
+// app/dashboard/page.js
 
 "use client";
 
@@ -40,9 +40,6 @@ import {
   LayoutDashboard,
   LogOut,
   FileCheck,
-  CreditCard,
-  DollarSign,
-  RefreshCw
 } from "lucide-react";
 import { toast } from "react-toastify";
 import fetchApiResponse from "@/helper/api_data_store";
@@ -55,8 +52,6 @@ import { QuestionForm } from "../components/Assessment/QuestionForm";
 import AssessmentModal from "../components/Assessment/AssessmentModal";
 import ProgramCard from "../components/Assessment/ProgramCard";
 import AdminManagement from "../components/ui/AdminManagement";
-import PaymentManagement from "../components/ui/PaymentManagement";
-import { adminService } from "@/helper/services/adminService";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -67,32 +62,6 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedAssessment, setExpandedAssessment] = useState(null);
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
-
-  // Admin Stats
-  const [adminStats, setAdminStats] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    inactiveUsers: 0,
-    totalEnrollments: 0,
-    activeEnrollments: 0,
-    pendingEnrollments: 0,
-    completedEnrollments: 0,
-    studentsCount: 0,
-    instructorsCount: 0,
-    adminsCount: 0,
-    totalCourses: 0,
-    publishedCourses: 0,
-    draftCourses: 0,
-    totalLessons: 0,
-    recentUsers: [],
-    recentEnrollments: [],
-    enrollmentGrowth: 0,
-    userGrowth: 0,
-    totalRevenue: 0,
-    totalPayments: 0,
-    successfulPayments: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(false);
 
   // Password change states
   const [passwordData, setPasswordData] = useState({
@@ -150,8 +119,9 @@ export default function DashboardPage() {
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
   const [videoFile, setVideoFile] = useState(null);
   const [originalLessons, setOriginalLessons] = useState({});
-  const [allPrograms, setAllPrograms] = useState([]);
-  const [isAllProgramsFetched, setIsAllProgramsFetched] = useState(false);
+  // Add this near your other state declarations
+const [allPrograms, setAllPrograms] = useState([]);
+const [isAllProgramsFetched, setIsAllProgramsFetched] = useState(false);
 
   const [filters, setFilters] = useState({
     category: "",
@@ -162,6 +132,35 @@ export default function DashboardPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filteredPrograms, setFilteredPrograms] = useState([]);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+
+
+
+  const [adminStats, setAdminStats] = useState({
+  totalUsers: 0,
+  activeUsers: 0,
+  inactiveUsers: 0,
+  totalEnrollments: 0,
+  activeEnrollments: 0,
+  pendingEnrollments: 0,
+  completedEnrollments: 0,
+  studentsCount: 0,
+  instructorsCount: 0,
+  adminsCount: 0,
+  totalCourses: 0,
+  publishedCourses: 0,
+  draftCourses: 0,
+  totalLessons: 0,
+  recentUsers: [],
+  recentEnrollments: [],
+  enrollmentGrowth: 0,
+  userGrowth: 0
+});
+
+const [statsLoading, setStatsLoading] = useState(false);
+
+
+
 
   const hasAdminOrInternalRoleFromSession = () => {
     if (!session || !session.user) return false;
@@ -182,6 +181,7 @@ export default function DashboardPage() {
   const isAdmin = hasAdminOrInternalRoleFromSession();
 
   // Redirect if not authenticated
+  // Guard against session hydration timing to prevent redirect loops.
   useEffect(() => {
     if (status === "loading") return;
     if (status === "unauthenticated" && !session?.user?.id) {
@@ -189,9 +189,142 @@ export default function DashboardPage() {
     }
   }, [status, router, session]);
 
+
+
+
+const fetchAdminStats = async () => {
+  if (!isAdmin) return;
+  
+  setStatsLoading(true);
+  try {
+    // Fetch users
+    const usersResult = await adminService.listUsers({}, session);
+    // Fetch enrollments
+    const enrollmentsResult = await adminService.listEnrollments({}, session);
+    // Fetch courses (already have programs)
+    
+    if (usersResult.success && enrollmentsResult.success) {
+      const users = usersResult.data || [];
+      const enrollments = enrollmentsResult.data || [];
+      
+      // Calculate stats
+      const activeUsers = users.filter(u => u.is_active).length;
+      const inactiveUsers = users.filter(u => !u.is_active).length;
+      
+      const students = users.filter(u => {
+        const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
+        return roles.some(r => r?.toLowerCase() === 'student');
+      }).length;
+      
+      const instructors = users.filter(u => {
+        const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
+        return roles.some(r => r?.toLowerCase() === 'instructor');
+      }).length;
+      
+      const admins = users.filter(u => {
+        const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
+        return roles.some(r => r?.toLowerCase() === 'admin' || r?.toLowerCase() === 'internal');
+      }).length;
+      
+      const activeEnrollments = enrollments.filter(e => 
+        (e.status === 'active' || e.enrollment_status === 'active')
+      ).length;
+      
+      const pendingEnrollments = enrollments.filter(e => 
+        (e.status === 'pending' || e.enrollment_status === 'pending')
+      ).length;
+      
+      const completedEnrollments = enrollments.filter(e => 
+        (e.status === 'completed' || e.enrollment_status === 'completed')
+      ).length;
+      
+      // Get recent users (last 5)
+      const recentUsers = [...users]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+      
+      // Get recent enrollments (last 5)
+      const recentEnrollments = [...enrollments]
+        .sort((a, b) => new Date(b.enrolled_at) - new Date(a.enrolled_at))
+        .slice(0, 5);
+      
+      setAdminStats({
+        totalUsers: users.length,
+        activeUsers,
+        inactiveUsers,
+        totalEnrollments: enrollments.length,
+        activeEnrollments,
+        pendingEnrollments,
+        completedEnrollments,
+        studentsCount: students,
+        instructorsCount: instructors,
+        adminsCount: admins,
+        totalCourses: programs.length,
+        publishedCourses: programs.filter(p => p.status === 'published').length,
+        draftCourses: programs.filter(p => p.status === 'draft').length,
+        totalLessons: programs.reduce((total, p) => total + (p.lessons?.length || 0), 0),
+        recentUsers,
+        recentEnrollments,
+        enrollmentGrowth: calculateGrowth(enrollments),
+        userGrowth: calculateGrowth(users)
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching admin stats:", error);
+  } finally {
+    setStatsLoading(false);
+  }
+};
+
+// Helper function to calculate growth (simple example)
+const calculateGrowth = (data) => {
+  if (!data || data.length < 2) return 0;
+  const now = new Date();
+  const lastMonth = new Date(now.setMonth(now.getMonth() - 1));
+  
+  const recent = data.filter(item => new Date(item.created_at || item.enrolled_at) > lastMonth);
+  const total = data.length;
+  
+  return total > 0 ? Math.round((recent.length / total) * 100) : 0;
+};
+
+// Update the useEffect to fetch stats
+useEffect(() => {
+  if (status === "authenticated" && session?.user?.id) {
+    fetchProfile();
+    if (isAdmin) {
+      fetchAllPrograms();
+      fetchPrograms(filters);
+      fetchAdminStats(); // Add this
+    } else {
+      fetchEnrolledCourses();
+    }
+  }
+}, [status, session, isAdmin]);
+
+// Refresh stats when programs change
+useEffect(() => {
+  if (isAdmin && programs.length > 0) {
+    fetchAdminStats();
+  }
+}, [programs.length]);
+
+
+
+
+
+
+
+
+
+
+
+
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isAdmin) {
+        // When search changes, update filters and fetch
         const newFilters = { ...filters, search: debouncedSearch };
         setFilters(newFilters);
         fetchPrograms(newFilters);
@@ -203,8 +336,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isAdmin && (filters.category || filters.level || filters.status)) {
-      refreshPrograms();   
-    }
+  refreshPrograms();   
+  }
   }, [filters.category, filters.level, filters.status]);
 
   const clearFilters = () => {
@@ -220,215 +353,113 @@ export default function DashboardPage() {
     fetchPrograms(emptyFilters);
   };
 
-  const getUniqueValues = (key) => {
-    const values = allPrograms
-      .map((p) => p[key])
-      .filter(Boolean);
-    
-    const uniqueMap = new Map();
-    values.forEach(val => {
-      const lowerKey = val.toLowerCase();
-      if (!uniqueMap.has(lowerKey)) {
-        uniqueMap.set(lowerKey, val);
-      }
-    });
-    
-    return Array.from(uniqueMap.values());
-  };
+// Update getUniqueValues to use allPrograms
+const getUniqueValues = (key) => {
+  // Use allPrograms which stores ALL programs without filters
+  const values = allPrograms
+    .map((p) => p[key])
+    .filter(Boolean);
+  
+  // Preserve original casing while removing duplicates
+  const uniqueMap = new Map();
+  values.forEach(val => {
+    const lowerKey = val.toLowerCase();
+    if (!uniqueMap.has(lowerKey)) {
+      uniqueMap.set(lowerKey, val);
+    }
+  });
+  
+  return Array.from(uniqueMap.values());
+};
 
   // Fetch profile data and conditional data based on role
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       fetchProfile();
       if (isAdmin) {
-        fetchAllPrograms();
-        fetchPrograms(filters);
-        fetchAdminStats();
+          // Fetch all programs for dropdown options (unfiltered)
+      fetchAllPrograms();
+      // Fetch programs with current filters
+      fetchPrograms(filters);
       } else {
         fetchEnrolledCourses();
       }
     }
   }, [status, session, isAdmin]);
 
-  // Refresh stats when programs change
-  useEffect(() => {
-    if (isAdmin && programs.length > 0) {
-      fetchAdminStats();
-    }
-  }, [programs.length]);
 
-  // Helper function to calculate growth
-  const calculateGrowth = (data) => {
-    if (!data || data.length < 2) return 0;
-    const now = new Date();
-    const lastMonth = new Date(now.setMonth(now.getMonth() - 1));
+// Add this function to fetch ALL programs without any filters
+const fetchAllPrograms = async () => {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`;
     
-    const recent = data.filter(item => new Date(item.created_at || item.enrolled_at) > lastMonth);
-    const total = data.length;
-    
-    return total > 0 ? Math.round((recent.length / total) * 100) : 0;
-  };
+    const response = await fetchApiResponse(url, {
+      method: "GET",
+      headers: {
+        "Access-Token": session?.accessToken,
+        "Refresh-Token": session?.refreshToken,
+      },
+    });
 
-  // Fetch admin statistics
-  const fetchAdminStats = async () => {
-    if (!isAdmin) return;
-    
-    setStatsLoading(true);
-    try {
-      // Fetch users
-      const usersResult = await adminService.listUsers({}, session);
-      // Fetch enrollments
-      const enrollmentsResult = await adminService.listEnrollments({}, session);
-      
-      if (usersResult.success && enrollmentsResult.success) {
-        const users = usersResult.data || [];
-        const enrollments = enrollmentsResult.data || [];
-        
-        // Calculate stats
-        const activeUsers = users.filter(u => u.is_active).length;
-        const inactiveUsers = users.filter(u => !u.is_active).length;
-        
-        const students = users.filter(u => {
-          const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
-          return roles.some(r => r?.toLowerCase() === 'student');
-        }).length;
-        
-        const instructors = users.filter(u => {
-          const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
-          return roles.some(r => r?.toLowerCase() === 'instructor');
-        }).length;
-        
-        const admins = users.filter(u => {
-          const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
-          return roles.some(r => r?.toLowerCase() === 'admin' || r?.toLowerCase() === 'internal');
-        }).length;
-        
-        const activeEnrollments = enrollments.filter(e => 
-          (e.status === 'active' || e.enrollment_status === 'active')
-        ).length;
-        
-        const pendingEnrollments = enrollments.filter(e => 
-          (e.status === 'pending' || e.enrollment_status === 'pending')
-        ).length;
-        
-        const completedEnrollments = enrollments.filter(e => 
-          (e.status === 'completed' || e.enrollment_status === 'completed')
-        ).length;
-        
-        // Get recent users (last 5)
-        const recentUsers = [...users]
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 5);
-        
-        // Get recent enrollments (last 5)
-        const recentEnrollments = [...enrollments]
-          .sort((a, b) => new Date(b.enrolled_at) - new Date(a.enrolled_at))
-          .slice(0, 5);
-        
-        // Calculate total revenue from programs
-        const totalRevenue = programs.reduce((total, p) => total + (p.final_price || 0), 0);
-        
-        setAdminStats({
-          totalUsers: users.length,
-          activeUsers,
-          inactiveUsers,
-          totalEnrollments: enrollments.length,
-          activeEnrollments,
-          pendingEnrollments,
-          completedEnrollments,
-          studentsCount: students,
-          instructorsCount: instructors,
-          adminsCount: admins,
-          totalCourses: programs.length,
-          publishedCourses: programs.filter(p => p.status === 'published').length,
-          draftCourses: programs.filter(p => p.status === 'draft').length,
-          totalLessons: programs.reduce((total, p) => total + (p.lessons?.length || 0), 0),
-          recentUsers,
-          recentEnrollments,
-          enrollmentGrowth: calculateGrowth(enrollments),
-          userGrowth: calculateGrowth(users),
-          totalRevenue,
-          totalPayments: enrollments.length,
-          successfulPayments: activeEnrollments + completedEnrollments,
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching admin stats:", error);
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  const fetchAllPrograms = async () => {
-    try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`;
-      
-      const response = await fetchApiResponse(url, {
-        method: "GET",
-        headers: {
-          "Access-Token": session?.accessToken,
-          "Refresh-Token": session?.refreshToken,
-        },
-      });
-
-      if (response.meta?.status === 200 && response.data) {
-        const courses = Array.isArray(response.data) ? response.data : [];
-        const mappedPrograms = await Promise.all(
-          courses.map(async (course) => {
-            try {
-              const detailsResponse = await fetchApiResponse(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${course.id}`,
-                {
-                  method: "GET",
-                  headers: {
-                    "Access-Token": session?.accessToken,
-                    "Refresh-Token": session?.refreshToken,
-                  },
+    if (response.meta?.status === 200 && response.data) {
+      const courses = Array.isArray(response.data) ? response.data : [];
+      const mappedPrograms = await Promise.all(
+        courses.map(async (course) => {
+          try {
+            const detailsResponse = await fetchApiResponse(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${course.id}`,
+              {
+                method: "GET",
+                headers: {
+                  "Access-Token": session?.accessToken,
+                  "Refresh-Token": session?.refreshToken,
                 },
-              );
+              },
+            );
 
-              if (
-                detailsResponse.meta?.status === 200 &&
-                detailsResponse.data
-              ) {
-                return {
-                  id: course.id,
-                  category: course.category,
-                  level: course.level,
-                  status: course.status,
-                  title: course.title,
-                  ...course,
-                };
-              }
+            if (
+              detailsResponse.meta?.status === 200 &&
+              detailsResponse.data
+            ) {
               return {
-                ...course,
-              };
-            } catch (error) {
-              console.error(
-                `Error fetching details for course ${course.id}:`,
-                error,
-              );
-              return {
+                id: course.id,
+                category: course.category,
+                level: course.level,
+                status: course.status,
+                title: course.title,
                 ...course,
               };
             }
-          }),
-        );
-        
-        setAllPrograms(mappedPrograms);
-        setIsAllProgramsFetched(true);
-        return mappedPrograms;
-      }
-      return [];
-    } catch (error) {
-      console.error("Error fetching all programs:", error);
-      return [];
+            return {
+              ...course,
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching details for course ${course.id}:`,
+              error,
+            );
+            return {
+              ...course,
+            };
+          }
+        }),
+      );
+      
+      setAllPrograms(mappedPrograms);
+      setIsAllProgramsFetched(true);
+      return mappedPrograms;
     }
-  };
+    return [];
+  } catch (error) {
+    console.error("Error fetching all programs:", error);
+    return [];
+  }
+};
 
   const fetchPrograms = async (filterParams = {}) => {
     setProgramsLoading(true);
     try {
+      // Build query string from filter params
       const queryParams = new URLSearchParams();
 
       if (filterParams.category) {
@@ -941,6 +972,9 @@ export default function DashboardPage() {
           toast.error("No URL returned from server");
         }
       }
+      // else {
+      //  toast.error(response.meta?.message || "Upload failed");
+      // }
     } catch (error) {
       console.error("Error uploading thumbnail:", error);
       toast.error("Failed to upload thumbnail");
@@ -1331,6 +1365,7 @@ export default function DashboardPage() {
             try {
               await updateCourse();
             } catch (error) {
+              // Error is already shown in updateCourse
               setProgramSaving(false);
               return;
             }
@@ -1351,12 +1386,14 @@ export default function DashboardPage() {
         if (Object.keys(changedFields).length > 0) {
           try {
             await updateCourse(changedFields);
+            // toast.success("Program updated successfully!");
             setProgramSuccess(true);
             setShowCreateProgram(false);
             setEditingProgram(null);
             resetProgramForm();
             await fetchPrograms(filters);
           } catch (error) {
+            // Error is already shown in updateCourse
             setProgramSaving(false);
             return;
           }
@@ -1424,6 +1461,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error("Error saving program:", error);
+      // toast.error("Failed to save program");
       setProgramErrors({ general: "Failed to save program" });
       setProgramSaving(false);
     }
@@ -1482,6 +1520,8 @@ export default function DashboardPage() {
     return changedFields;
   };
 
+  // In dashboard/page.js
+
   const updateCourse = async (changedFields) => {
     if (!editingProgram || Object.keys(changedFields).length === 0) return;
 
@@ -1499,16 +1539,18 @@ export default function DashboardPage() {
         },
       );
 
+      // Check if response has meta property
       if (!response || !response.meta) {
         toast.error("Invalid response from server");
         throw new Error("Invalid response from server");
       }
 
       if (response.meta.status === 200) {
-        return response;
+        return response; // Success - return response
       }
     } catch (error) {
       console.error("Update course error:", error);
+      // If error is already handled above, re-throw
       if (error.message) {
         throw error;
       }
@@ -1763,9 +1805,9 @@ export default function DashboardPage() {
   };
 
   const refreshPrograms = async () => {
-    await fetchAllPrograms();
-    await fetchPrograms(filters);
-  };
+  await fetchAllPrograms(); // Refresh the dropdown options
+  await fetchPrograms(filters); // Refresh the displayed programs
+};
 
   const handleDeleteProgram = async (programId) => {
     if (!confirm("Are you sure you want to delete this program?")) return;
@@ -1782,7 +1824,7 @@ export default function DashboardPage() {
       );
       if (response.meta?.status === 200) {
         toast.success("Program deleted successfully!");
-        await refreshPrograms();
+         await refreshPrograms();
       } else {
         toast.error(response.meta?.message || "Failed to delete program");
       }
@@ -1808,7 +1850,8 @@ export default function DashboardPage() {
 
       if (response.meta?.status === 200) {
         toast.success("Course activated successfully!");
-        await refreshPrograms();
+        // Refresh programs to get updated data
+         await refreshPrograms(); 
       }
     } catch (error) {
       console.error("Error activating course:", error);
@@ -1832,7 +1875,8 @@ export default function DashboardPage() {
 
       if (response.meta?.status === 200) {
         toast.success("Course deactivated successfully!");
-        await refreshPrograms();
+        // Refresh programs to get updated data
+        await refreshPrograms(); 
       }
     } catch (error) {
       console.error("Error deactivating course:", error);
@@ -2080,7 +2124,7 @@ export default function DashboardPage() {
 
           {/* Right Column - Tabs */}
           <div className="lg:col-span-3">
-            {/* Tab Navigation - Updated with Admin Management and Payment tabs */}
+            {/* Tab Navigation */}
             <div className="bg-white rounded-lg shadow mb-6">
               <div className="border-b border-gray-200">
                 <nav className="flex -mb-px overflow-x-auto">
@@ -2095,6 +2139,18 @@ export default function DashboardPage() {
                     <Activity className="w-4 h-4 inline mr-2" />
                     Overview
                   </button>
+                  <button
+  onClick={() => setActiveTab("admin")}
+  className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+    activeTab === "admin"
+      ? "border-red-600 text-red-600"
+      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+  }`}
+>
+  <Shield className="w-4 h-4 inline mr-2" />
+  Admin Management
+</button>
+
                   {!isAdmin && (
                     <button
                       onClick={() => setActiveTab("my-courses")}
@@ -2114,41 +2170,17 @@ export default function DashboardPage() {
                     </button>
                   )}
                   {isAdmin && (
-                    <>
-                      <button
-                        onClick={() => setActiveTab("programs")}
-                        className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                          activeTab === "programs"
-                            ? "border-red-600 text-red-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }`}
-                      >
-                        <BookOpen className="w-4 h-4 inline mr-2" />
-                        Programs
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("admin")}
-                        className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                          activeTab === "admin"
-                            ? "border-red-600 text-red-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }`}
-                      >
-                        <Users className="w-4 h-4 inline mr-2" />
-                        Management
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("payments")}
-                        className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                          activeTab === "payments"
-                            ? "border-red-600 text-red-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4 inline mr-2" />
-                        Payments
-                      </button>
-                    </>
+                    <button
+                      onClick={() => setActiveTab("programs")}
+                      className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === "programs"
+                          ? "border-red-600 text-red-600"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4 inline mr-2" />
+                      Programs
+                    </button>
                   )}
                   <button
                     onClick={() => setActiveTab("password")}
@@ -2168,7 +2200,7 @@ export default function DashboardPage() {
             {/* Tab Content */}
             <div className="bg-white rounded-lg shadow p-6">
               {activeTab === "overview" ? (
-                // Overview Tab - Updated with all stats
+                // Overview Tab
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -2178,7 +2210,7 @@ export default function DashboardPage() {
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
                         {isAdmin
-                          ? "Manage your users, courses, and monitor platform performance."
+                          ? "Manage your courses, track performance, and oversee program operations."
                           : "Track your learning progress, view enrolled programs, and manage your account."}
                       </p>
                     </div>
@@ -2192,338 +2224,89 @@ export default function DashboardPage() {
                       >
                         {isAdmin ? "Admin" : "Student"}
                       </span>
-                      {isAdmin && (
-                        <button
-                          onClick={fetchAdminStats}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                          title="Refresh Dashboard"
-                        >
-                          <RefreshCw className="w-4 h-4 text-gray-500" />
-                        </button>
-                      )}
                     </div>
                   </div>
 
-                  {isAdmin ? (
-                    // Admin Overview with all stats
-                    <div>
-                      {statsLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {isAdmin ? (
+                      <>
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-blue-100 rounded-full">
+                              <BookOpen className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              Total Programs
+                            </h4>
+                          </div>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {programs.length}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            All courses and programs
+                          </p>
                         </div>
-                      ) : (
-                        <>
-                          {/* Main Stats Grid */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-blue-200 rounded-lg">
-                                  <Users className="w-5 h-5 text-blue-700" />
-                                </div>
-                                <span className="text-xs font-medium text-blue-600 bg-blue-200 px-2 py-0.5 rounded-full">
-                                  +{adminStats.userGrowth}%
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Total Users</h4>
-                              <p className="text-2xl font-bold text-blue-700">
-                                {adminStats.totalUsers}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-emerald-600">
-                                  Active: {adminStats.activeUsers}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                  Inactive: {adminStats.inactiveUsers}
-                                </span>
-                              </div>
+                        <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-green-100 rounded-full">
+                              <CheckCircle className="w-5 h-5 text-green-600" />
                             </div>
-
-                            <div className="p-4 bg-linear-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-emerald-200 rounded-lg">
-                                  <BookOpen className="w-5 h-5 text-emerald-700" />
-                                </div>
-                                <span className="text-xs font-medium text-emerald-600 bg-emerald-200 px-2 py-0.5 rounded-full">
-                                  {adminStats.publishedCourses} Published
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Total Courses</h4>
-                              <p className="text-2xl font-bold text-emerald-700">
-                                {adminStats.totalCourses}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-amber-600">
-                                  Draft: {adminStats.draftCourses}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                  Lessons: {adminStats.totalLessons}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-purple-200 rounded-lg">
-                                  <GraduationCap className="w-5 h-5 text-purple-700" />
-                                </div>
-                                <span className="text-xs font-medium text-purple-600 bg-purple-200 px-2 py-0.5 rounded-full">
-                                  +{adminStats.enrollmentGrowth}%
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Enrollments</h4>
-                              <p className="text-2xl font-bold text-purple-700">
-                                {adminStats.totalEnrollments}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-emerald-600">
-                                  Active: {adminStats.activeEnrollments}
-                                </span>
-                                <span className="text-xs text-amber-600">
-                                  Pending: {adminStats.pendingEnrollments}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="p-4 bg-gradient-to-br from-rose-50 to-rose-100 rounded-xl border border-rose-200">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-rose-200 rounded-lg">
-                                  <DollarSign className="w-5 h-5 text-rose-700" />
-                                </div>
-                                <span className="text-xs font-medium text-rose-600 bg-rose-200 px-2 py-0.5 rounded-full">
-                                  Revenue
-                                </span>
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-600">Total Revenue</h4>
-                              <p className="text-2xl font-bold text-rose-700">
-                                ₹ 0
-                                {/* ₹{adminStats.totalRevenue?.toLocaleString() || 0} */}
-                              </p>
-                              <div className="flex gap-3 mt-1">
-                                <span className="text-xs text-blue-600">
-                                  Payments: {adminStats.totalPayments}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                  Successful: {adminStats.successfulPayments}
-                                </span>
-                              </div>
-                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              Published
+                            </h4>
                           </div>
-
-                          {/* User Role Distribution */}
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <h4 className="text-sm font-medium text-gray-700 mb-3">User Roles</h4>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Students</span>
-                                  <span className="text-sm font-semibold text-blue-600">
-                                    {adminStats.studentsCount}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-blue-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalUsers > 0 ? (adminStats.studentsCount / adminStats.totalUsers) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Instructors</span>
-                                  <span className="text-sm font-semibold text-purple-600">
-                                    {adminStats.instructorsCount}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-purple-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalUsers > 0 ? (adminStats.instructorsCount / adminStats.totalUsers) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Admins</span>
-                                  <span className="text-sm font-semibold text-red-600">
-                                    {adminStats.adminsCount}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-red-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalUsers > 0 ? (adminStats.adminsCount / adminStats.totalUsers) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                              </div>
+                          <p className="text-2xl font-bold text-green-600">
+                            {
+                              programs.filter((p) => p.status === "published")
+                                .length
+                            }
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Publicly available programs
+                          </p>
+                        </div>
+                        <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-yellow-100 rounded-full">
+                              <Clock className="w-5 h-5 text-yellow-600" />
                             </div>
-
-                            {/* Enrollment Status Distribution */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <h4 className="text-sm font-medium text-gray-700 mb-3">Enrollment Status</h4>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Active</span>
-                                  <span className="text-sm font-semibold text-emerald-600">
-                                    {adminStats.activeEnrollments}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-emerald-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalEnrollments > 0 ? (adminStats.activeEnrollments / adminStats.totalEnrollments) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Pending</span>
-                                  <span className="text-sm font-semibold text-amber-600">
-                                    {adminStats.pendingEnrollments}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-amber-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalEnrollments > 0 ? (adminStats.pendingEnrollments / adminStats.totalEnrollments) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Completed</span>
-                                  <span className="text-sm font-semibold text-rose-600">
-                                    {adminStats.completedEnrollments}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-rose-500 h-2 rounded-full transition-all"
-                                    style={{ 
-                                      width: `${adminStats.totalEnrollments > 0 ? (adminStats.completedEnrollments / adminStats.totalEnrollments) * 100 : 0}%` 
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Quick Stats */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Stats</h4>
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Total Revenue</span>
-                                  <span className="text-sm font-semibold text-gray-900">
-                                    ₹{adminStats.totalRevenue?.toLocaleString() || 0}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Active Users</span>
-                                  <span className="text-sm font-semibold text-emerald-600">
-                                    {adminStats.activeUsers}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Published Courses</span>
-                                  <span className="text-sm font-semibold text-blue-600">
-                                    {adminStats.publishedCourses}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                  <span className="text-sm text-gray-600">Total Lessons</span>
-                                  <span className="text-sm font-semibold text-purple-600">
-                                    {adminStats.totalLessons}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              Drafts
+                            </h4>
                           </div>
-
-                          {/* Recent Activity */}
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            {/* Recent Users */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-sm font-medium text-gray-700">Recent Users</h4>
-                                <button
-                                  onClick={() => setActiveTab("admin")}
-                                  className="text-xs text-red-600 hover:text-red-700"
-                                >
-                                  View All
-                                </button>
-                              </div>
-                              {adminStats.recentUsers.length > 0 ? (
-                                <div className="space-y-3">
-                                  {adminStats.recentUsers.map((user) => (
-                                    <div key={user.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                                      <div className="w-8 h-8 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center text-red-700 text-xs font-semibold flex-shrink-0">
-                                        {user.full_name?.charAt(0).toUpperCase() || "U"}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                          {user.full_name || "N/A"}
-                                        </p>
-                                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                                      </div>
-                                      <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(user.is_active ? 'active' : 'inactive')}`}>
-                                        {user.is_active ? "Active" : "Inactive"}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-400 text-center py-4">No recent users</p>
-                              )}
+                          <p className="text-2xl font-bold text-yellow-600">
+                            {
+                              programs.filter((p) => p.status === "draft")
+                                .length
+                            }
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Programs in progress
+                          </p>
+                        </div>
+                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-purple-100 rounded-full">
+                              <Users className="w-5 h-5 text-purple-600" />
                             </div>
-
-                            {/* Recent Enrollments */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-sm font-medium text-gray-700">Recent Enrollments</h4>
-                                <button
-                                  onClick={() => setActiveTab("admin")}
-                                  className="text-xs text-red-600 hover:text-red-700"
-                                >
-                                  View All
-                                </button>
-                              </div>
-                              {adminStats.recentEnrollments.length > 0 ? (
-                                <div className="space-y-3">
-                                  {adminStats.recentEnrollments.map((enrollment, idx) => (
-                                    <div key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs font-semibold flex-shrink-0">
-                                        {enrollment.user_name?.charAt(0).toUpperCase() || "U"}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                          {enrollment.user_name || "N/A"}
-                                        </p>
-                                        <p className="text-xs text-gray-500 truncate">
-                                          {enrollment.course_title || enrollment.course_name || "Course"}
-                                        </p>
-                                      </div>
-                                      <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(enrollment.status || enrollment.enrollment_status)}`}>
-                                        {enrollment.status || enrollment.enrollment_status || "Pending"}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-400 text-center py-4">No recent enrollments</p>
-                              )}
-                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              Total Lessons
+                            </h4>
                           </div>
-
-                        
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    // Student Overview (existing code)
-                    <>
-                      {/* Stats Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                          <p className="text-2xl font-bold text-purple-600">
+                            {programs.reduce(
+                              (total, p) => total + (p.lessons?.length || 0),
+                              0,
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Across all programs
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-blue-100 rounded-full">
@@ -2607,29 +2390,124 @@ export default function DashboardPage() {
                             Earned certificates
                           </p>
                         </div>
-                      </div>
+                      </>
+                    )}
+                  </div>
 
-                      {/* Recent Activity Section */}
-                      <div className="mt-6 pt-6 border-t border-gray-200">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                          Your Recent Activity
-                        </h4>
-                        <div className="bg-gray-50 rounded-lg p-4">
-                          <div className="flex items-center justify-center py-6">
-                            <div className="text-center">
-                              <Activity className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                              <p className="text-sm text-gray-400">
-                                Start exploring programs to see your activity here
-                              </p>
-                            </div>
-                          </div>
+                  {/* Quick Actions */}
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                      Quick Actions
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {isAdmin ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              setActiveTab("programs");
+                              setShowCreateProgram(true);
+                              setEditingProgram(null);
+                              resetProgramForm();
+                            }}
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                          >
+                            <Plus className="w-4 h-4 text-red-600" />
+                            <span className="text-sm text-red-700">
+                              Create Program
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => setActiveTab("programs")}
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                          >
+                            <BookOpen className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm text-blue-700">
+                              Manage Programs
+                            </span>
+                          </button>
+                          <Link
+                            href="/profile"
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            <User className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm text-gray-700">
+                              Edit Profile
+                            </span>
+                          </Link>
+                          <Link
+                            href="/dashboard"
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                          >
+                            <Settings className="w-4 h-4 text-green-600" />
+                            <span className="text-sm text-green-700">
+                              Settings
+                            </span>
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            href="/#programs"
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                          >
+                            <BookOpen className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm text-blue-700">
+                              Browse Programs
+                            </span>
+                          </Link>
+                          <Link
+                            href="/profile"
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            <User className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm text-gray-700">
+                              My Profile
+                            </span>
+                          </Link>
+                          <button
+                            onClick={() => setActiveTab("my-courses")}
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                          >
+                            <TrendingUp className="w-4 h-4 text-green-600" />
+                            <span className="text-sm text-green-700">
+                              My Courses
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => setActiveTab("password")}
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                          >
+                            <Lock className="w-4 h-4 text-red-600" />
+                            <span className="text-sm text-red-700">
+                              Security
+                            </span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Recent Activity Section */}
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                      {isAdmin ? "Recent Activity" : "Your Recent Activity"}
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-center py-6">
+                        <div className="text-center">
+                          <Activity className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-400">
+                            {isAdmin
+                              ? "No recent activity to show"
+                              : "Start exploring programs to see your activity here"}
+                          </p>
                         </div>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </div>
                 </div>
               ) : activeTab === "my-courses" ? (
-                // My Courses Tab (existing code)
+                // My Courses Tab
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -2775,189 +2653,195 @@ export default function DashboardPage() {
                   )}
                 </div>
               ) : activeTab === "programs" ? (
-                // Programs Tab (existing code - kept as is)
+                // Programs Tab
                 <div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6">
-                    <div className="w-full sm:w-auto">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Your Programs
-                      </h3>
-                      <p className="text-sm text-gray-500 hidden xs:block">
-                        Create and manage your courses and programs
-                      </p>
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                      <div className="relative flex-1 sm:flex-none sm:w-48 md:w-64">
-                        <input
-                          type="text"
-                          placeholder="Search programs..."
-                          value={debouncedSearch}
-                          onChange={(e) => setDebouncedSearch(e.target.value)}
-                          className="w-full px-3 sm:px-4 py-2 pr-8 sm:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                        />
-                        {debouncedSearch && (
-                          <button
-                            onClick={() => {
-                              setDebouncedSearch("");
-                              const newFilters = { ...filters, search: "" };
-                              setFilters(newFilters);
-                              fetchPrograms(newFilters);
-                            }}
-                            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6">
+  <div className="w-full sm:w-auto">
+    <h3 className="text-lg font-semibold text-gray-900">
+      Your Programs
+    </h3>
+    <p className="text-sm text-gray-500 hidden xs:block">
+      Create and manage your courses and programs
+    </p>
+  </div>
+  
+  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+    {/* Search Bar - Full width on mobile */}
+    <div className="relative flex-1 sm:flex-none sm:w-48 md:w-64">
+      <input
+        type="text"
+        placeholder="Search programs..."
+        value={debouncedSearch}
+        onChange={(e) => setDebouncedSearch(e.target.value)}
+        className="w-full px-3 sm:px-4 py-2 pr-8 sm:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+      />
+      {debouncedSearch && (
+        <button
+          onClick={() => {
+            setDebouncedSearch("");
+            const newFilters = { ...filters, search: "" };
+            setFilters(newFilters);
+            fetchPrograms(newFilters);
+          }}
+          className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+    </div>
 
-                      <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3 py-2 border rounded-lg transition-colors flex-shrink-0 ${
-                          showFilters || Object.values(filters).some((f) => f)
-                            ? "bg-red-50 border-red-200 text-red-600"
-                            : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                        }`}
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                          />
-                        </svg>
-                        <span className="text-sm hidden xs:inline">Filters</span>
-                        <span className="text-sm xs:hidden">Filter</span>
-                        {Object.values(filters).some((f) => f) && (
-                          <span className="w-2 h-2 bg-red-500 rounded-full shrink-0"></span>
-                        )}
-                      </button>
+    {/* Filter Toggle Button */}
+    <button
+      onClick={() => setShowFilters(!showFilters)}
+      className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3 py-2 border rounded-lg transition-colors flex-shrink-0 ${
+        showFilters || Object.values(filters).some((f) => f)
+          ? "bg-red-50 border-red-200 text-red-600"
+          : "border-gray-300 text-gray-600 hover:bg-gray-50"
+      }`}
+    >
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+        />
+      </svg>
+      <span className="text-sm hidden xs:inline">Filters</span>
+      <span className="text-sm xs:hidden">Filter</span>
+      {Object.values(filters).some((f) => f) && (
+        <span className="w-2 h-2 bg-red-500 rounded-full shrink-0"></span>
+      )}
+    </button>
 
-                      <button
-                        onClick={() => {
-                          setShowCreateProgram(true);
-                          setEditingProgram(null);
-                          resetProgramForm();
-                        }}
-                        className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex-shrink-0 text-sm sm:text-base"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden xs:inline">Create Program</span>
-                        <span className="xs:hidden">Create</span>
-                      </button>
-                    </div>
-                  </div>
+    {/* Create Program Button */}
+    <button
+      onClick={() => {
+        setShowCreateProgram(true);
+        setEditingProgram(null);
+        resetProgramForm();
+      }}
+      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex-shrink-0 text-sm sm:text-base"
+    >
+      <Plus className="w-4 h-4" />
+      <span className="hidden xs:inline">Create Program</span>
+      <span className="xs:hidden">Create</span>
+    </button>
+  </div>
+</div>
 
-                  {showFilters && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-700">Filters</h4>
-                        <button
-                          onClick={clearFilters}
-                          className="text-sm text-red-600 hover:text-red-700"
-                        >
-                          Clear All
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
-                            Category
-                          </label>
-                          <select
-                            value={filters.category}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const newFilters = {
-                                ...filters,
-                                category: value,
-                              };
-                              setFilters(newFilters);
-                              fetchPrograms(newFilters);
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                          >
-                            <option value="">All Categories</option>
-                            {getUniqueValues("category").map((category) => (
-                              <option key={category} value={category}>
-                                {category}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                 {showFilters && (
+  <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+    <div className="flex items-center justify-between mb-3">
+      <h4 className="text-sm font-medium text-gray-700">Filters</h4>
+      <button
+        onClick={clearFilters}
+        className="text-sm text-red-600 hover:text-red-700"
+      >
+        Clear All
+      </button>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Category Filter */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1">
+          Category
+        </label>
+        <select
+          value={filters.category}
+          onChange={(e) => {
+            const value = e.target.value;
+            const newFilters = {
+              ...filters,
+              category: value,
+            };
+            setFilters(newFilters);
+            fetchPrograms(newFilters);
+          }}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+        >
+          <option value="">All Categories</option>
+          {getUniqueValues("category").map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
-                            Level
-                          </label>
-                          <select
-                            value={filters.level}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const newFilters = {
-                                ...filters,
-                                level: value,
-                              };
-                              setFilters(newFilters);
-                              fetchPrograms(newFilters);
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                          >
-                            <option value="">All Levels</option>
-                            {getUniqueValues("level").map((level) => (
-                              <option key={level} value={level}>
-                                {level.charAt(0).toUpperCase() + level.slice(1)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+      {/* Level Filter */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1">
+          Level
+        </label>
+        <select
+          value={filters.level}
+          onChange={(e) => {
+            const value = e.target.value;
+            const newFilters = {
+              ...filters,
+              level: value,
+            };
+            setFilters(newFilters);
+            fetchPrograms(newFilters);
+          }}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+        >
+          <option value="">All Levels</option>
+          {getUniqueValues("level").map((level) => (
+            <option key={level} value={level}>
+              {level.charAt(0).toUpperCase() + level.slice(1)}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
-                            Status
-                          </label>
-                          <select
-                            value={filters.status}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const newFilters = {
-                                ...filters,
-                                status: value,
-                              };
-                              setFilters(newFilters);
-                              fetchPrograms(newFilters);
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                          >
-                            <option value="">All Status</option>
-                            <option value="draft">Draft</option>
-                            <option value="published">Published</option>
-                            <option value="deactivated">Deactivated</option>
-                          </select>
-                        </div>
+      {/* Status Filter */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1">
+          Status
+        </label>
+        <select
+          value={filters.status}
+          onChange={(e) => {
+            const value = e.target.value;
+            const newFilters = {
+              ...filters,
+              status: value,
+            };
+            setFilters(newFilters);
+            fetchPrograms(newFilters);
+          }}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+        >
+          <option value="">All Status</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="deactivated">Deactivated</option>
+        </select>
+      </div>
 
-                        <div className="flex items-end">
-                          <div className="w-full p-2 bg-white rounded-md border border-gray-200">
-                            <p className="text-sm text-gray-600">
-                              <span className="font-semibold">
-                                {filteredPrograms.length}
-                              </span>{" "}
-                              program{filteredPrograms.length !== 1 ? "s" : ""} found
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+      {/* Results Count */}
+      <div className="flex items-end">
+        <div className="w-full p-2 bg-white rounded-md border border-gray-200">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold">
+              {filteredPrograms.length}
+            </span>{" "}
+            program{filteredPrograms.length !== 1 ? "s" : ""} found
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
-                  {/* Create/Edit Program Form - kept as is */}
-                   {/* Create/Edit Program Form */}
+                  {/* Create/Edit Program Form */}
                   {showCreateProgram && (
                     <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex items-center justify-between mb-4">
@@ -3979,7 +3863,7 @@ export default function DashboardPage() {
                     </div>
                   )}
 
-                  {/* Programs List - kept as is */}
+                  {/* Programs List */}
                   {programsLoading ? (
                     <div className="text-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto" />
@@ -4021,18 +3905,22 @@ export default function DashboardPage() {
                         <div>
                           <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                           <p className="text-gray-500">
-                            No programs created yet
+                            {hasAdminOrInternalRoleFromSession()
+                              ? "No programs created yet"
+                              : "No programs available at the moment"}
                           </p>
-                          <button
-                            onClick={() => {
-                              setShowCreateProgram(true);
-                              setEditingProgram(null);
-                              resetProgramForm();
-                            }}
-                            className="mt-4 text-red-600 hover:text-red-700"
-                          >
-                            Create your first program
-                          </button>
+                          {hasAdminOrInternalRoleFromSession() && (
+                            <button
+                              onClick={() => {
+                                setShowCreateProgram(true);
+                                setEditingProgram(null);
+                                resetProgramForm();
+                              }}
+                              className="mt-4 text-red-600 hover:text-red-700"
+                            >
+                              Create your first program
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -4092,12 +3980,16 @@ export default function DashboardPage() {
                                 setQuestionErrors,
                               )
                             }
+                            // handleDeleteQuestion={handleDeleteQuestion}
                             handleDeleteQuestion={async (
                               courseId,
                               questionId,
                             ) => {
+                              // Call delete question
                               await handleDeleteQuestion(courseId, questionId);
-                              await refreshPrograms();
+                              // Refresh programs to get updated assessment data
+                               await refreshPrograms(); 
+                              // Also refresh the specific course details
                               const courseDetails =
                                 await fetchCourseDetails(courseId);
                               if (courseDetails && courseDetails.assessment) {
@@ -4122,53 +4014,21 @@ export default function DashboardPage() {
                   )}
                 </div>
               ) : activeTab === "admin" ? (
-                // Admin Management Tab
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Admin Management
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Manage users and enrollments
-                      </p>
-                    </div>
-                  </div>
-                  <AdminManagement 
-                    session={session} 
-                    onStatsUpdate={(stats) => {
-                      setAdminStats(prev => ({
-                        ...prev,
-                        ...stats
-                      }));
-                    }}
-                  />
-                </div>
-              ) : activeTab === "payments" ? (
-                // Payments Tab
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Payment Management
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        View and manage all payments
-                      </p>
-                    </div>
-                  </div>
-                  <PaymentManagement 
-                    session={session}
-                    onStatsUpdate={(stats) => {
-                      setAdminStats(prev => ({
-                        ...prev,
-                        ...stats
-                      }));
-                    }}
-                  />
-                </div>
-              ) : (
-                // Change Password Tab (existing code)
+  <div>
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Admin Management
+        </h3>
+        <p className="text-sm text-gray-500 mt-1">
+          Manage users and enrollments
+        </p>
+      </div>
+    </div>
+    <AdminManagement session={session} />
+  </div>
+):(
+                // Change Password Tab
                 <div>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-red-100 rounded-full">
@@ -4204,7 +4064,6 @@ export default function DashboardPage() {
                   )}
 
                   <form onSubmit={handleChangePassword} className="space-y-6">
-                    {/* ... existing password form fields */}
                     <div>
                       <label
                         htmlFor="old_password"

@@ -441,11 +441,11 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {/* Cover/Header Section */}
-          <div className="bg-linear-to-r from-red-600 to-red-700 h-32 relative">
+          <div className="bg-linear-to-r from-slate-50 via-red-50 to-rose-50 border-red-200/30 border  h-32 relative">
             {/* Avatar */}
             <div className="absolute -bottom-12 left-6">
               <div className="relative">
-                <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 overflow-hidden">
+                <div className="w-24 h-24 rounded-full border-4 border-red-200/30 bg-gray-200 overflow-hidden">
                   {avatarPreview || profile.avatar_url ? (
                     <img
                       src={avatarPreview || profile.avatar_url}

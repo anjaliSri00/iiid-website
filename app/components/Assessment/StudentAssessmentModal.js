@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Clock, Award, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { assessmentApi } from "@/helper/assessmentApi";
+import { assessmentApi } from "@/helper/services/assessmentApi";
 
 const StudentAssessmentModal = ({
   isOpen,
