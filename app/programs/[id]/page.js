@@ -127,6 +127,13 @@ const ProgramDetailPage = () => {
     checkSession();
   }, [status, session, update]);
 
+    useEffect(() => {
+      if (status === "loading") return;
+      if (status === "unauthenticated" && !session?.user?.id) {
+        router.push("/login?redirect=/dashboard");
+      }
+    }, [status, router, session]);
+
   useEffect(() => {
     setIsRouterReady(true);
   }, []);

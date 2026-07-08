@@ -20,7 +20,12 @@ import {
   Banknote,
   Receipt,
   Copy,
-  Check
+  Check,
+  User,
+  BookOpen,
+  Calendar,
+  Hash,
+  Tag
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { paymentService } from "@/helper/services/paymentService";
@@ -56,13 +61,12 @@ const PaymentManagement = ({ session }) => {
       const result = await paymentService.listPayments(session);
       
       if (result.success) {
-        // Ensure we have an array
         let paymentsData = result.data || [];
         
-        // If paymentsData is not an array, try to convert it
+        // Ensure we have an array
         if (!Array.isArray(paymentsData)) {
           if (typeof paymentsData === 'object' && paymentsData !== null) {
-            paymentsData = Object.values(paymentsData);
+            paymentsData = Object.values(paymentsData).flat();
           } else {
             paymentsData = [];
           }
@@ -100,11 +104,14 @@ const PaymentManagement = ({ session }) => {
       const search = searchTerm.toLowerCase();
       const filtered = payments.filter(payment => 
         (payment.order_id?.toLowerCase().includes(search) ||
-         payment.id?.toLowerCase().includes(search) ||
-         payment.user_name?.toLowerCase().includes(search) ||
-         payment.user_email?.toLowerCase().includes(search) ||
-         payment.course_title?.toLowerCase().includes(search) ||
-         payment.course_code?.toLowerCase().includes(search))
+         payment.payment_code?.toLowerCase().includes(search) ||
+         payment.id?.toString().includes(search) ||
+         payment.user_id?.toString().includes(search) ||
+         payment.course_id?.toString().includes(search) ||
+         payment.partner_order_id?.toLowerCase().includes(search) ||
+         payment.payment_method?.toLowerCase().includes(search) ||
+         payment.status?.toLowerCase().includes(search) ||
+         payment.payment_for?.toLowerCase().includes(search))
       );
       setFilteredPayments(filtered);
     }
@@ -112,6 +119,7 @@ const PaymentManagement = ({ session }) => {
 
   // Copy to clipboard
   const copyToClipboard = (text) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -125,7 +133,7 @@ const PaymentManagement = ({ session }) => {
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
-    }).format(amount);
+    }).format(parseFloat(amount));
   };
 
   // Format date
@@ -148,11 +156,14 @@ const PaymentManagement = ({ session }) => {
     const styles = {
       success: "bg-emerald-100 text-emerald-700",
       captured: "bg-emerald-100 text-emerald-700",
+      completed: "bg-emerald-100 text-emerald-700",
       failed: "bg-red-100 text-red-700",
+      failure: "bg-red-100 text-red-700",
       pending: "bg-amber-100 text-amber-700",
-      refunded: "bg-blue-100 text-blue-700",
+      initiated: "bg-blue-100 text-blue-700",
+      refunded: "bg-purple-100 text-purple-700",
       created: "bg-gray-100 text-gray-700",
-      authorized: "bg-purple-100 text-purple-700"
+      authorized: "bg-indigo-100 text-indigo-700"
     };
     return styles[s] || styles.created;
   };
@@ -163,13 +174,17 @@ const PaymentManagement = ({ session }) => {
     switch(s) {
       case 'success':
       case 'captured':
+      case 'completed':
         return <CheckCircle className="w-4 h-4 text-emerald-600" />;
       case 'failed':
+      case 'failure':
         return <XCircle className="w-4 h-4 text-red-600" />;
       case 'pending':
         return <Clock className="w-4 h-4 text-amber-600" />;
+      case 'initiated':
+        return <Clock className="w-4 h-4 text-blue-600" />;
       case 'refunded':
-        return <TrendingDown className="w-4 h-4 text-blue-600" />;
+        return <TrendingDown className="w-4 h-4 text-purple-600" />;
       default:
         return <AlertCircle className="w-4 h-4 text-gray-600" />;
     }
@@ -186,12 +201,25 @@ const PaymentManagement = ({ session }) => {
       case 'upi':
         return <Wallet className="w-4 h-4" />;
       case 'net banking':
+      case 'netbanking':
         return <Banknote className="w-4 h-4" />;
       case 'wallet':
         return <DollarSign className="w-4 h-4" />;
+      case 'razorpay':
+        return <Receipt className="w-4 h-4" />;
       default:
         return <Receipt className="w-4 h-4" />;
     }
+  };
+
+  // Get payment type label
+  const getPaymentTypeLabel = (type) => {
+    const labels = {
+      course_enrollment: "Course Enrollment",
+      subscription: "Subscription",
+      service: "Service Payment"
+    };
+    return labels[type] || type || "N/A";
   };
 
   return (
@@ -242,20 +270,6 @@ const PaymentManagement = ({ session }) => {
         
         <div className="bg-white p-4 rounded-xl border border-gray-200">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-gray-500">Failed</span>
-            <XCircle className="w-4 h-4 text-red-600" />
-          </div>
-          {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-          ) : (
-            <p className="text-lg font-bold text-red-600">
-              {stats.failedPayments || 0}
-            </p>
-          )}
-        </div>
-        
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
-          <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-500">Pending</span>
             <Clock className="w-4 h-4 text-amber-600" />
           </div>
@@ -264,6 +278,20 @@ const PaymentManagement = ({ session }) => {
           ) : (
             <p className="text-lg font-bold text-amber-600">
               {stats.pendingPayments || 0}
+            </p>
+          )}
+        </div>
+        
+        <div className="bg-white p-4 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-gray-500">Failed</span>
+            <XCircle className="w-4 h-4 text-red-600" />
+          </div>
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+          ) : (
+            <p className="text-lg font-bold text-red-600">
+              {stats.failedPayments || 0}
             </p>
           )}
         </div>
@@ -291,7 +319,7 @@ const PaymentManagement = ({ session }) => {
             <div className="flex-1 min-w-[200px] relative">
               <input
                 type="text"
-                placeholder="Search by order ID, user, email, course..."
+                placeholder="Search by Order ID, Payment Code, User ID, Course ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
@@ -343,7 +371,7 @@ const PaymentManagement = ({ session }) => {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order ID
+                    Payment Details
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     User
@@ -353,9 +381,6 @@ const PaymentManagement = ({ session }) => {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Amount
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Method
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -371,7 +396,7 @@ const PaymentManagement = ({ session }) => {
               <tbody className="divide-y divide-gray-200">
                 {filteredPayments.map((payment) => (
                   <tr 
-                    key={payment.id || payment.order_id} 
+                    key={payment.id} 
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => {
                       setSelectedPayment(payment);
@@ -379,60 +404,68 @@ const PaymentManagement = ({ session }) => {
                     }}
                   >
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono text-gray-900">
-                          {payment.order_id || payment.id?.slice(0, 8) || "N/A"}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyToClipboard(payment.order_id || payment.id || "N/A");
-                          }}
-                          className="p-1 hover:bg-gray-200 rounded transition-colors"
-                          title="Copy Order ID"
-                        >
-                          {copied ? (
-                            <Check className="w-3 h-3 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-3 h-3 text-gray-400" />
-                          )}
-                        </button>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono text-gray-900">
+                            {payment.payment_code || `PAY-${payment.id}`}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(payment.payment_code || `PAY-${payment.id}`);
+                            }}
+                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            title="Copy Payment Code"
+                          >
+                            {copied ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3 text-gray-400" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {getPaymentTypeLabel(payment.payment_for)}
+                        </p>
+                        {payment.partner_order_id && (
+                          <p className="text-xs text-gray-400 font-mono">
+                            Razorpay: {payment.partner_order_id}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 text-xs font-semibold flex-shrink-0">
-                          {payment.user_name?.charAt(0).toUpperCase() || "U"}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {payment.user_name || "N/A"}
-                          </p>
-                          <p className="text-xs text-gray-500">{payment.user_email || "N/A"}</p>
-                        </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          User #{payment.user_id}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {payment.payment_method || "N/A"}
+                        </p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div>
                         <p className="text-sm text-gray-900">
-                          {payment.course_title || "N/A"}
+                          Course #{payment.course_id}
                         </p>
-                        {payment.course_code && (
-                          <p className="text-xs text-gray-500">{payment.course_code}</p>
+                        {payment.discount && parseFloat(payment.discount) > 0 && (
+                          <p className="text-xs text-emerald-600">
+                            Discount: {formatCurrency(payment.discount)}
+                          </p>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(payment.amount)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        {getPaymentMethodIcon(payment.payment_method)}
-                        <span className="text-sm text-gray-600 capitalize">
-                          {payment.payment_method || "N/A"}
-                        </span>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {formatCurrency(payment.amount_paid || payment.price)}
+                        </p>
+                        {payment.price && payment.price !== payment.amount_paid && (
+                          <p className="text-xs text-gray-400 line-through">
+                            {formatCurrency(payment.price)}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -440,6 +473,11 @@ const PaymentManagement = ({ session }) => {
                         {getStatusIcon(payment.status)}
                         {payment.status || "N/A"}
                       </span>
+                      {payment.pg_source && (
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {payment.pg_source}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {formatDate(payment.created_at)}
@@ -467,8 +505,8 @@ const PaymentManagement = ({ session }) => {
 
       {/* Payment Detail Modal */}
       {showPaymentDetail && selectedPayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-gray-700" />
@@ -494,31 +532,62 @@ const PaymentManagement = ({ session }) => {
               {/* Payment Info */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500">Payment Code</p>
+                  <p className="text-sm font-mono text-gray-900">
+                    {selectedPayment.payment_code || "N/A"}
+                  </p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-xs text-gray-500">Order ID</p>
                   <p className="text-sm font-mono text-gray-900 break-all">
-                    {selectedPayment.order_id || selectedPayment.id || "N/A"}
+                    {selectedPayment.order_id || "N/A"}
                   </p>
                 </div>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500">Payment ID</p>
+                  <p className="text-xs text-gray-500">Razorpay Order ID</p>
                   <p className="text-sm font-mono text-gray-900 break-all">
-                    {selectedPayment.payment_id || "N/A"}
+                    {selectedPayment.partner_order_id || "N/A"}
                   </p>
                 </div>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500">Amount</p>
+                  <p className="text-xs text-gray-500">Payment Type</p>
+                  <p className="text-sm font-medium text-gray-900 capitalize">
+                    {getPaymentTypeLabel(selectedPayment.payment_for)}
+                  </p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500">Amount Paid</p>
                   <p className="text-lg font-bold text-emerald-600">
-                    {formatCurrency(selectedPayment.amount)}
+                    {formatCurrency(selectedPayment.amount_paid)}
                   </p>
                 </div>
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-xs text-gray-500">Payment Method</p>
-                  <p className="text-sm font-medium text-gray-900 capitalize">
+                  <p className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                    {getPaymentMethodIcon(selectedPayment.payment_method)}
                     {selectedPayment.payment_method || "N/A"}
                   </p>
                 </div>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500">Date</p>
+                  <p className="text-xs text-gray-500">Original Price</p>
+                  <p className="text-sm text-gray-900">
+                    {formatCurrency(selectedPayment.price)}
+                  </p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500">Discount</p>
+                  <p className="text-sm text-emerald-600">
+                    {formatCurrency(selectedPayment.discount)}
+                  </p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500">PG Source</p>
+                  <p className="text-sm text-gray-900">
+                    {selectedPayment.pg_source || "N/A"}
+                  </p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500">Created At</p>
                   <p className="text-sm text-gray-900">
                     {formatDate(selectedPayment.created_at)}
                   </p>
@@ -531,51 +600,45 @@ const PaymentManagement = ({ session }) => {
                 </div>
               </div>
 
-              {/* User Info */}
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">User Information</h4>
-                <div className="grid grid-cols-2 gap-4 p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="text-xs text-gray-500">Name</p>
-                    <p className="text-sm text-gray-900">{selectedPayment.user_name || "N/A"}</p>
+              {/* User & Course Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <User className="w-4 h-4 text-blue-600" />
+                    User Information
+                  </h4>
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-gray-900">
+                      <span className="text-gray-500">User ID:</span> {selectedPayment.user_id}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Email</p>
-                    <p className="text-sm text-gray-900">{selectedPayment.user_email || "N/A"}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-purple-600" />
+                    Course Information
+                  </h4>
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <p className="text-sm text-gray-900">
+                      <span className="text-gray-500">Course ID:</span> {selectedPayment.course_id}
+                    </p>
                   </div>
-                  {selectedPayment.user_id && (
-                    <div>
-                      <p className="text-xs text-gray-500">User ID</p>
-                      <p className="text-sm text-gray-900">{selectedPayment.user_id}</p>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Course Info */}
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Course Information</h4>
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <p className="text-sm text-gray-900">{selectedPayment.course_title || "N/A"}</p>
-                  {selectedPayment.course_code && (
-                    <p className="text-xs text-gray-500">Code: {selectedPayment.course_code}</p>
-                  )}
-                  {selectedPayment.course_id && (
-                    <p className="text-xs text-gray-500">ID: {selectedPayment.course_id}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Payment Metadata */}
-              {selectedPayment.metadata && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Additional Details</h4>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <pre className="text-xs text-gray-600 whitespace-pre-wrap break-all">
-                      {typeof selectedPayment.metadata === 'string' 
-                        ? selectedPayment.metadata
-                        : JSON.stringify(selectedPayment.metadata, null, 2)}
-                    </pre>
+              {/* Additional Info */}
+              {selectedPayment.partner_txn_id && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Transaction Details</h4>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-900">
+                      <span className="text-gray-500">Transaction ID:</span> {selectedPayment.partner_txn_id}
+                    </p>
+                    {selectedPayment.partner_transaction_time && (
+                      <p className="text-sm text-gray-900 mt-1">
+                        <span className="text-gray-500">Transaction Time:</span> {formatDate(selectedPayment.partner_transaction_time)}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

@@ -1,4 +1,4 @@
-// services/paymentService.js
+// helper/services/paymentService.js
 
 import fetchApiResponse from "@/helper/api_data_store";
 
@@ -17,52 +17,31 @@ export const paymentService = {
       });
 
       if (response.meta?.status === 200 && response.data) {
-        // Handle different response structures
-        let paymentsData = response.data;
+        let paymentsArray = [];
         
-        // If data has payments_list property, use that
-        if (paymentsData.payments_list) {
-          // Check if payments_list is an object with numeric keys
-          if (typeof paymentsData.payments_list === 'object' && !Array.isArray(paymentsData.payments_list)) {
-            // Convert object to array
-            const paymentsArray = Object.values(paymentsData.payments_list);
-            return { 
-              success: true, 
-              data: paymentsArray,
-              pagination: response.meta?.pagination || {}
-            };
-          } else if (Array.isArray(paymentsData.payments_list)) {
-            // If it's already an array
-            return { 
-              success: true, 
-              data: paymentsData.payments_list,
-              pagination: response.meta?.pagination || {}
-            };
+        // Handle the specific response structure
+        if (response.data.payments_list) {
+          // Check if payments_list has course_enrollment
+          if (response.data.payments_list.course_enrollment) {
+            paymentsArray = response.data.payments_list.course_enrollment;
+          } else {
+            // If payments_list is an object with other keys, try to get all values
+            paymentsArray = Object.values(response.data.payments_list).flat();
           }
+        } else if (Array.isArray(response.data)) {
+          paymentsArray = response.data;
+        } else if (typeof response.data === 'object' && response.data !== null) {
+          paymentsArray = Object.values(response.data).flat();
         }
         
-        // If data is directly an array
-        if (Array.isArray(paymentsData)) {
-          return { 
-            success: true, 
-            data: paymentsData,
-            pagination: response.meta?.pagination || {}
-          };
-        }
-        
-        // If data is an object with numeric keys (like {0: {...}, 1: {...}})
-        if (typeof paymentsData === 'object' && paymentsData !== null) {
-          const paymentsArray = Object.values(paymentsData);
-          return { 
-            success: true, 
-            data: paymentsArray,
-            pagination: response.meta?.pagination || {}
-          };
+        // Ensure we have an array
+        if (!Array.isArray(paymentsArray)) {
+          paymentsArray = [];
         }
         
         return { 
           success: true, 
-          data: [],
+          data: paymentsArray,
           pagination: response.meta?.pagination || {}
         };
       }
@@ -81,11 +60,9 @@ export const paymentService = {
     try {
       // Ensure payments is an array
       let paymentsArray = payments;
-      
-      // If payments is not an array, try to convert it
       if (!Array.isArray(paymentsArray)) {
         if (typeof paymentsArray === 'object' && paymentsArray !== null) {
-          paymentsArray = Object.values(paymentsArray);
+          paymentsArray = Object.values(paymentsArray).flat();
         } else {
           paymentsArray = [];
         }
@@ -131,17 +108,18 @@ export const paymentService = {
       monthAgo.setMonth(monthAgo.getMonth() - 1);
       
       paymentsArray.forEach(payment => {
-        const amount = parseFloat(payment.amount) || 0;
+        // Use amount_paid as the actual amount
+        const amount = parseFloat(payment.amount_paid) || parseFloat(payment.amount) || 0;
         const status = payment.status?.toLowerCase() || 'unknown';
         const date = new Date(payment.created_at);
         
         // Total revenue and status counts
-        if (status === 'success' || status === 'captured') {
+        if (status === 'success' || status === 'captured' || status === 'completed') {
           stats.totalRevenue += amount;
           stats.successfulPayments++;
-        } else if (status === 'failed') {
+        } else if (status === 'failed' || status === 'failure') {
           stats.failedPayments++;
-        } else if (status === 'pending') {
+        } else if (status === 'pending' || status === 'initiated') {
           stats.pendingPayments++;
         } else if (status === 'refunded') {
           stats.refundedPayments++;
