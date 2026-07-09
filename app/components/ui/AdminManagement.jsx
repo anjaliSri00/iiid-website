@@ -32,8 +32,12 @@ import {
 import { toast } from "react-toastify";
 import UserDetailModal from "./UserDetailModal";
 import { adminService } from "@/helper/services/adminService";
+import fetchApiResponse from "@/helper/api_data_store";
+import useCSVExport from "@/helper/hooks/useCSVExport";
+import { useSession } from "next-auth/react";
 
-const AdminManagement = ({ session }) => {
+const AdminManagement = ( ) => {
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
@@ -41,6 +45,9 @@ const AdminManagement = ({ session }) => {
   const [expandedUser, setExpandedUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetail, setShowUserDetail] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  //  const { isExporting, exportUsers } = useCSVExport(session);
 
   // User filters
   const [userFilters, setUserFilters] = useState({
@@ -297,6 +304,72 @@ const AdminManagement = ({ session }) => {
     return 0;
   };
 
+  //  const exportdata = async () => {
+  //   try {
+  //     await exportUsers();
+  //   } catch (error) {
+  //     // Error handled by hook
+  //     console.error('Export failed:', error);
+  //   }
+  // };
+
+ const exportdata = async () => {
+  if (isExporting) return;
+  
+  setIsExporting(true);
+  try {
+    toast.info("Preparing CSV export...");
+    
+    const queryParams = new URLSearchParams();
+    if (userFilters.search) queryParams.append('search', userFilters.search);
+    if (userFilters.role) queryParams.append('role', userFilters.role);
+    if (userFilters.is_active) queryParams.append('is_active', userFilters.is_active);
+    
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/export-csv?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          "Access-Token": session?.accessToken,
+          "Refresh-Token":session?.refreshToken       
+         },
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to export CSV');
+    }
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `users_${new Date().toISOString().slice(0,10)}.csv`;
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+    
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success(`CSV exported successfully!`);
+  } catch (error) {
+    console.error('Export error:', error);
+    toast.error(error.message || 'Failed to export CSV');
+  } finally {
+    setIsExporting(false);
+  }
+};
+
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
@@ -334,6 +407,28 @@ const AdminManagement = ({ session }) => {
               </span>
             )}
           </button>
+
+          <button 
+  onClick={exportdata} 
+  disabled={isExporting}
+  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+    isExporting 
+      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+  }`}
+>
+  {isExporting ? (
+    <>
+      <Loader2 className="w-4 h-4 animate-spin" />
+      <span>Exporting...</span>
+    </>
+  ) : (
+    <>
+      <Download className="w-4 h-4" />
+      <span>Export Users Data</span>
+    </>
+  )}
+</button>
         </div>
       </div>
 

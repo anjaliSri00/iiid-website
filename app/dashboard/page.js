@@ -23,6 +23,7 @@ import {
   Shield,
   ArrowRight,
   Activity,
+  Play,
   Clock,
   Award,
   TrendingUp,
@@ -44,7 +45,8 @@ import {
   DollarSign,
   RefreshCw,
   IndianRupee,
-  Receipt
+  Receipt,
+  HelpCircle,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import fetchApiResponse from "@/helper/api_data_store";
@@ -60,6 +62,7 @@ import AdminManagement from "../components/ui/AdminManagement";
 import PaymentManagement from "../components/ui/PaymentManagement";
 import { adminService } from "@/helper/services/adminService";
 import { paymentService } from "@/helper/services/paymentService";
+import FAQManagement from "../components/ui/FAQManagement";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -87,7 +90,7 @@ export default function DashboardPage() {
     publishedCourses: 0,
     draftCourses: 0,
     totalLessons: 0,
-      recentPayments: [],
+    recentPayments: [],
     recentUsers: [],
     recentEnrollments: [],
     enrollmentGrowth: 0,
@@ -156,6 +159,7 @@ export default function DashboardPage() {
   const [originalLessons, setOriginalLessons] = useState({});
   const [allPrograms, setAllPrograms] = useState([]);
   const [isAllProgramsFetched, setIsAllProgramsFetched] = useState(false);
+  const [selectedAssessmentIndex, setSelectedAssessmentIndex] = useState(null);
 
   const [filters, setFilters] = useState({
     category: "",
@@ -207,7 +211,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isAdmin && (filters.category || filters.level || filters.status)) {
-      refreshPrograms();   
+      refreshPrograms();
     }
   }, [filters.category, filters.level, filters.status]);
 
@@ -225,18 +229,16 @@ export default function DashboardPage() {
   };
 
   const getUniqueValues = (key) => {
-    const values = allPrograms
-      .map((p) => p[key])
-      .filter(Boolean);
-    
+    const values = allPrograms.map((p) => p[key]).filter(Boolean);
+
     const uniqueMap = new Map();
-    values.forEach(val => {
+    values.forEach((val) => {
       const lowerKey = val.toLowerCase();
       if (!uniqueMap.has(lowerKey)) {
         uniqueMap.set(lowerKey, val);
       }
     });
-    
+
     return Array.from(uniqueMap.values());
   };
 
@@ -262,37 +264,37 @@ export default function DashboardPage() {
   }, [programs.length]);
 
   // Helper function to calculate growth
- const calculateGrowth = (data) => {
-  if (!data || data.length < 2) return 0;
-  const now = new Date();
-  const lastMonth = new Date(now);
-  lastMonth.setMonth(lastMonth.getMonth() - 1);
-  
-  const recent = data.filter(item => {
-    const date = new Date(item.created_at || item.enrolled_at);
-    return date > lastMonth;
-  });
-  const total = data.length;
-  
-  return total > 0 ? Math.round((recent.length / total) * 100) : 0;
-};
+  const calculateGrowth = (data) => {
+    if (!data || data.length < 2) return 0;
+    const now = new Date();
+    const lastMonth = new Date(now);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+
+    const recent = data.filter((item) => {
+      const date = new Date(item.created_at || item.enrolled_at);
+      return date > lastMonth;
+    });
+    const total = data.length;
+
+    return total > 0 ? Math.round((recent.length / total) * 100) : 0;
+  };
 
   // Add this function near other helper functions (around line 200-300)
 
-// Format currency in Indian Rupees
-const formatCurrency = (amount) => {
-  if (!amount) return "₹0";
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  }).format(parseFloat(amount));
-};
+  // Format currency in Indian Rupees
+  const formatCurrency = (amount) => {
+    if (!amount) return "₹0";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(parseFloat(amount));
+  };
 
   const fetchAdminStats = async () => {
     if (!isAdmin) return;
-    
+
     setStatsLoading(true);
     try {
       // Fetch users
@@ -301,18 +303,18 @@ const formatCurrency = (amount) => {
       const enrollmentsResult = await adminService.listEnrollments({}, session);
       // Fetch payments
       const paymentsResult = await paymentService.listPayments(session);
-      
+
       if (usersResult.success && enrollmentsResult.success) {
         const users = usersResult.data || [];
         const enrollments = enrollmentsResult.data || [];
         let payments = [];
-        
+
         // Process payments data
         if (paymentsResult.success) {
           let paymentsData = paymentsResult.data || [];
           // Ensure we have an array
           if (!Array.isArray(paymentsData)) {
-            if (typeof paymentsData === 'object' && paymentsData !== null) {
+            if (typeof paymentsData === "object" && paymentsData !== null) {
               paymentsData = Object.values(paymentsData).flat();
             } else {
               paymentsData = [];
@@ -320,84 +322,102 @@ const formatCurrency = (amount) => {
           }
           payments = paymentsData;
         }
-        
+
         // Calculate stats
-        const activeUsers = users.filter(u => u.is_active).length;
-        const inactiveUsers = users.filter(u => !u.is_active).length;
-        
-        const students = users.filter(u => {
-          const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
-          return roles.some(r => r?.toLowerCase() === 'student');
+        const activeUsers = users.filter((u) => u.is_active).length;
+        const inactiveUsers = users.filter((u) => !u.is_active).length;
+
+        const students = users.filter((u) => {
+          const roles = Array.isArray(u.role_type)
+            ? u.role_type
+            : [u.role_type];
+          return roles.some((r) => r?.toLowerCase() === "student");
         }).length;
-        
-        const instructors = users.filter(u => {
-          const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
-          return roles.some(r => r?.toLowerCase() === 'instructor');
+
+        const instructors = users.filter((u) => {
+          const roles = Array.isArray(u.role_type)
+            ? u.role_type
+            : [u.role_type];
+          return roles.some((r) => r?.toLowerCase() === "instructor");
         }).length;
-        
-        const admins = users.filter(u => {
-          const roles = Array.isArray(u.role_type) ? u.role_type : [u.role_type];
-          return roles.some(r => r?.toLowerCase() === 'admin' || r?.toLowerCase() === 'internal');
+
+        const admins = users.filter((u) => {
+          const roles = Array.isArray(u.role_type)
+            ? u.role_type
+            : [u.role_type];
+          return roles.some(
+            (r) =>
+              r?.toLowerCase() === "admin" || r?.toLowerCase() === "internal",
+          );
         }).length;
-        
-        const activeEnrollments = enrollments.filter(e => 
-          (e.status === 'active' || e.enrollment_status === 'active')
+
+        const activeEnrollments = enrollments.filter(
+          (e) => e.status === "active" || e.enrollment_status === "active",
         ).length;
-        
-        const pendingEnrollments = enrollments.filter(e => 
-          (e.status === 'pending' || e.enrollment_status === 'pending')
+
+        const pendingEnrollments = enrollments.filter(
+          (e) => e.status === "pending" || e.enrollment_status === "pending",
         ).length;
-        
-        const completedEnrollments = enrollments.filter(e => 
-          (e.status === 'completed' || e.enrollment_status === 'completed')
+
+        const completedEnrollments = enrollments.filter(
+          (e) =>
+            e.status === "completed" || e.enrollment_status === "completed",
         ).length;
-        
+
         // Calculate payment statistics
-        const successfulPayments = payments.filter(p => 
-          p.status?.toLowerCase() === 'success' || 
-          p.status?.toLowerCase() === 'captured' ||
-          p.status?.toLowerCase() === 'completed'
+        const successfulPayments = payments.filter(
+          (p) =>
+            p.status?.toLowerCase() === "success" ||
+            p.status?.toLowerCase() === "captured" ||
+            p.status?.toLowerCase() === "completed",
         ).length;
-        
-        const failedPayments = payments.filter(p => 
-          p.status?.toLowerCase() === 'failed' || 
-          p.status?.toLowerCase() === 'failure'
+
+        const failedPayments = payments.filter(
+          (p) =>
+            p.status?.toLowerCase() === "failed" ||
+            p.status?.toLowerCase() === "failure",
         ).length;
-        
-        const pendingPayments = payments.filter(p => 
-          p.status?.toLowerCase() === 'pending' || 
-          p.status?.toLowerCase() === 'initiated'
+
+        const pendingPayments = payments.filter(
+          (p) =>
+            p.status?.toLowerCase() === "pending" ||
+            p.status?.toLowerCase() === "initiated",
         ).length;
-        
-        const refundedPayments = payments.filter(p => 
-          p.status?.toLowerCase() === 'refunded'
+
+        const refundedPayments = payments.filter(
+          (p) => p.status?.toLowerCase() === "refunded",
         ).length;
-        
+
         // Calculate total revenue from payments (only successful ones)
         const totalRevenue = payments.reduce((total, p) => {
           const status = p.status?.toLowerCase();
-          if (status === 'success' || status === 'captured' || status === 'completed') {
-            const amount = parseFloat(p.amount_paid) || parseFloat(p.amount) || 0;
+          if (
+            status === "success" ||
+            status === "captured" ||
+            status === "completed"
+          ) {
+            const amount =
+              parseFloat(p.amount_paid) || parseFloat(p.amount) || 0;
             return total + amount;
           }
           return total;
         }, 0);
-        
+
         // Get recent users (last 5)
         const recentUsers = [...users]
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 5);
-        
+
         // Get recent enrollments (last 5)
         const recentEnrollments = [...enrollments]
           .sort((a, b) => new Date(b.enrolled_at) - new Date(a.enrolled_at))
           .slice(0, 5);
-        
+
         // Get recent payments (last 5)
         const recentPayments = [...payments]
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 5);
-        
+
         setAdminStats({
           totalUsers: users.length,
           activeUsers,
@@ -410,9 +430,13 @@ const formatCurrency = (amount) => {
           instructorsCount: instructors,
           adminsCount: admins,
           totalCourses: programs.length,
-          publishedCourses: programs.filter(p => p.status === 'published').length,
-          draftCourses: programs.filter(p => p.status === 'draft').length,
-          totalLessons: programs.reduce((total, p) => total + (p.lessons?.length || 0), 0),
+          publishedCourses: programs.filter((p) => p.status === "published")
+            .length,
+          draftCourses: programs.filter((p) => p.status === "draft").length,
+          totalLessons: programs.reduce(
+            (total, p) => total + (p.lessons?.length || 0),
+            0,
+          ),
           recentUsers,
           recentEnrollments,
           recentPayments,
@@ -425,7 +449,8 @@ const formatCurrency = (amount) => {
           failedPayments,
           pendingPayments,
           refundedPayments,
-          averageAmount: payments.length > 0 ? totalRevenue / payments.length : 0,
+          averageAmount:
+            payments.length > 0 ? totalRevenue / payments.length : 0,
         });
       }
     } catch (error) {
@@ -437,7 +462,7 @@ const formatCurrency = (amount) => {
   const fetchAllPrograms = async () => {
     try {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`;
-      
+
       const response = await fetchApiResponse(url, {
         method: "GET",
         headers: {
@@ -489,7 +514,7 @@ const formatCurrency = (amount) => {
             }
           }),
         );
-        
+
         setAllPrograms(mappedPrograms);
         setIsAllProgramsFetched(true);
         return mappedPrograms;
@@ -555,7 +580,7 @@ const formatCurrency = (amount) => {
                 if (courseData.assessment) {
                   setAssessments((prev) => ({
                     ...prev,
-                    [course.id]: courseData.assessment,
+                    [course.id]: [courseData.assessment],
                   }));
                 }
                 return {
@@ -795,11 +820,40 @@ const formatCurrency = (amount) => {
         },
       );
       if (response.meta?.status === 200 && response.data) {
+        if (
+          response.data.assessments &&
+          Array.isArray(response.data.assessments)
+        ) {
+          setAssessments((prev) => ({
+            ...prev,
+            [courseId]: response.data.assessments,
+          }));
+        } else if (response.data.assessment) {
+          // If API returns single assessment, wrap in array
+          setAssessments((prev) => ({
+            ...prev,
+            [courseId]: [response.data.assessment],
+          }));
+        }
         return response.data;
       }
       return null;
     } catch (error) {
       console.error("Error fetching course details:", error);
+      return null;
+    }
+  };
+
+  const refreshAssessmentData = async (courseId) => {
+    try {
+      const courseDetails = await fetchCourseDetails(courseId);
+      if (courseDetails) {
+        // The fetchCourseDetails already updates the assessments state
+        return courseDetails;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error refreshing assessment data:", error);
       return null;
     }
   };
@@ -1941,14 +1995,17 @@ const formatCurrency = (amount) => {
   // Assessment handlers
   const handleOpenCreateAssessment = (courseId) => {
     setSelectedAssessmentId(courseId);
+    setSelectedAssessmentIndex(null);
     setEditingAssessment(null);
     resetAssessmentForm();
     setAssessmentSuccess(false);
     setIsAssessmentModalOpen(true);
   };
 
-  const handleOpenEditAssessment = (courseId, assessment) => {
+  const handleOpenEditAssessment = (courseId, assessment, index) => {
     setSelectedAssessmentId(courseId);
+    setSelectedAssessmentIndex(index);
+
     setEditingAssessment({
       ...assessment,
       id: assessment.id,
@@ -2024,7 +2081,7 @@ const formatCurrency = (amount) => {
     <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
       {/* Top Navigation */}
       <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200/60 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-linear-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
@@ -2056,7 +2113,7 @@ const formatCurrency = (amount) => {
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left Column - Profile Info */}
@@ -2212,20 +2269,33 @@ const formatCurrency = (amount) => {
                         <Users className="w-4 h-4 inline mr-2" />
                         Management
                       </button>
-                     
                     </>
                   )}
-                   <button
-                        onClick={() => setActiveTab("payments")}
-                        className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                          activeTab === "payments"
-                            ? "border-red-600 text-red-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4 inline mr-2" />
-                        Payments
-                      </button>
+                  <button
+                    onClick={() => setActiveTab("payments")}
+                    className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      activeTab === "payments"
+                        ? "border-red-600 text-red-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4 inline mr-2" />
+                    Payments
+                  </button>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => setActiveTab("faqs")}
+                      className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === "faqs"
+                          ? "border-red-600 text-red-600"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
+                    >
+                      <HelpCircle className="w-4 h-4 inline mr-2" />
+                      FAQs
+                    </button>
+                  )}
                   <button
                     onClick={() => setActiveTab("password")}
                     className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
@@ -2281,634 +2351,927 @@ const formatCurrency = (amount) => {
                   </div>
 
                   {isAdmin ? (
-                    // Admin Overview with all stats
                     <div>
                       {statsLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+                        <div className="flex flex-col items-center justify-center py-12">
+                          <Loader2 className="w-10 h-10 animate-spin text-red-600" />
+                          <p className="mt-3 text-gray-500 font-medium">
+                            Loading dashboard data...
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            Please wait while we fetch the latest stats
+                          </p>
                         </div>
                       ) : (
                         <>
-                          {/* Main Stats Grid */}
+                          {/* Main Stats Grid - Consolidated */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                            {/* Total Users */}
+                            <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                                    Total Users
+                                  </p>
+                                  <p className="text-3xl font-bold text-gray-900">
+                                    {adminStats.totalUsers}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                      {adminStats.activeUsers} Active
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full">
+                                      {adminStats.inactiveUsers} Inactive
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl group-hover:scale-110 transition-transform">
+                                  <Users className="w-6 h-6 text-blue-600" />
+                                </div>
+                              </div>
+                              <div className="mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000"
+                                    style={{
+                                      width: `${adminStats.totalUsers > 0 ? Math.min((adminStats.activeUsers / adminStats.totalUsers) * 100, 100) : 0}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-blue-600">
+                                  {adminStats.totalUsers > 0
+                                    ? Math.round(
+                                        (adminStats.activeUsers /
+                                          adminStats.totalUsers) *
+                                          100,
+                                      )
+                                    : 0}
+                                  %
+                                </span>
+                              </div>
+                            </div>
 
-{/* Main Stats Grid */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-    <div className="flex items-center justify-between mb-2">
-      <div className="p-2 bg-blue-200 rounded-lg">
-        <Users className="w-5 h-5 text-blue-700" />
-      </div>
-      <span className="text-xs font-medium text-blue-600 bg-blue-200 px-2 py-0.5 rounded-full">
-        +{adminStats.userGrowth}%
-      </span>
-    </div>
-    <h4 className="text-sm font-medium text-gray-600">Total Users</h4>
-    <p className="text-2xl font-bold text-blue-700">
-      {adminStats.totalUsers}
-    </p>
-    <div className="flex gap-3 mt-1">
-      <span className="text-xs text-emerald-600">
-        Active: {adminStats.activeUsers}
-      </span>
-      <span className="text-xs text-gray-400">
-        Inactive: {adminStats.inactiveUsers}
-      </span>
-    </div>
-  </div>
+                            {/* Total Courses */}
+                            <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-emerald-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                                    Total Courses
+                                  </p>
+                                  <p className="text-3xl font-bold text-gray-900">
+                                    {adminStats.totalCourses}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                      {adminStats.publishedCourses} Published
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                      {adminStats.draftCourses} Draft
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl group-hover:scale-110 transition-transform">
+                                  <BookOpen className="w-6 h-6 text-emerald-600" />
+                                </div>
+                              </div>
+                              <div className="mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-1000"
+                                    style={{
+                                      width: `${adminStats.totalCourses > 0 ? Math.min((adminStats.publishedCourses / adminStats.totalCourses) * 100, 100) : 0}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-emerald-600">
+                                  {adminStats.totalCourses > 0
+                                    ? Math.round(
+                                        (adminStats.publishedCourses /
+                                          adminStats.totalCourses) *
+                                          100,
+                                      )
+                                    : 0}
+                                  %
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-400 mt-2">
+                                {adminStats.totalLessons} total lessons
+                              </p>
+                            </div>
 
-  <div className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
-    <div className="flex items-center justify-between mb-2">
-      <div className="p-2 bg-emerald-200 rounded-lg">
-        <BookOpen className="w-5 h-5 text-emerald-700" />
-      </div>
-      <span className="text-xs font-medium text-emerald-600 bg-emerald-200 px-2 py-0.5 rounded-full">
-        {adminStats.publishedCourses} Published
-      </span>
-    </div>
-    <h4 className="text-sm font-medium text-gray-600">Total Courses</h4>
-    <p className="text-2xl font-bold text-emerald-700">
-      {adminStats.totalCourses}
-    </p>
-    <div className="flex gap-3 mt-1">
-      <span className="text-xs text-amber-600">
-        Draft: {adminStats.draftCourses}
-      </span>
-      <span className="text-xs text-gray-400">
-        Lessons: {adminStats.totalLessons}
-      </span>
-    </div>
-  </div>
+                            {/* Enrollments Card */}
+                            <div className="group bg-white rounded-2xl p-5 relative shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                                    Enrollments
+                                  </p>
+                                  <p className="text-3xl font-bold text-gray-900">
+                                    {adminStats.totalEnrollments}
+                                  </p>
+                                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                      {adminStats.activeEnrollments} Active
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                      {adminStats.pendingEnrollments} Pending
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                      {adminStats.completedEnrollments}{" "}
+                                      Completed
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shrink-0 group-hover:scale-110 transition-transform ml-3">
+                                  <GraduationCap className="w-6 h-6 text-purple-600" />
+                                </div>
+                              </div>
+                              <div className="mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-1000"
+                                    style={{
+                                      width: `${adminStats.totalEnrollments > 0 ? Math.min((adminStats.activeEnrollments / adminStats.totalEnrollments) * 100, 100) : 0}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-purple-600 flex-shrink-0">
+                                  {adminStats.totalEnrollments > 0
+                                    ? Math.round(
+                                        (adminStats.activeEnrollments /
+                                          adminStats.totalEnrollments) *
+                                          100,
+                                      )
+                                    : 0}
+                                  %
+                                </span>
+                              </div>
+                            </div>
 
-  <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-    <div className="flex items-center justify-between mb-2">
-      <div className="p-2 bg-purple-200 rounded-lg">
-        <GraduationCap className="w-5 h-5 text-purple-700" />
-      </div>
-      <span className="text-xs font-medium text-purple-600 bg-purple-200 px-2 py-0.5 rounded-full">
-        +{adminStats.enrollmentGrowth}%
-      </span>
-    </div>
-    <h4 className="text-sm font-medium text-gray-600">Enrollments</h4>
-    <p className="text-2xl font-bold text-purple-700">
-      {adminStats.totalEnrollments}
-    </p>
-    <div className="flex gap-3 mt-1">
-      <span className="text-xs text-emerald-600">
-        Active: {adminStats.activeEnrollments}
-      </span>
-      <span className="text-xs text-amber-600">
-        Pending: {adminStats.pendingEnrollments}
-      </span>
-    </div>
-  </div>
+                            {/* Revenue Card */}
+                            <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                                    Revenue
+                                  </p>
+                                  <p className="text-3xl font-bold text-amber-600">
+                                    {formatCurrency(adminStats.totalRevenue)}
+                                  </p>
+                                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                      {adminStats.successfulPayments} Success
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                      {adminStats.failedPayments} Failed
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                      {adminStats.totalPayments} Total
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform ml-3">
+                                  <IndianRupee className="w-6 h-6 text-amber-600" />
+                                </div>
+                              </div>
+                              <div className="mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-1000"
+                                    style={{
+                                      width: `${adminStats.totalPayments > 0 ? Math.min((adminStats.successfulPayments / adminStats.totalPayments) * 100, 100) : 0}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-amber-600 flex-shrink-0">
+                                  {adminStats.totalPayments > 0
+                                    ? Math.round(
+                                        (adminStats.successfulPayments /
+                                          adminStats.totalPayments) *
+                                          100,
+                                      )
+                                    : 0}
+                                  %
+                                </span>
+                              </div>
+                            </div>
+                          </div>
 
-  <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
-    <div className="flex items-center justify-between mb-2">
-      <div className="p-2 bg-amber-200 rounded-lg">
-        <IndianRupee className="w-5 h-5 text-amber-700" />
-      </div>
-      <span className="text-xs font-medium text-amber-600 bg-amber-200 px-2 py-0.5 rounded-full">
-        {adminStats.totalPayments} Payments
-      </span>
-    </div>
-    <h4 className="text-sm font-medium text-gray-600">Total Revenue</h4>
-    <p className="text-2xl font-bold text-amber-700">
-      {formatCurrency(adminStats.totalRevenue)}
-    </p>
-    <div className="flex gap-3 mt-1">
-      <span className="text-xs text-emerald-600">
-        Success: {adminStats.successfulPayments}
-      </span>
-      <span className="text-xs text-red-600">
-        Failed: {adminStats.failedPayments}
-      </span>
-    </div>
-  </div>
-</div>
+                          {/* Recent Activity - Consolidated */}
+                          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-100">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                  <Activity className="w-4 h-4 text-red-500" />
+                                  Recent Activity
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setActiveTab("admin")}
+                                    className="text-xs text-red-600 hover:text-red-700 font-medium"
+                                  >
+                                    View All Users
+                                  </button>
+                                  <span className="w-px h-4 bg-gray-200"></span>
+                                  <button
+                                    onClick={() => setActiveTab("payments")}
+                                    className="text-xs text-red-600 hover:text-red-700 font-medium"
+                                  >
+                                    View All Payments
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
 
-{/* Payment Status Distribution */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-  {/* Existing User Role Distribution */}
-  <div className="bg-white p-4 rounded-xl border border-gray-200">
-    <h4 className="text-sm font-medium text-gray-700 mb-3">User Roles</h4>
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Students</span>
-        <span className="text-sm font-semibold text-blue-600">
-          {adminStats.studentsCount}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-blue-500 h-2 rounded-full transition-all"
-          style={{ 
-            width: `${adminStats.totalUsers > 0 ? (adminStats.studentsCount / adminStats.totalUsers) * 100 : 0}%` 
-          }}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Instructors</span>
-        <span className="text-sm font-semibold text-purple-600">
-          {adminStats.instructorsCount}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-purple-500 h-2 rounded-full transition-all"
-          style={{ 
-            width: `${adminStats.totalUsers > 0 ? (adminStats.instructorsCount / adminStats.totalUsers) * 100 : 0}%` 
-          }}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Admins</span>
-        <span className="text-sm font-semibold text-red-600">
-          {adminStats.adminsCount}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-red-500 h-2 rounded-full transition-all"
-          style={{ 
-            width: `${adminStats.totalUsers > 0 ? (adminStats.adminsCount / adminStats.totalUsers) * 100 : 0}%` 
-          }}
-        />
-      </div>
-    </div>
-  </div>
+                            <div className="divide-y divide-gray-100">
+                              {/* Recent Users */}
+                              {adminStats.recentUsers?.length > 0 && (
+                                <div className="p-4">
+                                  <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <Users className="w-3.5 h-3.5" />
+                                    Recent Users
+                                  </h5>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {adminStats.recentUsers
+                                      .slice(0, 3)
+                                      .map((user) => (
+                                        <div
+                                          key={user.id}
+                                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
+                                        >
+                                          <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center text-red-700 text-sm font-semibold flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            {user.full_name
+                                              ?.charAt(0)
+                                              .toUpperCase() || "U"}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                              {user.full_name || "N/A"}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate">
+                                              {user.email}
+                                            </p>
+                                          </div>
+                                          <span
+                                            className={`px-2 py-0.5 text-xs rounded-full ${
+                                              user.is_active
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : "bg-gray-100 text-gray-500"
+                                            }`}
+                                          >
+                                            {user.is_active
+                                              ? "Active"
+                                              : "Inactive"}
+                                          </span>
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
 
-  {/* Payment Status Distribution */}
-  <div className="bg-white p-4 rounded-xl border border-gray-200">
-    <h4 className="text-sm font-medium text-gray-700 mb-3">Payment Status</h4>
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Successful</span>
-        <span className="text-sm font-semibold text-emerald-600">
-          {adminStats.successfulPayments || 0}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-emerald-500 h-2 rounded-full transition-all"
-          style={{ 
-            width: `${adminStats.totalPayments > 0 ? (adminStats.successfulPayments / adminStats.totalPayments) * 100 : 0}%` 
-          }}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Pending</span>
-        <span className="text-sm font-semibold text-amber-600">
-          {adminStats.pendingPayments || 0}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-amber-500 h-2 rounded-full transition-all"
-          style={{ 
-            width: `${adminStats.totalPayments > 0 ? (adminStats.pendingPayments / adminStats.totalPayments) * 100 : 0}%` 
-          }}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Failed</span>
-        <span className="text-sm font-semibold text-red-600">
-          {adminStats.failedPayments || 0}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-red-500 h-2 rounded-full transition-all"
-          style={{ 
-            width: `${adminStats.totalPayments > 0 ? (adminStats.failedPayments / adminStats.totalPayments) * 100 : 0}%` 
-          }}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">Refunded</span>
-        <span className="text-sm font-semibold text-purple-600">
-          {adminStats.refundedPayments || 0}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-purple-500 h-2 rounded-full transition-all"
-          style={{ 
-            width: `${adminStats.totalPayments > 0 ? (adminStats.refundedPayments / adminStats.totalPayments) * 100 : 0}%` 
-          }}
-        />
-      </div>
-    </div>
-  </div>
+                              {/* Recent Enrollments */}
+                              {adminStats.recentEnrollments?.length > 0 && (
+                                <div className="p-4">
+                                  <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <GraduationCap className="w-3.5 h-3.5" />
+                                    Recent Enrollments
+                                  </h5>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {adminStats.recentEnrollments
+                                      .slice(0, 3)
+                                      .map((enrollment, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                                        >
+                                          <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center text-blue-700 text-sm font-semibold flex-shrink-0">
+                                            {enrollment.user_name
+                                              ?.charAt(0)
+                                              .toUpperCase() || "U"}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                              {enrollment.user_name || "N/A"}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate">
+                                              {enrollment.course_title ||
+                                                enrollment.course_name ||
+                                                "Course"}
+                                            </p>
+                                          </div>
+                                          <span
+                                            className={`px-2 py-0.5 text-xs rounded-full ${
+                                              enrollment.status === "active" ||
+                                              enrollment.enrollment_status ===
+                                                "active"
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : enrollment.status ===
+                                                      "completed" ||
+                                                    enrollment.enrollment_status ===
+                                                      "completed"
+                                                  ? "bg-blue-100 text-blue-700"
+                                                  : "bg-amber-100 text-amber-700"
+                                            }`}
+                                          >
+                                            {enrollment.status ||
+                                              enrollment.enrollment_status ||
+                                              "Pending"}
+                                          </span>
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
 
-  {/* Quick Stats - Updated with payment info */}
-  <div className="bg-white p-4 rounded-xl border border-gray-200">
-    <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Stats</h4>
-    <div className="space-y-3">
-      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-        <span className="text-sm text-gray-600">Total Revenue</span>
-        <span className="text-sm font-semibold text-emerald-600">
-          {formatCurrency(adminStats.totalRevenue)}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-        <span className="text-sm text-gray-600">Total Payments</span>
-        <span className="text-sm font-semibold text-blue-600">
-          {adminStats.totalPayments || 0}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-        <span className="text-sm text-gray-600">Avg Payment Amount</span>
-        <span className="text-sm font-semibold text-purple-600">
-          {formatCurrency(adminStats.averageAmount)}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-        <span className="text-sm text-gray-600">Active Users</span>
-        <span className="text-sm font-semibold text-emerald-600">
-          {adminStats.activeUsers}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-        <span className="text-sm text-gray-600">Published Courses</span>
-        <span className="text-sm font-semibold text-blue-600">
-          {adminStats.publishedCourses}
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+                              {/* Recent Payments */}
+                              {adminStats.recentPayments?.length > 0 && (
+                                <div className="p-4">
+                                  <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <Receipt className="w-3.5 h-3.5" />
+                                    Recent Payments
+                                  </h5>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {adminStats.recentPayments
+                                      .slice(0, 3)
+                                      .map((payment, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                                        >
+                                          <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center text-amber-700 text-sm font-semibold flex-shrink-0">
+                                            <IndianRupee className="w-5 h-5" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                              {payment.payment_code ||
+                                                `PAY-${payment.id}`}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate">
+                                              {formatCurrency(
+                                                payment.amount_paid ||
+                                                  payment.price,
+                                              )}
+                                              {payment.user_id &&
+                                                ` • User #${payment.user_id}`}
+                                            </p>
+                                          </div>
+                                          <span
+                                            className={`px-2 py-0.5 text-xs rounded-full ${
+                                              payment.status === "success" ||
+                                              payment.status === "captured" ||
+                                              payment.status === "completed"
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : payment.status === "failed"
+                                                  ? "bg-red-100 text-red-700"
+                                                  : "bg-amber-100 text-amber-700"
+                                            }`}
+                                          >
+                                            {payment.status || "Pending"}
+                                          </span>
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
 
-{/* Recent Activity - Added Recent Payments */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-  {/* Recent Users */}
-  <div className="bg-white p-4 rounded-xl border border-gray-200">
-    <div className="flex items-center justify-between mb-3">
-      <h4 className="text-sm font-medium text-gray-700">Recent Users</h4>
-      <button
-        onClick={() => setActiveTab("admin")}
-        className="text-xs text-red-600 hover:text-red-700"
-      >
-        View All
-      </button>
-    </div>
-    {adminStats.recentUsers?.length > 0 ? (
-      <div className="space-y-3">
-        {adminStats.recentUsers.map((user) => (
-          <div key={user.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-            <div className="w-8 h-8 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center text-red-700 text-xs font-semibold flex-shrink-0">
-              {user.full_name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {user.full_name || "N/A"}
-              </p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
-            </div>
-            <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(user.is_active ? 'active' : 'inactive')}`}>
-              {user.is_active ? "Active" : "Inactive"}
-            </span>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <p className="text-sm text-gray-400 text-center py-4">No recent users</p>
-    )}
-  </div>
-
-  {/* Recent Enrollments */}
-  <div className="bg-white p-4 rounded-xl border border-gray-200">
-    <div className="flex items-center justify-between mb-3">
-      <h4 className="text-sm font-medium text-gray-700">Recent Enrollments</h4>
-      <button
-        onClick={() => setActiveTab("admin")}
-        className="text-xs text-red-600 hover:text-red-700"
-      >
-        View All
-      </button>
-    </div>
-    {adminStats.recentEnrollments?.length > 0 ? (
-      <div className="space-y-3">
-        {adminStats.recentEnrollments.map((enrollment, idx) => (
-          <div key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-xs font-semibold flex-shrink-0">
-              {enrollment.user_name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {enrollment.user_name || "N/A"}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {enrollment.course_title || enrollment.course_name || "Course"}
-              </p>
-            </div>
-            <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(enrollment.status || enrollment.enrollment_status)}`}>
-              {enrollment.status || enrollment.enrollment_status || "Pending"}
-            </span>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <p className="text-sm text-gray-400 text-center py-4">No recent enrollments</p>
-    )}
-  </div>
-
-  {/* Recent Payments */}
-  <div className="bg-white p-4 rounded-xl border border-gray-200">
-    <div className="flex items-center justify-between mb-3">
-      <h4 className="text-sm font-medium text-gray-700">Recent Payments</h4>
-      <button
-        onClick={() => setActiveTab("payments")}
-        className="text-xs text-red-600 hover:text-red-700"
-      >
-        View All
-      </button>
-    </div>
-    {adminStats.recentPayments?.length > 0 ? (
-      <div className="space-y-3">
-        {adminStats.recentPayments.map((payment, idx) => (
-          <div key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-            <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 text-xs font-semibold flex-shrink-0">
-              <Receipt className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {payment.payment_code || `PAY-${payment.id}`}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {formatCurrency(payment.amount_paid || payment.price)}
-                {payment.user_id && ` • User #${payment.user_id}`}
-              </p>
-            </div>
-            <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadge(payment.status)}`}>
-              {payment.status || "Pending"}
-            </span>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <p className="text-sm text-gray-400 text-center py-4">No recent payments</p>
-    )}
-  </div>
-</div>
-
-                      
-
-                        
+                              {!adminStats.recentUsers?.length &&
+                                !adminStats.recentEnrollments?.length &&
+                                !adminStats.recentPayments?.length && (
+                                  <div className="text-center py-8">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                      <Activity className="w-8 h-8 text-gray-300" />
+                                    </div>
+                                    <p className="text-sm text-gray-500">
+                                      No recent activity
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      Activity will appear here as users
+                                      interact with the platform
+                                    </p>
+                                  </div>
+                                )}
+                            </div>
+                          </div>
                         </>
                       )}
                     </div>
                   ) : (
                     // Student Overview (existing code)
                     <>
-                      {/* Stats Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-blue-100 rounded-full">
-                              <BookOpen className="w-5 h-5 text-blue-600" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-red-200 hover:-translate-y-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500 mb-1">
+                                Enrolled
+                              </p>
+                              <p className="text-3xl font-bold text-gray-900">
+                                {
+                                  enrolledCourses.filter(
+                                    (c) => c.enrollment_status === "active",
+                                  ).length
+                                }
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Active programs
+                              </p>
                             </div>
-                            <h4 className="font-medium text-gray-900">
-                              Enrolled Programs
-                            </h4>
+                            <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl group-hover:scale-110 transition-transform">
+                              <BookOpen className="w-6 h-6 text-blue-600" />
+                            </div>
                           </div>
-                          <p className="text-2xl font-bold text-blue-600">
-                            {
-                              enrolledCourses.filter(
-                                (c) => c.enrollment_status === "active",
-                              ).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Active enrollments
-                          </p>
+                          <div className="mt-3 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000"
+                              style={{
+                                width: `${Math.min((enrolledCourses.filter((c) => c.enrollment_status === "active").length / 10) * 100, 100)}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                        <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-green-100 rounded-full">
-                              <CheckCircle className="w-5 h-5 text-green-600" />
+
+                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-green-200 hover:-translate-y-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500 mb-1">
+                                Completed
+                              </p>
+                              <p className="text-3xl font-bold text-gray-900">
+                                {
+                                  enrolledCourses.filter(
+                                    (c) => c.enrollment_status === "completed",
+                                  ).length
+                                }
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Finished programs
+                              </p>
                             </div>
-                            <h4 className="font-medium text-gray-900">
-                              Completed
-                            </h4>
+                            <div className="p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-xl group-hover:scale-110 transition-transform">
+                              <CheckCircle className="w-6 h-6 text-green-600" />
+                            </div>
                           </div>
-                          <p className="text-2xl font-bold text-green-600">
-                            {
-                              enrolledCourses.filter(
-                                (c) => c.enrollment_status === "completed",
-                              ).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Completed programs
-                          </p>
+                          <div className="mt-3 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-1000"
+                              style={{
+                                width: `${Math.min((enrolledCourses.filter((c) => c.enrollment_status === "completed").length / 10) * 100, 100)}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                        <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-yellow-100 rounded-full">
-                              <TrendingUp className="w-5 h-5 text-yellow-600" />
+
+                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500 mb-1">
+                                In Progress
+                              </p>
+                              <p className="text-3xl font-bold text-gray-900">
+                                {
+                                  enrolledCourses.filter(
+                                    (c) =>
+                                      c.enrollment_status === "active" &&
+                                      c.progress > 0 &&
+                                      c.progress < 100,
+                                  ).length
+                                }
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Active learning
+                              </p>
                             </div>
-                            <h4 className="font-medium text-gray-900">
-                              In Progress
-                            </h4>
+                            <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl group-hover:scale-110 transition-transform">
+                              <TrendingUp className="w-6 h-6 text-amber-600" />
+                            </div>
                           </div>
-                          <p className="text-2xl font-bold text-yellow-600">
-                            {
-                              enrolledCourses.filter(
-                                (c) =>
-                                  c.enrollment_status === "active" &&
-                                  c.progress > 0 &&
-                                  c.progress < 100,
-                              ).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Programs in progress
-                          </p>
+                          <div className="mt-3 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-1000"
+                              style={{
+                                width: `${Math.min(
+                                  (enrolledCourses.filter(
+                                    (c) =>
+                                      c.enrollment_status === "active" &&
+                                      c.progress > 0 &&
+                                      c.progress < 100,
+                                  ).length /
+                                    10) *
+                                    100,
+                                  100,
+                                )}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-purple-100 rounded-full">
-                              <Award className="w-5 h-5 text-purple-600" />
+
+                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500 mb-1">
+                                Certificates
+                              </p>
+                              <p className="text-3xl font-bold text-gray-900">
+                                {
+                                  enrolledCourses.filter(
+                                    (c) => c.certificate_issued,
+                                  ).length
+                                }
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                Earned certificates
+                              </p>
                             </div>
-                            <h4 className="font-medium text-gray-900">
-                              Certificates
-                            </h4>
+                            <div className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl group-hover:scale-110 transition-transform">
+                              <Award className="w-6 h-6 text-purple-600" />
+                            </div>
                           </div>
-                          <p className="text-2xl font-bold text-purple-600">
-                            {
-                              enrolledCourses.filter(
-                                (c) => c.certificate_issued,
-                              ).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Earned certificates
-                          </p>
+                          <div className="mt-3 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-1000"
+                              style={{
+                                width: `${Math.min((enrolledCourses.filter((c) => c.certificate_issued).length / 10) * 100, 100)}%`,
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
 
                       {/* Recent Activity Section */}
-                      <div className="mt-6 pt-6 border-t border-gray-200">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                          Your Recent Activity
-                        </h4>
-                        <div className="bg-gray-50 rounded-lg p-4">
-                          <div className="flex items-center justify-center py-6">
-                            <div className="text-center">
-                              <Activity className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                              <p className="text-sm text-gray-400">
-                                Start exploring programs to see your activity here
-                              </p>
-                            </div>
-                          </div>
+                      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <Activity className="w-4 h-4 text-red-500" />
+                            Recent Activity
+                          </h4>
+                          {enrolledCourses.length > 0 && (
+                            <span className="text-xs text-gray-400">
+                              Last {Math.min(enrolledCourses.length, 5)}{" "}
+                              activities
+                            </span>
+                          )}
                         </div>
+
+                        {enrolledCourses.length > 0 ? (
+                          <div className="space-y-3">
+                            {enrolledCourses
+                              .sort(
+                                (a, b) =>
+                                  new Date(b.enrolled_at || b.created_at) -
+                                  new Date(a.enrolled_at || a.created_at),
+                              )
+                              .slice(0, 5)
+                              .map((course, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                                >
+                                  <div className="relative">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                      {course.progress === 100 ? (
+                                        <CheckCircle className="w-5 h-5 text-green-600" />
+                                      ) : course.progress > 0 ? (
+                                        <TrendingUp className="w-5 h-5 text-amber-600" />
+                                      ) : (
+                                        <BookOpen className="w-5 h-5 text-blue-600" />
+                                      )}
+                                    </div>
+                                    <div
+                                      className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${
+                                        course.enrollment_status === "active"
+                                          ? "bg-green-500"
+                                          : course.enrollment_status ===
+                                              "completed"
+                                            ? "bg-blue-500"
+                                            : "bg-gray-400"
+                                      }`}
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                      {course.title}
+                                    </p>
+                                    <div className="flex flex-wrap items-center gap-3 mt-0.5">
+                                      <span className="text-xs text-gray-500 flex items-center gap-1">
+                                        <Calendar className="w-3 h-3" />
+                                        {new Date(
+                                          course.enrolled_at ||
+                                            course.created_at,
+                                        ).toLocaleDateString()}
+                                      </span>
+                                      {course.progress !== undefined && (
+                                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                                          {course.progress}% complete
+                                        </span>
+                                      )}
+                                      {course.enrollment_status && (
+                                        <span
+                                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                            course.enrollment_status ===
+                                            "active"
+                                              ? "bg-green-100 text-green-700"
+                                              : course.enrollment_status ===
+                                                  "completed"
+                                                ? "bg-blue-100 text-blue-700"
+                                                : "bg-gray-100 text-gray-700"
+                                          }`}
+                                        >
+                                          {course.enrollment_status
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            course.enrollment_status.slice(1)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Link
+                                    href={`/programs/${course.course_id}`}
+                                    className="shrink-0 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                                  >
+                                    {course.progress > 0
+                                      ? "Continue →"
+                                      : "View →"}
+                                  </Link>
+                                </div>
+                              ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Activity className="w-8 h-8 text-gray-300" />
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              No recent activity yet
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Start exploring programs to see your activity here
+                            </p>
+                            <Link
+                              href="/#programs"
+                              className="inline-block mt-4 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                            >
+                              Browse Programs →
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     </>
                   )}
                 </div>
               ) : activeTab === "my-courses" ? (
-                // My Courses Tab (existing code)
                 <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        My Courses
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {enrolledCourses.length > 0
-                          ? `You are enrolled in ${enrolledCourses.length} course${enrolledCourses.length > 1 ? "s" : ""}`
-                          : "You haven't enrolled in any courses yet"}
-                      </p>
+                  <div className="mb-8">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                          <BookOpen className="w-7 h-7 text-red-600" />
+                          My Learning
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {enrolledCourses.length > 0
+                            ? `You are enrolled in ${enrolledCourses.length} course${enrolledCourses.length > 1 ? "s" : ""}`
+                            : "Start your learning journey today"}
+                        </p>
+                      </div>
+                      <Link
+                        href="/#programs"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-200 text-sm font-medium"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Browse Courses
+                      </Link>
                     </div>
-                    <Link
-                      href="/#programs"
-                      className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Browse Courses
-                    </Link>
                   </div>
 
+                  {/* Loading State */}
                   {enrolledCoursesLoading ? (
-                    <div className="text-center py-8">
-                      <Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto" />
-                      <p className="mt-2 text-gray-500">
+                    <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-200">
+                      <Loader2 className="w-10 h-10 animate-spin text-red-600" />
+                      <p className="mt-3 text-gray-500 font-medium">
                         Loading your courses...
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Please wait while we fetch your enrolled programs
                       </p>
                     </div>
                   ) : enrolledCourses.length === 0 ? (
-                    <div className="text-center py-12">
-                      <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-2">
-                        You haven't enrolled in any courses yet
+                    /* Empty State */
+                    <div className="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                      <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <BookOpen className="w-10 h-10 text-red-400" />
+                      </div>
+                      <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                        No Courses Enrolled Yet
+                      </h4>
+                      <p className="text-gray-500 max-w-md mx-auto mb-6">
+                        Start your learning journey by enrolling in your first
+                        course. Explore our wide range of programs designed just
+                        for you.
                       </p>
                       <Link
                         href="/#programs"
-                        className="text-red-600 hover:text-red-700 inline-flex items-center gap-1"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-200 font-medium"
                       >
-                        Browse available programs
+                        Explore Programs
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {enrolledCourses.map((course) => (
-                        <div
-                          key={course.enrollment_id || course.course_id}
-                          className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex flex-col md:flex-row">
-                            {course.thumbnail_url && (
-                              <div className="md:w-48 h-32 bg-gray-200 shrink-0">
-                                <Image
-                                  src={course.thumbnail_url}
-                                  alt={course.title}
-                                  width={192}
-                                  height={128}
-                                  quality={85}
-                                  priority={false}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                            <div className="flex-1 p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                    <h4 className="font-semibold text-gray-900">
-                                      {course.title}
-                                    </h4>
-                                    <span
-                                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(course.enrollment_status || course.status)}`}
-                                    >
-                                      {course.enrollment_status ||
-                                        course.status ||
-                                        "Active"}
-                                    </span>
-                                    {course.course_code && (
-                                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                        {course.course_code}
-                                      </span>
-                                    )}
+                    /* Course Cards */
+                    <div className="grid grid-cols-1 gap-5">
+                      {enrolledCourses.map((course) => {
+                        const progress = course.progress || 0;
+                        const isCompleted =
+                          course.enrollment_status === "completed";
+                        const isActive = course.enrollment_status === "active";
+
+                        return (
+                          <div
+                            key={course.enrollment_id || course.course_id}
+                            className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                          >
+                            <div className="flex flex-col md:flex-row">
+                              {/* Thumbnail */}
+                              <div className="relative md:w-64 h-48 md:h-auto bg-gradient-to-br from-gray-100 to-gray-200 shrink-0 overflow-hidden">
+                                {course.thumbnail_url ? (
+                                  <Image
+                                    src={course.thumbnail_url}
+                                    alt={course.title}
+                                    width={256}
+                                    height={192}
+                                    quality={90}
+                                    priority={false}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <BookOpen className="w-16 h-16 text-gray-300" />
                                   </div>
-                                  <p className="text-sm text-gray-600 line-clamp-2">
-                                    {course.description}
-                                  </p>
-                                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                                    <span className="flex items-center gap-1">
-                                      <BookOpen className="w-3 h-3" />
-                                      {course.category || "General"}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      {course.duration || "N/A"}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Award className="w-3 h-3" />
-                                      {course.level || "Beginner"}
-                                    </span>
-                                    {course.enrolled_at && (
-                                      <span className="flex items-center gap-1">
-                                        <Calendar className="w-3 h-3" />
-                                        Enrolled:{" "}
-                                        {new Date(
-                                          course.enrolled_at,
-                                        ).toLocaleDateString()}
-                                      </span>
-                                    )}
-                                    {course.final_price && (
-                                      <span className="flex items-center gap-1 font-semibold text-gray-700">
-                                        ₹{course.final_price}
-                                        {course.original_price &&
-                                          course.discount > 0 && (
-                                            <span className="text-gray-400 line-through ml-1">
-                                              ₹{course.original_price}
-                                            </span>
-                                          )}
-                                      </span>
-                                    )}
-                                    {course.progress !== undefined &&
-                                      course.progress > 0 && (
-                                        <span className="flex items-center gap-1">
-                                          <TrendingUp className="w-3 h-3" />
-                                          Progress: {course.progress}%
+                                )}
+
+                                {/* Progress Badge on Thumbnail */}
+                                {progress > 0 && progress < 100 && (
+                                  <div className="absolute bottom-3 left-3 right-3">
+                                    <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                                      <div className="flex items-center justify-between text-white text-xs mb-1">
+                                        <span className="font-medium">
+                                          Progress
+                                        </span>
+                                        <span className="font-bold">
+                                          {Math.round(progress)}%
+                                        </span>
+                                      </div>
+                                      <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                                        <div
+                                          className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-1000"
+                                          style={{ width: `${progress}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Status Badge on Thumbnail */}
+                                <div className="absolute top-3 right-3">
+                                  <span
+                                    className={`px-3 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm shadow-lg ${
+                                      isCompleted
+                                        ? "bg-green-500/90 text-white"
+                                        : isActive
+                                          ? "bg-blue-500/90 text-white"
+                                          : "bg-gray-500/90 text-white"
+                                    }`}
+                                  >
+                                    {isCompleted
+                                      ? "Completed"
+                                      : isActive
+                                        ? "In Progress"
+                                        : "Pending"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Content */}
+                              <div className="flex-1 p-5 sm:p-6">
+                                <div className="flex flex-col h-full">
+                                  {/* Course Info */}
+                                  <div className="flex-1">
+                                    <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                                      <h4 className="text-lg font-bold text-gray-900 group-hover:text-red-600 transition-colors line-clamp-1">
+                                        {course.title}
+                                      </h4>
+                                      {course.course_code && (
+                                        <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg whitespace-nowrap">
+                                          {course.course_code}
                                         </span>
                                       )}
+                                    </div>
+
+                                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                      {course.description ||
+                                        "No description available"}
+                                    </p>
+
+                                    {/* Course Meta */}
+                                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                        <BookOpen className="w-3.5 h-3.5 text-gray-400" />
+                                        {course.category || "General"}
+                                      </span>
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                        {course.duration || "Self-paced"}
+                                      </span>
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                        <Award className="w-3.5 h-3.5 text-gray-400" />
+                                        {course.level || "Beginner"}
+                                      </span>
+                                      {course.enrolled_at && (
+                                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                          <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                          {new Date(
+                                            course.enrolled_at,
+                                          ).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Price & Certificate */}
+                                    <div className="flex flex-wrap items-center gap-4 mt-3">
+                                      {course.final_price && (
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-lg font-bold text-gray-900">
+                                            ₹{course.final_price}
+                                          </span>
+                                          {course.original_price &&
+                                            course.discount > 0 && (
+                                              <>
+                                                <span className="text-sm text-gray-400 line-through">
+                                                  ₹{course.original_price}
+                                                </span>
+                                                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold rounded-lg">
+                                                  {Math.round(course.discount)}%
+                                                  OFF
+                                                </span>
+                                              </>
+                                            )}
+                                        </div>
+                                      )}
+                                      {course.certificate_issued && (
+                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-600 text-xs font-semibold rounded-lg">
+                                          <Award className="w-3.5 h-3.5" />
+                                          Certificate Issued
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+                                    <Link
+                                      href={`/programs/${course.course_id}`}
+                                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+                                    >
+                                      {progress > 0 && progress < 100 ? (
+                                        <>
+                                          <RefreshCw className="w-4 h-4" />
+                                          Continue Learning
+                                        </>
+                                      ) : progress === 100 ? (
+                                        <>
+                                          <CheckCircle className="w-4 h-4" />
+                                          View Course
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Play className="w-4 h-4" />
+                                          Start Learning
+                                        </>
+                                      )}
+                                    </Link>
+
+                                    {course.certificate_issued && (
+                                      <button
+                                        onClick={() =>
+                                          window.open(
+                                            `/certificate/${course.enrollment_id}`,
+                                            "_blank",
+                                          )
+                                        }
+                                        className="px-4 py-2.5 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-all text-sm font-medium flex items-center gap-2"
+                                      >
+                                        <FileCheck className="w-4 h-4" />
+                                        Certificate
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
-                                <Link
-                                  href={`/programs/${course.course_id}`}
-                                  className="shrink-0 ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-                                >
-                                  {course.progress && course.progress > 0
-                                    ? "Continue Learning"
-                                    : "Start Learning"}
-                                </Link>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -2924,7 +3287,7 @@ const formatCurrency = (amount) => {
                         Create and manage your courses and programs
                       </p>
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                       <div className="relative flex-1 sm:flex-none sm:w-48 md:w-64">
                         <input
@@ -2970,7 +3333,9 @@ const formatCurrency = (amount) => {
                             d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                           />
                         </svg>
-                        <span className="text-sm hidden xs:inline">Filters</span>
+                        <span className="text-sm hidden xs:inline">
+                          Filters
+                        </span>
                         <span className="text-sm xs:hidden">Filter</span>
                         {Object.values(filters).some((f) => f) && (
                           <span className="w-2 h-2 bg-red-500 rounded-full shrink-0"></span>
@@ -2995,7 +3360,9 @@ const formatCurrency = (amount) => {
                   {showFilters && (
                     <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-700">Filters</h4>
+                        <h4 className="text-sm font-medium text-gray-700">
+                          Filters
+                        </h4>
                         <button
                           onClick={clearFilters}
                           className="text-sm text-red-600 hover:text-red-700"
@@ -3086,7 +3453,8 @@ const formatCurrency = (amount) => {
                               <span className="font-semibold">
                                 {filteredPrograms.length}
                               </span>{" "}
-                              program{filteredPrograms.length !== 1 ? "s" : ""} found
+                              program{filteredPrograms.length !== 1 ? "s" : ""}{" "}
+                              found
                             </p>
                           </div>
                         </div>
@@ -3095,7 +3463,7 @@ const formatCurrency = (amount) => {
                   )}
 
                   {/* Create/Edit Program Form - kept as is */}
-                   {/* Create/Edit Program Form */}
+                  {/* Create/Edit Program Form */}
                   {showCreateProgram && (
                     <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex items-center justify-between mb-4">
@@ -3335,349 +3703,391 @@ const formatCurrency = (amount) => {
                             <div className="flex items-center justify-between mb-3">
                               <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                 <FileCheck className="w-4 h-4 text-red-500" />
-                                Assessment
+                                Assessments (
+                                {Array.isArray(assessments[editingProgram.id])
+                                  ? assessments[editingProgram.id].length
+                                  : 0}
+                                )
                               </h5>
                               {editingProgram && (
-                                <div className="border-t border-gray-100 flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2">
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      const assessment =
-                                        assessments[editingProgram.id];
-                                      if (assessment) {
-                                        handleOpenEditAssessment(
-                                          editingProgram.id,
-                                          assessment,
-                                        );
-                                      } else {
-                                        handleOpenCreateAssessment(
-                                          editingProgram.id,
-                                        );
-                                      }
-                                    }}
-                                    className="flex items-center gap-1.5 text-sm bg-red-50 p-2 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+                                    onClick={() =>
+                                      handleOpenCreateAssessment(
+                                        editingProgram.id,
+                                      )
+                                    }
+                                    className="flex items-center gap-1.5 text-sm bg-red-50 px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
                                   >
-                                    {assessments[editingProgram.id] ? (
-                                      <>
-                                        <Edit className="w-4 h-4" />
-                                        Edit Assessment
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Plus className="w-4 h-4" />
-                                        Create Assessment
-                                      </>
-                                    )}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const assessment =
-                                        assessments[editingProgram.id];
-                                      if (assessment) {
-                                        handleDeleteAssessment(
-                                          editingProgram.id,
-                                          assessment.id,
-                                        );
-                                      }
-                                    }}
-                                    className="text-xs text-red-600 hover:text-red-700 px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-1"
-                                  >
-                                    <Trash2Icon className="w-4 h-4" />
+                                    <Plus className="w-4 h-4" />
+                                    Add Assessment
                                   </button>
                                 </div>
                               )}
                             </div>
 
-                            {assessments[editingProgram.id] ? (
-                              <div className="p-4 bg-white rounded-lg border border-gray-200">
-                                {/* Assessment Details */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                  <div>
-                                    <p className="text-xs text-gray-400">
-                                      Title
-                                    </p>
-                                    <p className="text-sm font-medium text-gray-700">
-                                      {assessments[editingProgram.id].title}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-400">
-                                      Passing Score
-                                    </p>
-                                    <p className="text-sm font-medium text-emerald-600">
-                                      {
-                                        assessments[editingProgram.id]
-                                          .passing_score
-                                      }
-                                      %
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-400">
-                                      Duration
-                                    </p>
-                                    <p className="text-sm font-medium text-blue-600">
-                                      {
-                                        assessments[editingProgram.id]
-                                          .duration_minutes
-                                      }{" "}
-                                      min
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-400">
-                                      Status
-                                    </p>
-                                    <span
-                                      className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessments[editingProgram.id].status)}`}
+                            {assessments[editingProgram.id] &&
+                            Array.isArray(assessments[editingProgram.id]) &&
+                            assessments[editingProgram.id].length > 0 ? (
+                              <div className="space-y-4">
+                                {assessments[editingProgram.id].map(
+                                  (assessment, index) => (
+                                    <div
+                                      key={assessment.id || index}
+                                      className="p-4 bg-white rounded-lg border border-gray-200"
                                     >
-                                      {assessments[editingProgram.id].status}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Questions List */}
-                                <div className="mt-4 pt-4 border-t border-gray-100">
-                                  <div className="flex items-center justify-between mb-3">
-                                    <p className="text-sm font-medium text-gray-700">
-                                      Questions (
-                                      {assessments[editingProgram.id].questions
-                                        ?.length || 0}
-                                      )
-                                    </p>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const assessment =
-                                          assessments[editingProgram.id];
-                                        if (assessment) {
-                                          setSelectedAssessmentId(
-                                            editingProgram.id,
-                                          );
-                                          setShowAddQuestion(true);
-                                          setEditingQuestion(null);
-                                          resetQuestionForm();
-                                        }
-                                      }}
-                                      className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
-                                    >
-                                      <Plus className="w-3 h-3" />
-                                      Add Question
-                                    </button>
-                                  </div>
-
-                                  {/* Questions List */}
-                                  {assessments[editingProgram.id].questions &&
-                                  assessments[editingProgram.id].questions
-                                    .length > 0 ? (
-                                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                                      {assessments[
-                                        editingProgram.id
-                                      ].questions.map((question, idx) => (
-                                        <div
-                                          key={question.id || idx}
-                                          className="bg-gray-50 p-3 rounded-lg border border-gray-200"
-                                        >
-                                          <div className="flex items-start justify-between gap-3">
-                                            <div className="flex-1 min-w-0">
-                                              <div className="flex items-center gap-2">
-                                                <span className="inline-flex items-center justify-center w-5 h-5 bg-red-50 text-red-600 text-xs font-bold rounded-full">
-                                                  {idx + 1}
-                                                </span>
-                                                <p className="text-sm font-medium text-gray-900 truncate">
-                                                  {question.question_text}
-                                                </p>
-                                              </div>
-                                              <div className="mt-1.5 flex flex-wrap gap-2 text-xs">
-                                                <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                  A: {question.option_a}
-                                                </span>
-                                                <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                  B: {question.option_b}
-                                                </span>
-                                                {question.option_c && (
-                                                  <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                    C: {question.option_c}
-                                                  </span>
-                                                )}
-                                                {question.option_d && (
-                                                  <span className="px-2 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                    D: {question.option_d}
-                                                  </span>
-                                                )}
-                                                <span className="px-2 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
-                                                  ✓ {question.correct_option}
-                                                </span>
-                                                <span className="px-2 py-0.5 bg-blue-50 rounded text-blue-600">
-                                                  {question.marks || 1} mark
-                                                  {question.marks > 1
-                                                    ? "s"
-                                                    : ""}
-                                                </span>
-                                              </div>
-                                            </div>
-                                            <div className="flex gap-1 shrink-0">
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  setEditingQuestion(question);
-                                                  setQuestionFormData({
-                                                    question_text:
-                                                      question.question_text ||
-                                                      "",
-                                                    option_a:
-                                                      question.option_a || "",
-                                                    option_b:
-                                                      question.option_b || "",
-                                                    option_c:
-                                                      question.option_c || "",
-                                                    option_d:
-                                                      question.option_d || "",
-                                                    correct_option:
-                                                      question.correct_option ||
-                                                      "A",
-                                                    marks: question.marks || 1,
-                                                    order_number:
-                                                      question.order_number ||
-                                                      idx + 1,
-                                                    status:
-                                                      question.status ||
-                                                      "draft",
-                                                  });
-                                                  setSelectedAssessmentId(
-                                                    editingProgram.id,
-                                                  );
-                                                  setShowAddQuestion(true);
-                                                }}
-                                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                title="Edit Question"
-                                              >
-                                                <Edit className="w-3.5 h-3.5" />
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={async () => {
-                                                  await handleDeleteQuestion(
-                                                    editingProgram.id,
-                                                    question.id,
-                                                  );
-                                                  const courseDetails =
-                                                    await fetchCourseDetails(
-                                                      editingProgram.id,
-                                                    );
-                                                  if (
-                                                    courseDetails &&
-                                                    courseDetails.assessment
-                                                  ) {
-                                                    setAssessments((prev) => ({
-                                                      ...prev,
-                                                      [editingProgram.id]:
-                                                        courseDetails.assessment,
-                                                    }));
-                                                  }
-                                                }}
-                                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Delete Question"
-                                              >
-                                                <Trash2Icon className="w-3.5 h-3.5" />
-                                              </button>
-                                            </div>
-                                          </div>
+                                      {/* Assessment Header with Actions */}
+                                      <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span className="inline-flex items-center justify-center w-6 h-6 bg-red-50 text-red-600 text-xs font-bold rounded-full">
+                                            {index + 1}
+                                          </span>
+                                          <h6 className="text-sm font-semibold text-gray-700">
+                                            {assessment.title ||
+                                              `Assessment ${index + 1}`}
+                                          </h6>
+                                          <span
+                                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessment.status)}`}
+                                          >
+                                            {assessment.status || "draft"}
+                                          </span>
                                         </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                      <p className="text-sm text-gray-400">
-                                        No questions added yet
-                                      </p>
-                                      <p className="text-xs text-gray-300 mt-0.5">
-                                        Click "Add Question" to get started
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Question Form - Show when "Add Question" is clicked */}
-                                {showAddQuestion &&
-                                  selectedAssessmentId === editingProgram.id &&
-                                  assessments[editingProgram.id] && (
-                                    <div className="mt-4 pt-4 border-t border-gray-100">
-                                      {QuestionForm && (
-                                        <QuestionForm
-                                          editingQuestion={editingQuestion}
-                                          questionFormData={questionFormData}
-                                          questionErrors={questionErrors}
-                                          questionSaving={questionSaving}
-                                          handleQuestionFormChange={(e) =>
-                                            handleQuestionFormChange(
-                                              e,
-                                              setQuestionFormData,
-                                              setQuestionErrors,
-                                            )
-                                          }
-                                          handleQuestionSubmit={async () => {
-                                            const assessment =
-                                              assessments[editingProgram.id];
-                                            if (assessment) {
-                                              await handleQuestionSubmit(
+                                        <div className="flex gap-1">
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleOpenEditAssessment(
                                                 editingProgram.id,
-                                                assessment.id,
-                                                questionFormData,
-                                                editingQuestion,
-                                                setQuestionSaving,
-                                                resetQuestionForm,
-                                                async () => {
-                                                  // Close question form
-                                                  setShowAddQuestion(false);
-                                                  // Refresh the specific course details to update the assessment
-                                                  const courseDetails =
-                                                    await fetchCourseDetails(
-                                                      editingProgram.id,
-                                                    );
-                                                  if (
-                                                    courseDetails &&
-                                                    courseDetails.assessment
-                                                  ) {
-                                                    setAssessments((prev) => ({
-                                                      ...prev,
-                                                      [editingProgram.id]:
-                                                        courseDetails.assessment,
-                                                    }));
-                                                  }
-                                                  // Also refresh all programs
-                                                 await refreshPrograms(); 
-                                                },
-                                                setEditingQuestion,
-                                                setQuestionErrors,
-                                              );
+                                                assessment,
+                                                index,
+                                              )
                                             }
-                                          }}
-                                          setShowAddQuestion={
-                                            setShowAddQuestion
-                                          }
-                                          setEditingQuestion={
-                                            setEditingQuestion
-                                          }
-                                          resetQuestionForm={resetQuestionForm}
-                                          courseId={editingProgram.id}
-                                          assessmentId={
-                                            assessments[editingProgram.id]?.id
-                                          }
-                                        />
-                                      )}
+                                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            title="Edit Assessment"
+                                          >
+                                            <Edit className="w-4 h-4" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              if (
+                                                confirm(
+                                                  `Are you sure you want to delete "${assessment.title}"?`,
+                                                )
+                                              ) {
+                                                handleDeleteAssessment(
+                                                  editingProgram.id,
+                                                  assessment.id,
+                                                );
+                                              }
+                                            }}
+                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Delete Assessment"
+                                          >
+                                            <Trash2Icon className="w-4 h-4" />
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {/* Assessment Details */}
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                                        <div>
+                                          <p className="text-xs text-gray-400">
+                                            Passing Score
+                                          </p>
+                                          <p className="text-sm font-medium text-emerald-600">
+                                            {assessment.passing_score || 60}%
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-400">
+                                            Duration
+                                          </p>
+                                          <p className="text-sm font-medium text-blue-600">
+                                            {assessment.duration_minutes || 30}{" "}
+                                            min
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-400">
+                                            Questions
+                                          </p>
+                                          <p className="text-sm font-medium text-gray-700">
+                                            {assessment.questions?.length || 0}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-gray-400">
+                                            Created
+                                          </p>
+                                          <p className="text-sm font-medium text-gray-700">
+                                            {assessment.created_at
+                                              ? new Date(
+                                                  assessment.created_at,
+                                                ).toLocaleDateString()
+                                              : "N/A"}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      {/* Questions Section for this Assessment */}
+                                      <div className="mt-3 pt-3 border-t border-gray-100">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <p className="text-sm font-medium text-gray-700">
+                                            Questions (
+                                            {assessment.questions?.length || 0})
+                                          </p>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setSelectedAssessmentId(
+                                                editingProgram.id,
+                                              );
+                                              setSelectedAssessmentIndex(index);
+                                              setShowAddQuestion(true);
+                                              setEditingQuestion(null);
+                                              resetQuestionForm();
+                                            }}
+                                            className="text-xs text-emerald-600 hover:text-emerald-700 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
+                                          >
+                                            <Plus className="w-3 h-3" />
+                                            Add Question
+                                          </button>
+                                        </div>
+
+                                        {/* Questions List */}
+                                        {assessment.questions &&
+                                        assessment.questions.length > 0 ? (
+                                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                                            {assessment.questions.map(
+                                              (question, qIdx) => (
+                                                <div
+                                                  key={question.id || qIdx}
+                                                  className="bg-gray-50 p-2 rounded-lg border border-gray-200"
+                                                >
+                                                  <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex-1 min-w-0">
+                                                      <div className="flex items-center gap-2">
+                                                        <span className="inline-flex items-center justify-center w-5 h-5 bg-red-50 text-red-600 text-xs font-bold rounded-full flex-shrink-0">
+                                                          {qIdx + 1}
+                                                        </span>
+                                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                                          {
+                                                            question.question_text
+                                                          }
+                                                        </p>
+                                                      </div>
+                                                      <div className="mt-1 flex flex-wrap gap-1 text-xs">
+                                                        <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                          A: {question.option_a}
+                                                        </span>
+                                                        <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                          B: {question.option_b}
+                                                        </span>
+                                                        {question.option_c && (
+                                                          <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                            C:{" "}
+                                                            {question.option_c}
+                                                          </span>
+                                                        )}
+                                                        {question.option_d && (
+                                                          <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                            D:{" "}
+                                                            {question.option_d}
+                                                          </span>
+                                                        )}
+                                                        <span className="px-1.5 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
+                                                          ✓{" "}
+                                                          {
+                                                            question.correct_option
+                                                          }
+                                                        </span>
+                                                        <span className="px-1.5 py-0.5 bg-blue-50 rounded text-blue-600">
+                                                          {question.marks || 1}{" "}
+                                                          mark
+                                                          {question.marks > 1
+                                                            ? "s"
+                                                            : ""}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                    <div className="flex gap-1 shrink-0">
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                          setEditingQuestion(
+                                                            question,
+                                                          );
+                                                          setQuestionFormData({
+                                                            question_text:
+                                                              question.question_text ||
+                                                              "",
+                                                            option_a:
+                                                              question.option_a ||
+                                                              "",
+                                                            option_b:
+                                                              question.option_b ||
+                                                              "",
+                                                            option_c:
+                                                              question.option_c ||
+                                                              "",
+                                                            option_d:
+                                                              question.option_d ||
+                                                              "",
+                                                            correct_option:
+                                                              question.correct_option ||
+                                                              "A",
+                                                            marks:
+                                                              question.marks ||
+                                                              1,
+                                                            order_number:
+                                                              question.order_number ||
+                                                              qIdx + 1,
+                                                            status:
+                                                              question.status ||
+                                                              "draft",
+                                                          });
+                                                          setSelectedAssessmentId(
+                                                            editingProgram.id,
+                                                          );
+                                                          setSelectedAssessmentIndex(
+                                                            index,
+                                                          );
+                                                          setShowAddQuestion(
+                                                            true,
+                                                          );
+                                                        }}
+                                                        className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                        title="Edit Question"
+                                                      >
+                                                        <Edit className="w-3.5 h-3.5" />
+                                                      </button>
+                                                      <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                          if (
+                                                            confirm(
+                                                              "Delete this question?",
+                                                            )
+                                                          ) {
+                                                            await handleDeleteQuestion(
+                                                              editingProgram.id,
+                                                              question.id,
+                                                              assessment.id,
+                                                            );
+                                                            await refreshAssessmentData(
+                                                              editingProgram.id,
+                                                            );
+                                                          }
+                                                        }}
+                                                        className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                        title="Delete Question"
+                                                      >
+                                                        <Trash2Icon className="w-3.5 h-3.5" />
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              ),
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <div className="text-center py-3 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                            <p className="text-sm text-gray-400">
+                                              No questions added yet
+                                            </p>
+                                            <p className="text-xs text-gray-300">
+                                              Click "Add Question" to get
+                                              started
+                                            </p>
+                                          </div>
+                                        )}
+
+                                        {/* Question Form - Show when "Add Question" is clicked */}
+                                        {showAddQuestion &&
+                                          selectedAssessmentId ===
+                                            editingProgram.id &&
+                                          selectedAssessmentIndex === index &&
+                                          assessments[editingProgram.id] &&
+                                          assessments[editingProgram.id][
+                                            index
+                                          ] && (
+                                            <div className="mt-3 pt-3 border-t border-gray-100">
+                                              <QuestionForm
+                                                editingQuestion={
+                                                  editingQuestion
+                                                }
+                                                questionFormData={
+                                                  questionFormData
+                                                }
+                                                questionErrors={questionErrors}
+                                                questionSaving={questionSaving}
+                                                handleQuestionFormChange={(e) =>
+                                                  handleQuestionFormChange(
+                                                    e,
+                                                    setQuestionFormData,
+                                                    setQuestionErrors,
+                                                  )
+                                                }
+                                                handleQuestionSubmit={async () => {
+                                                  const assessment =
+                                                    assessments[
+                                                      editingProgram.id
+                                                    ]?.[index];
+                                                  if (assessment) {
+                                                    await handleQuestionSubmit(
+                                                      editingProgram.id,
+                                                      assessment.id,
+                                                      questionFormData,
+                                                      editingQuestion,
+                                                      setQuestionSaving,
+                                                      resetQuestionForm,
+                                                      async () => {
+                                                        setShowAddQuestion(
+                                                          false,
+                                                        );
+                                                        await refreshAssessmentData(
+                                                          editingProgram.id,
+                                                        );
+                                                        await refreshPrograms();
+                                                      },
+                                                      setEditingQuestion,
+                                                      setQuestionErrors,
+                                                    );
+                                                  }
+                                                }}
+                                                setShowAddQuestion={
+                                                  setShowAddQuestion
+                                                }
+                                                setEditingQuestion={
+                                                  setEditingQuestion
+                                                }
+                                                resetQuestionForm={
+                                                  resetQuestionForm
+                                                }
+                                                courseId={editingProgram.id}
+                                                assessmentId={
+                                                  assessments[
+                                                    editingProgram.id
+                                                  ]?.[index]?.id
+                                                }
+                                              />
+                                            </div>
+                                          )}
+                                      </div>
                                     </div>
-                                  )}
+                                  ),
+                                )}
                               </div>
                             ) : (
                               <div className="text-center py-6 bg-white rounded-lg border border-dashed border-gray-200">
                                 <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                                 <p className="text-sm text-gray-400">
-                                  No assessment created yet
+                                  No assessments created yet
                                 </p>
                                 <p className="text-xs text-gray-300 mt-0.5">
-                                  Click "Create Assessment" to add one
+                                  Click "Add Assessment" to create one
                                 </p>
                               </div>
                             )}
@@ -4272,12 +4682,12 @@ const formatCurrency = (amount) => {
                       </p>
                     </div>
                   </div>
-                  <AdminManagement 
-                    session={session} 
+                  <AdminManagement
+                    session={session}
                     onStatsUpdate={(stats) => {
-                      setAdminStats(prev => ({
+                      setAdminStats((prev) => ({
                         ...prev,
-                        ...stats
+                        ...stats,
                       }));
                     }}
                   />
@@ -4295,12 +4705,24 @@ const formatCurrency = (amount) => {
                       </p>
                     </div>
                   </div> */}
-                  <PaymentManagement 
+                  <PaymentManagement
                     session={session}
                     onStatsUpdate={(stats) => {
-                      setAdminStats(prev => ({
+                      setAdminStats((prev) => ({
                         ...prev,
-                        ...stats
+                        ...stats,
+                      }));
+                    }}
+                  />
+                </div>
+              ) : activeTab === "faqs" ? (
+                <div>
+                  <FAQManagement
+                    session={session}
+                    onStatsUpdate={(stats) => {
+                      setAdminStats((prev) => ({
+                        ...prev,
+                        ...stats,
                       }));
                     }}
                   />
@@ -4565,6 +4987,7 @@ const formatCurrency = (amount) => {
           setAssessmentSuccess(false);
         }}
         editingAssessment={editingAssessment}
+        editingIndex={selectedAssessmentIndex}
         assessmentFormData={assessmentFormData}
         assessmentErrors={assessmentErrors}
         assessmentSaving={assessmentSaving}
@@ -4575,6 +4998,7 @@ const formatCurrency = (amount) => {
             courseId,
             assessmentFormData,
             editingAssessment,
+            selectedAssessmentIndex,
           )
         }
         setAssessmentSuccess={setAssessmentSuccess}

@@ -149,10 +149,13 @@ export const useAssessmentOperations = (
       const response = await assessmentApi.deleteAssessment(courseId, assessmentId, session);
       if (response.meta?.status === 200) {
         toast.success("Assessment deleted successfully!");
-        setAssessments(prev => ({
+         setAssessments(prev => {
+        const currentAssessments = prev[courseId] || [];
+        return {
           ...prev,
-          [courseId]: null
-        }));
+          [courseId]: currentAssessments.filter(a => a.id !== assessmentId)
+        };
+      });
         if (fetchPrograms) await fetchPrograms();
       } 
       // else {

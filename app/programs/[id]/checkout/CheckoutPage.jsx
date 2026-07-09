@@ -460,7 +460,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-red-50 to-white py-8 md:py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
           <Link 

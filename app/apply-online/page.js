@@ -4,12 +4,12 @@ import Loading from './loading';
 import BenefitsSection from './components/BenefitsSection';
 import CoursesSection from './components/CoursesSection';
 import HowItWorksSection from './components/HowItWorksSection';
-import FAQSection from './components/FAQSection';
 import CTASection from './components/CTASection';
 import ScholarshipSection from './components/ScholarshipSection';
 import HeroSection from './components/HeroSection';
 import ProgramGrid from '../components/sections/ProgramGrid';
 import Programs from '../components/sections/Programs';
+import FaqList from './components/FaqList';
 
 // SEO Metadata
 export const metadata = {
@@ -108,7 +108,7 @@ export default function ApplyOnline() {
       </Suspense> */}
 
       <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
-        <FAQSection />
+        <FaqList />
       </Suspense>
 
 
