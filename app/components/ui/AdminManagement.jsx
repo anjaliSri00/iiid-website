@@ -1,13 +1,13 @@
 // components/Admin/AdminManagement.js
 
 import { useState, useEffect } from "react";
-import { 
-  Users, 
-  BookOpen, 
-  Search, 
-  Filter, 
-  X, 
-  CheckCircle, 
+import {
+  Users,
+  BookOpen,
+  Search,
+  Filter,
+  X,
+  CheckCircle,
   XCircle,
   Loader2,
   Eye,
@@ -27,7 +27,7 @@ import {
   UserPlus,
   Download,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import UserDetailModal from "./UserDetailModal";
@@ -36,7 +36,7 @@ import fetchApiResponse from "@/helper/api_data_store";
 import useCSVExport from "@/helper/hooks/useCSVExport";
 import { useSession } from "next-auth/react";
 
-const AdminManagement = ( ) => {
+const AdminManagement = () => {
   const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
@@ -45,9 +45,9 @@ const AdminManagement = ( ) => {
   const [expandedUser, setExpandedUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetail, setShowUserDetail] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+  // const [isExporting, setIsExporting] = useState(false);
 
-  //  const { isExporting, exportUsers } = useCSVExport(session);
+  const { isExporting, exportUsers,exportEnrollments } = useCSVExport(session);
 
   // User filters
   const [userFilters, setUserFilters] = useState({
@@ -55,7 +55,7 @@ const AdminManagement = ( ) => {
     role: "",
     is_active: "",
   });
-  
+
   // Enrollment filters
   const [enrollmentFilters, setEnrollmentFilters] = useState({
     user_id: "",
@@ -63,17 +63,17 @@ const AdminManagement = ( ) => {
     status: "",
     is_active: "",
   });
-  
+
   const [showUserFilters, setShowUserFilters] = useState(false);
   const [showEnrollmentFilters, setShowEnrollmentFilters] = useState(false);
-  
+
   // Pagination
   const [userPagination, setUserPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
   });
-  
+
   const [enrollmentPagination, setEnrollmentPagination] = useState({
     page: 1,
     limit: 10,
@@ -102,7 +102,10 @@ const AdminManagement = ( ) => {
   const fetchEnrollments = async () => {
     setLoading(true);
     try {
-      const result = await adminService.listEnrollments(enrollmentFilters, session);
+      const result = await adminService.listEnrollments(
+        enrollmentFilters,
+        session,
+      );
       if (result.success) {
         setEnrollments(result.data);
       } else {
@@ -147,17 +150,24 @@ const AdminManagement = ( ) => {
 
   // Handle user status toggle
   const handleToggleUserStatus = async (userId, currentStatus) => {
-    if (!confirm(`Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} this user?`)) return;
-    
+    if (
+      !confirm(
+        `Are you sure you want to ${currentStatus ? "deactivate" : "activate"} this user?`,
+      )
+    )
+      return;
+
     try {
       const result = await adminService.updateUserStatus(
-        userId, 
-        !currentStatus, 
-        session
+        userId,
+        !currentStatus,
+        session,
       );
-      
+
       if (result.success) {
-        toast.success(`User ${currentStatus ? 'deactivated' : 'activated'} successfully`);
+        toast.success(
+          `User ${currentStatus ? "deactivated" : "activated"} successfully`,
+        );
         fetchUsers();
       } else {
         toast.error(result.error);
@@ -170,15 +180,18 @@ const AdminManagement = ( ) => {
 
   // Handle enrollment status update
   const handleUpdateEnrollmentStatus = async (enrollmentId, status) => {
-    if (!confirm(`Are you sure you want to update this enrollment to ${status}?`)) return;
-    
+    if (
+      !confirm(`Are you sure you want to update this enrollment to ${status}?`)
+    )
+      return;
+
     try {
       const result = await adminService.updateEnrollmentStatus(
-        enrollmentId, 
-        status, 
-        session
+        enrollmentId,
+        status,
+        session,
       );
-      
+
       if (result.success) {
         toast.success(`Enrollment updated to ${status}`);
         fetchEnrollments();
@@ -194,8 +207,8 @@ const AdminManagement = ( ) => {
   // User filter handlers
   const handleUserFilterChange = (e) => {
     const { name, value } = e.target;
-    setUserFilters(prev => ({ ...prev, [name]: value }));
-    if (name === 'role' || name === 'is_active') {
+    setUserFilters((prev) => ({ ...prev, [name]: value }));
+    if (name === "role" || name === "is_active") {
       setTimeout(fetchUsers, 100);
     }
   };
@@ -213,8 +226,8 @@ const AdminManagement = ( ) => {
   // Enrollment filter handlers
   const handleEnrollmentFilterChange = (e) => {
     const { name, value } = e.target;
-    setEnrollmentFilters(prev => ({ ...prev, [name]: value }));
-    if (name === 'status' || name === 'is_active') {
+    setEnrollmentFilters((prev) => ({ ...prev, [name]: value }));
+    if (name === "status" || name === "is_active") {
       setTimeout(fetchEnrollments, 100);
     }
   };
@@ -273,14 +286,14 @@ const AdminManagement = ( ) => {
       month: "short",
       year: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   };
 
   // Get progress percentage from enrollment
   const getProgress = (enrollment) => {
     if (enrollment.progress) {
-      if (typeof enrollment.progress === 'object') {
+      if (typeof enrollment.progress === "object") {
         return enrollment.progress.progress_percentage || 0;
       }
       return enrollment.progress;
@@ -290,7 +303,7 @@ const AdminManagement = ( ) => {
 
   // Get completed lessons from enrollment
   const getCompletedLessons = (enrollment) => {
-    if (enrollment.progress && typeof enrollment.progress === 'object') {
+    if (enrollment.progress && typeof enrollment.progress === "object") {
       return enrollment.progress.completed_lessons || 0;
     }
     return 0;
@@ -298,139 +311,130 @@ const AdminManagement = ( ) => {
 
   // Get total lessons from enrollment
   const getTotalLessons = (enrollment) => {
-    if (enrollment.progress && typeof enrollment.progress === 'object') {
+    if (enrollment.progress && typeof enrollment.progress === "object") {
       return enrollment.progress.total_lessons || 0;
     }
     return 0;
   };
 
-  //  const exportdata = async () => {
-  //   try {
-  //     await exportUsers();
-  //   } catch (error) {
-  //     // Error handled by hook
-  //     console.error('Export failed:', error);
-  //   }
-  // };
+   const handleExportCSV = async () => {
+    try {
+      let exportFunction;
+      let filters = {};
+      let entityName = "";
 
- const exportdata = async () => {
-  if (isExporting) return;
-  
-  setIsExporting(true);
-  try {
-    toast.info("Preparing CSV export...");
-    
-    const queryParams = new URLSearchParams();
-    if (userFilters.search) queryParams.append('search', userFilters.search);
-    if (userFilters.role) queryParams.append('role', userFilters.role);
-    if (userFilters.is_active) queryParams.append('is_active', userFilters.is_active);
-    
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/export-csv?${queryParams.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          "Access-Token": session?.accessToken,
-          "Refresh-Token":session?.refreshToken       
-         },
+      // Determine which export function to call based on active tab
+      switch (activeTab) {
+        case "users":
+          exportFunction = exportUsers;
+          filters = userFilters;
+          entityName = "users";
+          break;
+        case "enrollments":
+          exportFunction = exportEnrollments;
+          filters = enrollmentFilters;
+          entityName = "enrollments";
+          break;
+        default:
+          toast.warning("No export available for this tab");
+          return;
       }
-    );
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to export CSV');
-    }
-    
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    
-    const contentDisposition = response.headers.get('Content-Disposition');
-    let filename = `users_${new Date().toISOString().slice(0,10)}.csv`;
-    if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-      if (filenameMatch) {
-        filename = filenameMatch[1];
-      }
-    }
-    
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-    
-    toast.success(`CSV exported successfully!`);
-  } catch (error) {
-    console.error('Export error:', error);
-    toast.error(error.message || 'Failed to export CSV');
-  } finally {
-    setIsExporting(false);
-  }
-};
 
+      // Call the appropriate export function
+      await exportFunction(filters);
+      
+      // Success message with entity name
+      // toast.success(`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} exported successfully!`);
+      
+    } catch (error) {
+      // Error is already handled by the hook
+      console.error(`Export ${activeTab} failed:`, error);
+    }
+  };
+
+ 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-wrap gap-4">
-          <button
-            onClick={() => setActiveTab("users")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              activeTab === "users"
-                ? "bg-red-50 text-red-600 border border-red-200"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            Users
-            {users.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 text-xs bg-gray-200 rounded-full">
-                {users.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("enrollments")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              activeTab === "enrollments"
-                ? "bg-red-50 text-red-600 border border-red-200"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            Enrollments
-            {enrollments.length > 0 && (
-              <span className="ml-1 px-2 py-0.5 text-xs bg-gray-200 rounded-full">
-                {enrollments.length}
-              </span>
-            )}
-          </button>
+  <div className="flex flex-wrap items-center gap-3">
+    {/* Tab Buttons */}
+    <button
+      onClick={() => setActiveTab("users")}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+        activeTab === "users"
+          ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
+          : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
+      }`}
+    >
+      <Users className={`w-4 h-4 ${activeTab === "users" ? "text-red-600" : "text-gray-500"}`} />
+      <span className="font-medium">Users</span>
+      {users.length > 0 && (
+        <span className={`ml-1 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+          activeTab === "users" 
+            ? "bg-red-200 text-red-800" 
+            : "bg-gray-200 text-gray-700"
+        }`}>
+          {users.length}
+        </span>
+      )}
+    </button>
 
-          <button 
-  onClick={exportdata} 
-  disabled={isExporting}
-  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-    isExporting 
-      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-  }`}
->
-  {isExporting ? (
-    <>
-      <Loader2 className="w-4 h-4 animate-spin" />
-      <span>Exporting...</span>
-    </>
-  ) : (
-    <>
-      <Download className="w-4 h-4" />
-      <span>Export Users Data</span>
-    </>
-  )}
-</button>
-        </div>
-      </div>
+    <button
+      onClick={() => setActiveTab("enrollments")}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+        activeTab === "enrollments"
+          ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
+          : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
+      }`}
+    >
+      <BookOpen className={`w-4 h-4 ${activeTab === "enrollments" ? "text-red-600" : "text-gray-500"}`} />
+      <span className="font-medium">Enrollments</span>
+      {enrollments.length > 0 && (
+        <span className={`ml-1 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+          activeTab === "enrollments" 
+            ? "bg-red-200 text-red-800" 
+            : "bg-gray-200 text-gray-700"
+        }`}>
+          {enrollments.length}
+        </span>
+      )}
+    </button>
+
+    {/* Spacer */}
+    <div className="flex-1"></div>
+
+    {/* Export Button - Enhanced Design */}
+    <button
+      onClick={handleExportCSV}
+      disabled={isExporting}
+      className={`
+        flex items-center gap-2 px-3 py-2 rounded-lg font-medium
+        transition-all duration-200 ease-in-out
+        ${isExporting 
+          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+          : "bg-linear-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:shadow-emerald-200 active:scale-95"
+        }
+        border-0 shadow-sm
+      `}
+    >
+      {isExporting ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Exporting...</span>
+          <span className="ml-1 text-xs opacity-75">Please wait</span>
+        </>
+      ) : (
+        <>
+          <Download className="w-4 h-4" />
+          <span>Export Data</span>
+          <span className="hidden sm:inline text-xs opacity-80">
+            CSV
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+        </>
+      )}
+    </button>
+  </div>
 
       {/* Users Tab */}
       {activeTab === "users" && (
@@ -438,7 +442,7 @@ const AdminManagement = ( ) => {
           {/* User Filters */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-wrap items-center gap-4">
-              <div className="flex-1 min-w-[200px] relative">
+              <div className="flex-1 min-w-50 relative">
                 <input
                   type="text"
                   name="search"
@@ -449,11 +453,11 @@ const AdminManagement = ( ) => {
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
-              
+
               <button
                 onClick={() => setShowUserFilters(!showUserFilters)}
                 className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
-                  showUserFilters || (userFilters.role || userFilters.is_active)
+                  showUserFilters || userFilters.role || userFilters.is_active
                     ? "bg-red-50 border-red-200 text-red-600"
                     : "border-gray-300 text-gray-600 hover:bg-gray-50"
                 }`}
@@ -464,7 +468,7 @@ const AdminManagement = ( ) => {
                   <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                 )}
               </button>
-              
+
               <button
                 onClick={fetchUsers}
                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -477,7 +481,9 @@ const AdminManagement = ( ) => {
             {showUserFilters && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-gray-700">Filter Users</h4>
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Filter Users
+                  </h4>
                   <button
                     onClick={clearUserFilters}
                     className="text-sm text-red-600 hover:text-red-700"
@@ -533,7 +539,9 @@ const AdminManagement = ( ) => {
               <div className="text-center py-12">
                 <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">No users found</p>
-                {(userFilters.search || userFilters.role || userFilters.is_active) && (
+                {(userFilters.search ||
+                  userFilters.role ||
+                  userFilters.is_active) && (
                   <button
                     onClick={clearUserFilters}
                     className="mt-2 text-sm text-red-600 hover:text-red-700"
@@ -568,8 +576,8 @@ const AdminManagement = ( ) => {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {users.map((user) => (
-                    <tr 
-                      key={user.id} 
+                    <tr
+                      key={user.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => {
                         setSelectedUser(user);
@@ -579,15 +587,21 @@ const AdminManagement = ( ) => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center text-red-700 font-semibold text-sm flex-shrink-0">
-                            {user.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
+                            {user.full_name
+                              ? user.full_name.charAt(0).toUpperCase()
+                              : "U"}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900">
                               {user.full_name || "N/A"}
                             </p>
-                            <p className="text-xs text-gray-500">{user.email}</p>
+                            <p className="text-xs text-gray-500">
+                              {user.email}
+                            </p>
                             {user.user_code && (
-                              <p className="text-xs text-gray-400 font-mono">{user.user_code}</p>
+                              <p className="text-xs text-gray-400 font-mono">
+                                {user.user_code}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -598,30 +612,34 @@ const AdminManagement = ( ) => {
                             user.role_type.map((role) => (
                               <span
                                 key={role}
-                                className={`px-2 py-0.5 text-xs rounded-full ${getRoleBadge(role)}`}
+                                className={`px-2 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getRoleBadge(role)}`}
                               >
                                 {role}
                               </span>
                             ))
                           ) : (
-                            <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleBadge(user.role_type)}`}>
+                            <span
+                              className={`px-2 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getRoleBadge(user.role_type)}`}
+                            >
                               {user.role_type}
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(user.is_active ? 'active' : 'inactive')}`}>
+                        <span
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(user.is_active ? "active" : "inactive")}`}
+                        >
                           {user.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
-                          <span className="text-sm font-medium text-gray-900">
+                          {/* <span className="text-sm font-medium text-gray-900">
                             {user.enrollment_count || 0}
-                          </span>
+                          </span> */}
                           {user.is_enrolled && (
-                            <span className="px-1.5 py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded-full">
+                            <span className="px-1.5 py-0.5 uppercase tracking-[1.36px] text-xs bg-emerald-100 text-emerald-700 rounded-full">
                               Enrolled
                             </span>
                           )}
@@ -653,7 +671,9 @@ const AdminManagement = ( ) => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setExpandedUser(expandedUser === user.id ? null : user.id);
+                              setExpandedUser(
+                                expandedUser === user.id ? null : user.id,
+                              );
                             }}
                             className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                           >
@@ -675,30 +695,46 @@ const AdminManagement = ( ) => {
           {/* Expanded User Details */}
           {expandedUser && (
             <div className="border-t border-gray-200 p-4 bg-gray-50">
-              {users.find(u => u.id === expandedUser)?.enrolled_courses?.length > 0 ? (
+              {users.find((u) => u.id === expandedUser)?.enrolled_courses
+                ?.length > 0 ? (
                 <div>
                   <h5 className="text-sm font-semibold text-gray-700 mb-3">
                     Enrolled Courses
                   </h5>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {users.find(u => u.id === expandedUser).enrolled_courses.map((course, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-lg border border-gray-200">
-                        <p className="text-sm font-medium text-gray-900">{course.title}</p>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          <span className="text-xs text-gray-500">Code: {course.course_code}</span>
-                          <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadge(course.course_status)}`}>
-                            {course.course_status}
-                          </span>
-                          <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadge(course.enrollment_status)}`}>
-                            {course.enrollment_status}
-                          </span>
+                    {users
+                      .find((u) => u.id === expandedUser)
+                      .enrolled_courses.map((course, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white p-3 rounded-lg border border-gray-200"
+                        >
+                          <p className="text-sm font-medium text-gray-900">
+                            {course.title}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            <span className="text-xs text-gray-500">
+                              Code: {course.course_code}
+                            </span>
+                            <span
+                              className={`px-1.5 py-0.5 uppercase tracking-[1.36px] text-xs rounded-full ${getStatusBadge(course.course_status)}`}
+                            >
+                              {course.course_status}
+                            </span>
+                            <span
+                              className={`px-1.5 py-0.5 uppercase tracking-[1.36px] text-xs rounded-full ${getStatusBadge(course.enrollment_status)}`}
+                            >
+                              {course.enrollment_status}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 text-center py-2">No enrolled courses</p>
+                <p className="text-sm text-gray-500 text-center py-2">
+                  No enrolled courses
+                </p>
               )}
             </div>
           )}
@@ -711,7 +747,7 @@ const AdminManagement = ( ) => {
           {/* Enrollment Filters */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-wrap items-center gap-4">
-              <div className="flex-1 min-w-[200px] relative">
+              <div className="flex-1 min-w-50 relative">
                 <input
                   type="text"
                   name="user_id"
@@ -722,22 +758,27 @@ const AdminManagement = ( ) => {
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
-              
+
               <button
                 onClick={() => setShowEnrollmentFilters(!showEnrollmentFilters)}
                 className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
-                  showEnrollmentFilters || (enrollmentFilters.course_id || enrollmentFilters.status || enrollmentFilters.is_active)
+                  showEnrollmentFilters ||
+                  enrollmentFilters.course_id ||
+                  enrollmentFilters.enrollment_status ||
+                  enrollmentFilters.is_active
                     ? "bg-red-50 border-red-200 text-red-600"
                     : "border-gray-300 text-gray-600 hover:bg-gray-50"
                 }`}
               >
                 <Filter className="w-4 h-4" />
                 <span className="text-sm">Filters</span>
-                {(enrollmentFilters.course_id || enrollmentFilters.status || enrollmentFilters.is_active) && (
+                {(enrollmentFilters.course_id ||
+                  enrollmentFilters.enrollment_status ||
+                  enrollmentFilters.is_active) && (
                   <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                 )}
               </button>
-              
+
               <button
                 onClick={fetchEnrollments}
                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -750,7 +791,9 @@ const AdminManagement = ( ) => {
             {showEnrollmentFilters && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-gray-700">Filter Enrollments</h4>
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Filter Enrollments
+                  </h4>
                   <button
                     onClick={clearEnrollmentFilters}
                     className="text-sm text-red-600 hover:text-red-700"
@@ -778,8 +821,8 @@ const AdminManagement = ( ) => {
                     </label>
                     <select
                       name="status"
-                      value={enrollmentFilters.status}
-                    //   onChange={handleEnrollmentFilterChange}
+                      value={enrollmentFilters.enrollment_status}
+                      //   onChange={handleEnrollmentFilterChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All Status</option>
@@ -819,8 +862,10 @@ const AdminManagement = ( ) => {
               <div className="text-center py-12">
                 <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">No enrollments found</p>
-                {(enrollmentFilters.user_id || enrollmentFilters.course_id || 
-                  enrollmentFilters.status || enrollmentFilters.is_active) && (
+                {(enrollmentFilters.user_id ||
+                  enrollmentFilters.course_id ||
+                  enrollmentFilters.enrollment_status ||
+                  enrollmentFilters.is_active) && (
                   <button
                     onClick={clearEnrollmentFilters}
                     className="mt-2 text-sm text-red-600 hover:text-red-700"
@@ -845,9 +890,9 @@ const AdminManagement = ( ) => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Enrolled
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Progress
-                    </th>
+                    </th> */}
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
@@ -855,62 +900,79 @@ const AdminManagement = ( ) => {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {enrollments.map((enrollment) => {
-                    const progress = getProgress(enrollment);
-                    const completedLessons = getCompletedLessons(enrollment);
-                    const totalLessons = getTotalLessons(enrollment);
-                    
+                    // const progress = getProgress(enrollment);
+                    // const completedLessons = getCompletedLessons(enrollment);
+                    // const totalLessons = getTotalLessons(enrollment);
+
                     return (
-                      <tr key={enrollment.enrollment_id || enrollment.id} className="hover:bg-gray-50 transition-colors">
+                      <tr
+                        key={enrollment.enrollment_id || enrollment.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 text-xs font-semibold flex-shrink-0">
-                              {enrollment.user_name ? enrollment.user_name.charAt(0).toUpperCase() : "U"}
+                              {enrollment.user_name
+                                ? enrollment.user_name.charAt(0).toUpperCase()
+                                : "U"}
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-900">
                                 {enrollment.user_name || "N/A"}
                               </p>
-                              <p className="text-xs text-gray-500">{enrollment.user_email || "N/A"}</p>
+                              <p className="text-xs text-gray-500">
+                                {enrollment.user_email || "N/A"}
+                              </p>
                               {enrollment.user_mobile && (
-                                <p className="text-xs text-gray-400">{enrollment.user_mobile}</p>
+                                <p className="text-xs text-gray-400">
+                                  {enrollment.user_mobile}
+                                </p>
                               )}
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           <div>
-                            <p className="text-sm text-gray-900">
+                            <p className="text-sm capitalize text-gray-900">
                               {enrollment.course_title || "N/A"}
                             </p>
                             {enrollment.course_code && (
-                              <p className="text-xs text-gray-500 font-mono">{enrollment.course_code}</p>
+                              <p className="text-xs text-gray-500 font-mono">
+                                {enrollment.course_code}
+                              </p>
                             )}
                             {enrollment.course_status && (
-                              <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadge(enrollment.course_status)}`}>
+                              <span
+                                className={`px-1.5 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(enrollment.course_status)}`}
+                              >
                                 {enrollment.course_status}
                               </span>
                             )}
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(enrollment.status)}`}>
-                            {enrollment.status || "N/A"}
+                          <span
+                            className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(enrollment.enrollment_status)}`}
+                          >
+                            {enrollment.enrollment_status || "N/A"}
                           </span>
-                          {enrollment.is_active !== undefined && (
-                            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${enrollment.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}>
-                              {enrollment.is_active ? 'Active' : 'Inactive'}
+                          {/* {enrollment.enrollment_is_active !== undefined && (
+                            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${enrollment.enrollment_is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}>
+                              {enrollment.enrollment_is_active ? 'Active' : 'Inactive'}
                             </span>
-                          )}
+                          )} */}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-500">
-                          {enrollment.enrolled_at ? formatDateTime(enrollment.enrolled_at) : "N/A"}
+                          {enrollment.enrolled_at
+                            ? formatDateTime(enrollment.enrolled_at)
+                            : "N/A"}
                           {enrollment.expiry_at && (
                             <div className="text-xs text-gray-400">
                               Expires: {formatDate(enrollment.expiry_at)}
                             </div>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        {/* <td className="px-4 py-3">
                           {progress > 0 ? (
                             <div>
                               <div className="flex items-center gap-2">
@@ -933,17 +995,17 @@ const AdminManagement = ( ) => {
                           ) : (
                             <span className="text-xs text-gray-400">Not started</span>
                           )}
-                        </td>
+                        </td> */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <select
-                              value={enrollment.status || ""}
+                              value={enrollment.enrollment_status || ""}
                               onChange={(e) => {
                                 const status = e.target.value;
                                 if (status) {
                                   handleUpdateEnrollmentStatus(
                                     enrollment.enrollment_id || enrollment.id,
-                                    status
+                                    status,
                                   );
                                 }
                               }}

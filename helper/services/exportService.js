@@ -40,12 +40,12 @@ class ExportService {
       const queryString = this.buildQueryString(filters);
       const url = `${this.baseURL}/api/v1/${endpoint}/export-csv${queryString}`;
 
-      console.log('Export URL:', url); // For debugging
 
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${session?.user?.access_token}`,
+          'Access-Token': session?.accessToken,
+          'Refresh-Token':session?.refreshToken,
           'Content-Type': 'application/json',
         },
       });
@@ -159,8 +159,7 @@ class ExportService {
       // Show info toast
       if (toast?.info) {
         toast.info(`Preparing ${endpoint} CSV export...`);
-      }
-
+      }    
       // Get the CSV response
       const response = await this.exportCSV(endpoint, filters, session, defaultFilename);
       
@@ -272,7 +271,7 @@ class ExportService {
    * @param {Object} session - User session
    * @returns {Promise<boolean>} - True if export is available
    */
-  async checkExportAvailability(endpoint, session) {
+  async checkExportAvailability(endpoint, session) {    
     try {
       const response = await fetch(`${this.baseURL}/api/v1/${endpoint}/export-csv`, {
         method: 'GET',

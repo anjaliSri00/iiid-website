@@ -1,6 +1,6 @@
 // components/Assessment/ProgramCard.js
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -100,7 +100,52 @@ const ProgramCard = ({
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
   const router = useRouter();
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target) && 
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    // Close menu on escape key
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
+
+  // Handle window resize to reposition dropdown
+  useEffect(() => {
+    if (showMenu) {
+      const handleResize = () => {
+        // Force re-render to update position
+        setShowMenu(prev => {
+          setShowMenu(false);
+          setTimeout(() => setShowMenu(true), 10);
+          return prev;
+        });
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [showMenu]);
 
   const handleActivate = async () => {
     setIsActivating(true);
@@ -165,12 +210,59 @@ const ProgramCard = ({
     return colors[status] || colors.draft;
   };
 
+  const toggleAssessment = () => {
+    if (!assessment) return;
+    setExpandedAssessment(prev => {
+      const newState = prev === assessment.id ? null : assessment.id;
+      return newState;
+    });
+  };
+
+  const isExpanded = assessment && expandedAssessment === assessment.id;
+
+  // Get dropdown position based on viewport
+  const getDropdownPosition = () => {
+    if (typeof window === 'undefined') return 'right-0';
+    
+    const width = window.innerWidth;
+    
+    // For very small screens, position from left
+    if (width < 380) {
+      return 'left-0';
+    }
+    
+    // For small screens, position from right with some offset
+    if (width < 640) {
+      return 'right-0';
+    }
+    
+    // For larger screens, default right position
+    return 'right-0';
+  };
+
+  // Get dropdown width based on viewport
+  const getDropdownWidth = () => {
+    if (typeof window === 'undefined') return 'w-48';
+    
+    const width = window.innerWidth;
+    
+    if (width < 380) {
+      return 'w-[calc(100vw-2rem)] min-w-[200px] max-w-[280px]';
+    }
+    
+    if (width < 640) {
+      return 'w-56';
+    }
+    
+    return 'w-48 sm:w-56 md:w-60';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="group"
+      className="group w-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -178,104 +270,154 @@ const ProgramCard = ({
         className={`bg-linear-to-br ${getGradient(program.id?.length || 0)} rounded-2xl border-2 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden`}
       >
         {/* Top Status Bar */}
-        <div className="flex items-center justify-between px-6 pt-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
             {program.is_active && (
               <motion.div 
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full"
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-emerald-50 border border-emerald-200 rounded-full flex-shrink-0"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
               >
                 <motion.div 
-                  className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                  className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500"
                   animate={{ scale: [1, 1.5, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
-                <span className="text-xs font-medium text-emerald-700">Active</span>
+                <span className="text-[9px] sm:text-xs uppercase tracking-[1.36px] font-medium text-emerald-700">Active</span>
               </motion.div>
             )}
-            <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(program.status)}`}>
+            <span className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 uppercase tracking-[1.36px] rounded-full text-[9px] sm:text-xs font-medium border ${getStatusColor(program.status)} flex-shrink-0`}>
               {program.status}
             </span>
             {program.course_code && (
-              <span className="px-2.5 py-1 bg-white/80 border border-gray-200 rounded-full text-xs font-medium text-gray-600">
+              <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-white/80 border border-gray-200 rounded-full text-[9px] sm:text-xs font-medium text-gray-600 truncate max-w-[80px] sm:max-w-none flex-shrink-0">
                 {program.course_code}
               </span>
             )}
           </div>
           
-          {/* Quick Actions Dropdown */}
-          <div className="relative">
+          {/* Quick Actions Dropdown - Improved for Mobile */}
+          <div className="relative flex-shrink-0">
             <motion.button
+              ref={buttonRef}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1.5 hover:bg-white/80 rounded-lg transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
+              className="p-1.5 sm:p-2 hover:bg-white/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400/50"
+              aria-label="More options"
+              aria-expanded={showMenu}
             >
-              <MoreVertical className="w-4 h-4 text-gray-400" />
+              <MoreVertical className="w-4 h-4 sm:w-4 sm:h-4 text-gray-400" />
             </motion.button>
             
             <AnimatePresence>
               {showMenu && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50"
+                  ref={menuRef}
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className={`absolute max-sm:-left-26.5 ${getDropdownPosition()} mt-2 ${getDropdownWidth()} bg-white rounded-xl shadow-2xl border border-gray-100/80 py-1.5 z-50 overflow-hidden max-h-[80vh] overflow-y-auto`}
+                  style={{
+                    boxShadow: '0 20px 60px -12px rgba(0,0,0,0.25), 0 8px 24px -6px rgba(0,0,0,0.1)',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                 >
+                  {/* Dropdown Header for Mobile */}
+                  <div className="block sm:hidden px-3 py-2 border-b border-gray-100">
+                    <p className="text-xs font-semibold text-gray-600">Course Actions</p>
+                  </div>
+
                   <button
-                    onClick={() => { onEditProgram(program); setShowMenu(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center gap-2"
+                    onClick={() => { 
+                      onEditProgram(program); 
+                      setShowMenu(false); 
+                    }}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center gap-2.5 sm:gap-2 transition-colors"
                   >
-                    <Edit className="w-4 h-4" />
-                    Edit Program
+                    <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate">Edit Program</span>
                   </button>
+                  
                   <button
-                    onClick={() => { router.push(`/programs/${program.id}`); setShowMenu(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2"
+                    onClick={() => { 
+                      router.push(`/programs/${program.id}`); 
+                      setShowMenu(false); 
+                    }}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2.5 sm:gap-2 transition-colors"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    View Details
+                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate">View Details</span>
                   </button>
-                   {program.is_active ? (
+
+                  <div className="border-t border-gray-100 my-1.5"></div>
+                  
+                  {program.is_active ? (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={handleDeactivateCourse}
+                      onClick={() => {
+                        handleDeactivateCourse();
+                        setShowMenu(false);
+                      }}
                       disabled={isCourseDeactivating}
-                      className="flex items-center gap-2 px-4 w-full py-2 text-sm text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                      className="flex items-center gap-2.5 sm:gap-2 px-3 sm:px-4 w-full py-2.5 sm:py-2 text-xs sm:text-sm text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-50"
                     >
                       {isCourseDeactivating ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 animate-spin flex-shrink-0" />
                       ) : (
-                        <EyeOff className="w-3.5 h-3.5" />
+                        <EyeOff className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                       )}
-                      Deactivate
+                      <span className="truncate">Deactivate Course</span>
                     </motion.button>
                   ) : (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={handleActivateCourse}
+                      onClick={() => {
+                        handleActivateCourse();
+                        setShowMenu(false);
+                      }}
                       disabled={isCourseActivating}
-                      className="flex items-center gap-2 px-4 py-2 w-full text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="flex items-center gap-2.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-2 w-full text-xs sm:text-sm text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
                     >
                       {isCourseActivating ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 animate-spin flex-shrink-0" />
                       ) : (
-                        <Rocket className="w-3.5 h-3.5" />
+                        <Rocket className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                       )}
-                      Activate
+                      <span className="truncate">Activate Course</span>
                     </motion.button>
                   )}
-                  <hr className="my-1 border-gray-100" />
+                  
+                  <div className="border-t border-gray-100 my-1.5"></div>
+                  
                   <button
-                    onClick={() => { onDeleteProgram(program.id); setShowMenu(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    onClick={() => { 
+                      if (confirm('Are you sure you want to delete this program?')) {
+                        onDeleteProgram(program.id);
+                      }
+                      setShowMenu(false); 
+                    }}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-2 text-left text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5 sm:gap-2 transition-colors"
                   >
-                    <Trash2Icon className="w-4 h-4" />
-                    Delete Program
+                    <Trash2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate">Delete Program</span>
                   </button>
+
+                  {/* Close button for mobile */}
+                  <div className="block sm:hidden border-t border-gray-100 mt-1 pt-1.5">
+                    <button
+                      onClick={() => setShowMenu(false)}
+                      className="w-full px-3 py-2 text-center text-xs text-gray-400 hover:text-gray-600"
+                    >
+                      Close Menu
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -283,11 +425,11 @@ const ProgramCard = ({
         </div>
 
         {/* Main Content */}
-        <div className="px-6 pb-6">
-          <div className="flex items-start gap-5 mt-2">
+        <div className="px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-5 mt-2">
             {/* Thumbnail */}
-            <div className="relative group/image flex-shrink-0">
-              <div className="w-24 h-24 rounded-xl overflow-hidden shadow-md ring-2 ring-white/50">
+            <div className="relative group/image shrink-0 w-full sm:w-20 md:w-24">
+              <div className="w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl overflow-hidden shadow-md ring-2 ring-white/50 mx-auto sm:mx-0">
                 {program.thumbnail_url ? (
                   <Image
                     src={program.thumbnail_url}
@@ -297,107 +439,105 @@ const ProgramCard = ({
                     className="w-full h-full object-cover group-hover/image:scale-110 transition-transform duration-500"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center">
-                    <BookOpen className="w-10 h-10 text-white/90" />
+                  <div className="w-full h-full bg-linear-to-br from-red-400 to-rose-500 flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-white/90" />
                   </div>
                 )}
               </div>
-              <div className="absolute -bottom-1 -right-1">
+              <div className="absolute -bottom-1 -right-1 sm:right-0">
                 <button
                   onClick={() => router.push(`/programs/${program.id}`)}
-                  className="p-1.5 bg-red-500 text-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105"
+                  className="p-1 sm:p-1.5 bg-red-500 text-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105"
                 >
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </button>
               </div>
             </div>
 
             {/* Program Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
+            <div className="flex-1 min-w-0 w-full">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-3">
+                <div className="flex-1 w-full">
                   <h3 
-                    className="text-lg font-bold text-gray-800 hover:text-red-600 cursor-pointer transition-colors line-clamp-1"
+                    className="text-base sm:text-lg md:text-xl font-bold text-gray-800 capitalize hover:text-red-600 cursor-pointer transition-colors line-clamp-1"
                     onClick={() => router.push(`/programs/${program.id}`)}
                   >
                     {program.title}
                   </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2 mt-0.5">
+                  <p className="text-xs sm:text-sm text-gray-600 capitalize line-clamp-2 mt-0.5">
                     {program.description}
                   </p>
                   
-                  {/* Tags */}
-                  <div className="flex flex-wrap items-center gap-2 mt-2">
-                    <div className="flex items-center gap-1 text-xs text-gray-500 bg-white/70 px-2.5 py-1 rounded-full border border-gray-200/50">
-                      <Tag className="w-3 h-3 text-red-400" />
-                      {program.category || "General"}
+                  {/* Tags - Responsive grid */}
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                      <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-400 flex-shrink-0" />
+                      <span className="truncate max-w-[60px] sm:max-w-none">{program.category || "General"}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 bg-white/70 px-2.5 py-1 rounded-full border border-gray-200/50">
-                      <Clock className="w-3 h-3 text-amber-400" />
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400 flex-shrink-0" />
                       {program.duration || "N/A"}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 bg-white/70 px-2.5 py-1 rounded-full border border-gray-200/50">
-                      <GraduationCap className="w-3 h-3 text-purple-400" />
-                      {program.level || "Beginner"}
+                    <div className="flex items-center gap-0.5 sm:gap-1 uppercase tracking-[1.36px] text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                      <GraduationCap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-purple-400 flex-shrink-0" />
+                      <span className="truncate max-w-[50px] sm:max-w-none">{program.level || "Beginner"}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 bg-white/70 px-2.5 py-1 rounded-full border border-gray-200/50">
-                      <Users className="w-3 h-3 text-blue-400" />
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs uppercase tracking-[1.36px] text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                      <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400 flex-shrink-0" />
                       {program.mode || "Online"}
                     </div>
                     {program.final_price && (
-                      <div className="flex items-center gap-1 bg-gradient-to-r from-red-50 to-rose-50 px-2.5 py-1 rounded-full border border-red-200/50">
-                        <span className="text-xs font-bold text-red-600">₹{program.final_price}</span>
+                      <div className="flex items-center gap-0.5 sm:gap-1 bg-linear-to-r from-red-50 to-rose-50 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-red-200/50">
+                        <span className="text-[9px] sm:text-xs font-bold text-red-600">₹{program.final_price}</span>
                         {program.original_price && program.discount > 0 && (
                           <>
-                            <span className="text-xs text-gray-400 line-through">₹{program.original_price}</span>
-                            <span className="text-xs font-bold text-red-500 bg-white/60 px-1 rounded-full">-{program.discount}%</span>
+                            <span className="text-[8px] sm:text-xs text-gray-400 line-through">₹{program.original_price}</span>
+                            <span className="text-[8px] sm:text-xs font-bold text-red-500 bg-white/60 px-0.5 sm:px-1 rounded-full">-{program.discount}%</span>
                           </>
                         )}
                       </div>
                     )}
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <span className="w-1 h-1 rounded-full bg-gray-300" />
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-400">
+                      <span className="w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-gray-300" />
                       <span>{program.lessons?.length || 0} lessons</span>
                     </div>
                   </div>
                 </div>
-
-            
               </div>
             </div>
           </div>
         </div>
 
         {/* Assessment Section */}
-        <div className="px-6 pb-6">
+        <div className="px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6">
           <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm overflow-hidden">
             {/* Assessment Header */}
             <div 
-              className="px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-white/30 transition-colors"
-              onClick={() => assessment && setExpandedAssessment(expandedAssessment === program.id ? null : program.id)}
+              className="px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 cursor-pointer hover:bg-white/30 transition-colors"
+              onClick={toggleAssessment} 
             >
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg text-white">
-                  <FileCheck className="w-3.5 h-3.5" />
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 flex-1 min-w-0">
+                <div className="p-1 sm:p-1.5 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg text-white flex-shrink-0">
+                  <FileCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Assessment</span>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Assessment</span>
                   {assessment && (
                     <>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusColor(assessment.status)}`}>
+                      <span className={`px-1.5 sm:px-2 py-0.5 uppercase tracking-[1.36px] rounded-full text-[8px] sm:text-[10px] font-medium border ${getStatusColor(assessment.status)} whitespace-nowrap`}>
                         {assessment.status}
                       </span>
                       {assessment.is_active ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                          <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-emerald-500" />
                           Live
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                        <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium bg-gray-50 text-gray-600 border border-gray-200 whitespace-nowrap">
                           Draft
                         </span>
                       )}
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-[8px] sm:text-[10px] text-gray-400 whitespace-nowrap">
                         {assessment.questions?.length || 0} questions
                       </span>
                     </>
@@ -405,71 +545,72 @@ const ProgramCard = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-0.5 sm:gap-1 flex-shrink-0">
                 {assessment ? (
                   <>
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex flex-wrap items-center gap-0.5 sm:gap-1">
                       {assessment.is_active ? (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeactivate(); }}
                           disabled={isDeactivating}
-                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-1 sm:p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
                           title="Deactivate Assessment"
                         >
                           {isDeactivating ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
                           ) : (
-                            <EyeOff className="w-3.5 h-3.5" />
+                            <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           )}
                         </button>
                       ) : (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleActivate(); }}
                           disabled={isActivating}
-                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-1 sm:p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
                           title="Activate Assessment"
                         >
                           {isActivating ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
                           ) : (
-                            <Eye className="w-3.5 h-3.5" />
+                            <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           )}
                         </button>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); onEditAssessment(program.id, assessment); }}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Edit Assessment"
                       >
-                        <Edit className="w-3.5 h-3.5" />
+                        <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); onDeleteAssessment(program.id, assessment.id); }}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Delete Assessment"
                       >
-                        <Trash2Icon className="w-3.5 h-3.5" />
+                        <Trash2Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
                     </div>
                     <button
-                      onClick={(e) => { e.stopPropagation(); setExpandedAssessment(expandedAssessment === program.id ? null : program.id); }}
-                      className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      onClick={(e) => { e.stopPropagation(); setExpandedAssessment(expandedAssessment === assessment.id ? null : assessment.id); }}
+                      className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <motion.div
-                        animate={{ rotate: expandedAssessment === program.id ? 180 : 0 }}
+                        animate={{ rotate: isExpanded ? 180 : 0 }} 
                         transition={{ duration: 0.2 }}
                       >
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </motion.div>
                     </button>
                   </>
                 ) : (
                   <button
                     onClick={(e) => { e.stopPropagation(); onCreateAssessment(program.id); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 rounded-lg transition-colors shadow-sm"
+                    className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 rounded-lg transition-colors shadow-sm whitespace-nowrap"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    Create Assessment
+                    <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <span className="hidden xs:inline">Create Assessment</span>
+                    <span className="xs:hidden">Create</span>
                   </button>
                 )}
               </div>
@@ -477,41 +618,41 @@ const ProgramCard = ({
 
             {/* Expanded Assessment Details */}
             <AnimatePresence>
-              {expandedAssessment === program.id && assessment && (
+              {isExpanded && assessment && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="px-4 py-3 border-t border-gray-200/50 bg-white/30 overflow-hidden"
+                  className="px-3 sm:px-4 py-2 sm:py-3 border-t border-gray-200/50 bg-white/30 overflow-hidden"
                 >
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-4 gap-2.5 mb-3">
-                    <div className="bg-white/60 rounded-lg p-2.5 text-center">
-                      <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Title</p>
-                      <p className="text-xs font-semibold text-gray-800 truncate">{assessment.title}</p>
+                  {/* Stats Grid - Responsive */}
+                  <div className="grid grid-cols-2 xs:grid-cols-4 gap-1.5 sm:gap-2.5 mb-2 sm:mb-3">
+                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Title</p>
+                      <p className="text-[10px] sm:text-xs font-semibold text-gray-800 capitalize truncate">{assessment.title}</p>
                     </div>
-                    <div className="bg-white/60 rounded-lg p-2.5 text-center">
-                      <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Passing Score</p>
-                      <p className="text-xs font-bold text-emerald-600">{assessment.passing_score}%</p>
+                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Passing</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-emerald-600">{assessment.passing_score}%</p>
                     </div>
-                    <div className="bg-white/60 rounded-lg p-2.5 text-center">
-                      <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Duration</p>
-                      <p className="text-xs font-bold text-blue-600">{assessment.duration_minutes}m</p>
+                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Duration</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-blue-600">{assessment.duration_minutes}m</p>
                     </div>
-                    <div className="bg-white/60 rounded-lg p-2.5 text-center">
-                      <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Questions</p>
-                      <p className="text-xs font-bold text-purple-600">{assessment.questions?.length || 0}</p>
+                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Questions</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-purple-600">{assessment.questions?.length || 0}</p>
                     </div>
                   </div>
 
                   {/* Questions */}
                   {assessment.questions && assessment.questions.length > 0 && (
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <ListChecks className="w-3.5 h-3.5 text-purple-500" />
-                          <span className="text-xs font-semibold text-gray-700">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                          <ListChecks className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500 flex-shrink-0" />
+                          <span className="text-[10px] sm:text-xs font-semibold text-gray-700 whitespace-nowrap">
                             Questions ({assessment.questions.length})
                           </span>
                         </div>
@@ -522,28 +663,28 @@ const ProgramCard = ({
                             setEditingQuestion(null);
                             resetQuestionForm();
                           }}
-                          className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors"
+                          className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors whitespace-nowrap"
                         >
-                          <Plus className="w-3 h-3" />
-                          Add
+                          <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          <span className="hidden xs:inline">Add</span>
                         </button>
                       </div>
 
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                      <div className="space-y-1 sm:space-y-1.5 max-h-32 sm:max-h-48 overflow-y-auto pr-0.5 sm:pr-1 custom-scrollbar">
                         {assessment.questions.map((question, idx) => (
                           <div
                             key={question.id || idx}
-                            className="group/question bg-white rounded-lg p-2.5 border border-gray-200/60 hover:border-red-200 transition-colors"
+                            className="group/question bg-white rounded-lg p-1.5 sm:p-2.5 border border-gray-200/60 hover:border-red-200 transition-colors"
                           >
-                            <div className="flex items-start gap-2.5">
-                              <span className="flex items-center justify-center w-5 h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-full text-white text-[10px] font-bold flex-shrink-0">
+                            <div className="flex flex-col xs:flex-row items-start gap-1.5 sm:gap-2.5">
+                              <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-full text-white text-[8px] sm:text-[10px] font-bold flex-shrink-0">
                                 {idx + 1}
                               </span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-gray-800 line-clamp-1">
+                              <div className="flex-1 min-w-0 w-full">
+                                <p className="text-[10px] sm:text-xs font-medium text-gray-800 line-clamp-1">
                                   {question.question_text}
                                 </p>
-                                <div className="flex flex-wrap gap-1 mt-1">
+                                <div className="flex flex-wrap gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
                                   {['A', 'B', 'C', 'D'].map(letter => {
                                     const option = question[`option_${letter.toLowerCase()}`];
                                     if (!option) return null;
@@ -551,23 +692,23 @@ const ProgramCard = ({
                                     return (
                                       <span
                                         key={letter}
-                                        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium ${
+                                        className={`inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.5 rounded text-[7px] sm:text-[9px] font-medium ${
                                           isCorrect
                                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                             : 'bg-gray-50 text-gray-600 border border-gray-200'
                                         }`}
                                       >
-                                        {letter}: {option}
-                                        {isCorrect && <CheckCircle className="w-2.5 h-2.5 text-emerald-500" />}
+                                        {letter}: <span className="truncate max-w-[30px] sm:max-w-[60px]">{option}</span>
+                                        {isCorrect && <CheckCircle className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-emerald-500 flex-shrink-0" />}
                                       </span>
                                     );
                                   })}
-                                  <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-medium border border-blue-200">
+                                  <span className="px-1 sm:px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[7px] sm:text-[9px] font-medium border border-blue-200 whitespace-nowrap">
                                     {question.marks || 1}m
                                   </span>
                                 </div>
                               </div>
-                              <div className="flex gap-0.5 opacity-0 group-hover/question:opacity-100 transition-opacity">
+                              <div className="flex gap-0.5 opacity-100 xs:opacity-0 group-hover/question:opacity-100 transition-opacity ml-auto xs:ml-0">
                                 <button
                                   onClick={() => {
                                     setEditingQuestion(question);
@@ -585,15 +726,15 @@ const ProgramCard = ({
                                     setSelectedAssessmentId(program.id);
                                     setShowAddQuestion(true);
                                   }}
-                                  className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                 >
-                                  <Edit className="w-3 h-3" />
+                                  <Edit className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteQuestion(program.id, question.id)}
-                                  className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                 >
-                                  <Trash2Icon className="w-3 h-3" />
+                                  <Trash2Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 </button>
                               </div>
                             </div>
@@ -610,24 +751,26 @@ const ProgramCard = ({
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="mt-3 pt-3 border-t border-gray-200/50"
+                        className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-200/50"
                       >
                         {QuestionForm && (
-                          <QuestionForm
-                            editingQuestion={editingQuestion}
-                            questionFormData={questionFormData}
-                            questionErrors={questionErrors}
-                            questionSaving={questionSaving}
-                            handleQuestionFormChange={handleQuestionFormChange}
-                            handleQuestionSubmit={() =>
-                              handleQuestionSubmit(program.id, assessment.id)
-                            }
-                            setShowAddQuestion={setShowAddQuestion}
-                            setEditingQuestion={setEditingQuestion}
-                            resetQuestionForm={resetQuestionForm}
-                            courseId={program.id}
-                            assessmentId={assessment.id}
-                          />
+                          <div className="scale-90 sm:scale-100 origin-top">
+                            <QuestionForm
+                              editingQuestion={editingQuestion}
+                              questionFormData={questionFormData}
+                              questionErrors={questionErrors}
+                              questionSaving={questionSaving}
+                              handleQuestionFormChange={handleQuestionFormChange}
+                              handleQuestionSubmit={() =>
+                                handleQuestionSubmit(program.id, assessment.id)
+                              }
+                              setShowAddQuestion={setShowAddQuestion}
+                              setEditingQuestion={setEditingQuestion}
+                              resetQuestionForm={resetQuestionForm}
+                              courseId={program.id}
+                              assessmentId={assessment.id}
+                            />
+                          </div>
                         )}
                       </motion.div>
                     )}
@@ -640,8 +783,10 @@ const ProgramCard = ({
       </div>
 
       <style jsx>{`
+        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
-          width: 3px;
+          width: 2px;
+          height: 2px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
@@ -652,6 +797,72 @@ const ProgramCard = ({
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #f87171;
+        }
+        
+        @media (min-width: 640px) {
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 3px;
+            height: 3px;
+          }
+        }
+        
+        /* Extra small devices (phones) */
+        @media (max-width: 480px) {
+          .xs\\:inline {
+            display: inline !important;
+          }
+          .xs\\:hidden {
+            display: none !important;
+          }
+          .xs\\:grid-cols-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          }
+          .xs\\:opacity-0 {
+            opacity: 0 !important;
+          }
+          .group:hover .xs\\:opacity-100,
+          .group\\/question:hover .xs\\:opacity-100 {
+            opacity: 100 !important;
+          }
+        }
+        
+        @media (min-width: 481px) {
+          .xs\\:inline {
+            display: none !important;
+          }
+          .xs\\:hidden {
+            display: none !important;
+          }
+        }
+        
+        /* Dropdown animations and styles */
+        .dropdown-enter {
+          opacity: 0;
+          transform: scale(0.95) translateY(-10px);
+        }
+        .dropdown-enter-active {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+          transition: all 0.15s ease-out;
+        }
+        .dropdown-exit {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+        .dropdown-exit-active {
+          opacity: 0;
+          transform: scale(0.95) translateY(-10px);
+          transition: all 0.1s ease-in;
+        }
+        
+        /* Touch-friendly button areas for mobile */
+        @media (max-width: 640px) {
+          .p-1\\.5 {
+            padding: 0.5rem !important;
+          }
+          .p-1 {
+            padding: 0.375rem !important;
+          }
         }
       `}</style>
     </motion.div>

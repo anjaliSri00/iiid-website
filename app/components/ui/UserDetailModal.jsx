@@ -96,13 +96,13 @@ const UserDetailModal = ({ user, onClose, session }) => {
                   user.role_type.map((role) => (
                     <span
                       key={role}
-                      className={`px-2 py-0.5 text-xs rounded-full ${getRoleBadge(role)}`}
+                      className={`px-2 py-0.5 text-xs tracking-[1.36px] uppercase rounded-full ${getRoleBadge(role)}`}
                     >
                       {role}
                     </span>
                   ))
                 ) : (
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleBadge(user.role_type)}`}>
+                  <span className={`px-2 py-0.5 text-xs tracking-[1.36px] uppercase rounded-full ${getRoleBadge(user.role_type)}`}>
                     {user.role_type}
                   </span>
                 )}
@@ -110,7 +110,7 @@ const UserDetailModal = ({ user, onClose, session }) => {
             </div>
             <div className="p-3 bg-gray-50 rounded-lg">
               <p className="text-xs text-gray-500">Status</p>
-              <span className={`mt-1 inline-block px-2 py-1 text-xs rounded-full ${getStatusBadge(user.is_active ? 'active' : 'inactive')}`}>
+              <span className={`mt-1 inline-block px-2 py-1 text-xs tracking-[1.36px] uppercase rounded-full ${getStatusBadge(user.is_active ? 'active' : 'inactive')}`}>
                 {user.is_active ? "Active" : "Inactive"}
               </span>
             </div>
@@ -141,20 +141,20 @@ const UserDetailModal = ({ user, onClose, session }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {user.enrolled_courses.map((course, idx) => (
                   <div key={idx} className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <p className="text-sm font-medium text-gray-900">{course.title}</p>
+                    <p className="text-sm font-medium text-gray-900 capitalize">{course.title}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <span className="text-xs text-gray-500">Code: {course.course_code}</span>
-                      <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadge(course.course_status)}`}>
+                      <span className={`px-1.5 py-0.5 text-xs tracking-[1.36px] uppercase rounded-full ${getStatusBadge(course.course_status)}`}>
                         {course.course_status}
                       </span>
-                      <span className={`px-1.5 py-0.5 text-xs rounded-full ${getStatusBadge(course.enrollment_status)}`}>
+                      <span className={`px-1.5 tracking-[1.36px] uppercase py-0.5 text-xs rounded-full ${getStatusBadge(course.enrollment_status)}`}>
                         {course.enrollment_status}
                       </span>
-                      {course.is_active && (
-                        <span className="px-1.5 py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded-full">
+                      {/* {course.is_active && (
+                        <span className="px-1.5 tracking-[1.36px] uppercase py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded-full">
                           Active
                         </span>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 ))}

@@ -47,6 +47,8 @@ import {
   IndianRupee,
   Receipt,
   HelpCircle,
+  Download,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import fetchApiResponse from "@/helper/api_data_store";
@@ -63,6 +65,7 @@ import PaymentManagement from "../components/ui/PaymentManagement";
 import { adminService } from "@/helper/services/adminService";
 import { paymentService } from "@/helper/services/paymentService";
 import FAQManagement from "../components/ui/FAQManagement";
+import useCSVExport from "@/helper/hooks/useCSVExport";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -73,6 +76,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [expandedAssessment, setExpandedAssessment] = useState(null);
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
+  const {isExporting, exportCourses} = useCSVExport(session);
 
   // Admin Stats
   const [adminStats, setAdminStats] = useState({
@@ -2032,6 +2036,17 @@ export default function DashboardPage() {
     resetQuestionForm();
   };
 
+
+    const handleExportCSV = async () => {
+    try {
+      await exportCourses();
+    } catch (error) {
+      // Error handled by hook
+      console.error("Export failed:", error);
+    }
+  };
+
+
   // Show loading state
   if (status === "loading" || loading) {
     return (
@@ -2365,33 +2380,33 @@ export default function DashboardPage() {
                       ) : (
                         <>
                           {/* Main Stats Grid - Consolidated */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-5 mb-6 md:mb-8">
                             {/* Total Users */}
-                            <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:-translate-y-1 overflow-hidden">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
                                     Total Users
                                   </p>
-                                  <p className="text-3xl font-bold text-gray-900">
+                                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                                     {adminStats.totalUsers}
                                   </p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                      <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full"></span>
                                       {adminStats.activeUsers} Active
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-gray-500 bg-gray-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.inactiveUsers} Inactive
                                     </span>
                                   </div>
                                 </div>
-                                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl group-hover:scale-110 transition-transform">
-                                  <Users className="w-6 h-6 text-blue-600" />
+                                <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                                  <Users className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-600" />
                                 </div>
                               </div>
-                              <div className="mt-3 flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="mt-2 sm:mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1 sm:h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000"
                                     style={{
@@ -2399,7 +2414,7 @@ export default function DashboardPage() {
                                     }}
                                   />
                                 </div>
-                                <span className="text-xs font-medium text-blue-600">
+                                <span className="text-[10px] sm:text-xs font-medium text-blue-600 flex-shrink-0">
                                   {adminStats.totalUsers > 0
                                     ? Math.round(
                                         (adminStats.activeUsers /
@@ -2413,30 +2428,30 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Total Courses */}
-                            <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-emerald-200 hover:-translate-y-1 overflow-hidden">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-emerald-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
                                     Total Courses
                                   </p>
-                                  <p className="text-3xl font-bold text-gray-900">
+                                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                                     {adminStats.totalCourses}
                                   </p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.publishedCourses} Published
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.draftCourses} Draft
                                     </span>
                                   </div>
                                 </div>
-                                <div className="p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl group-hover:scale-110 transition-transform">
-                                  <BookOpen className="w-6 h-6 text-emerald-600" />
+                                <div className="p-2 sm:p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-emerald-600" />
                                 </div>
                               </div>
-                              <div className="mt-3 flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="mt-2 sm:mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1 sm:h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-1000"
                                     style={{
@@ -2444,7 +2459,7 @@ export default function DashboardPage() {
                                     }}
                                   />
                                 </div>
-                                <span className="text-xs font-medium text-emerald-600">
+                                <span className="text-[10px] sm:text-xs font-medium text-emerald-600 flex-shrink-0">
                                   {adminStats.totalCourses > 0
                                     ? Math.round(
                                         (adminStats.publishedCourses /
@@ -2455,40 +2470,40 @@ export default function DashboardPage() {
                                   %
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-400 mt-2">
+                              <p className="text-[10px] sm:text-xs text-gray-400 mt-1.5 sm:mt-2 truncate">
                                 {adminStats.totalLessons} total lessons
                               </p>
                             </div>
 
                             {/* Enrollments Card */}
-                            <div className="group bg-white rounded-2xl p-5 relative shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1 overflow-hidden">
-                              <div className="flex items-start justify-between">
+                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
                                     Enrollments
                                   </p>
-                                  <p className="text-3xl font-bold text-gray-900">
+                                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                                     {adminStats.totalEnrollments}
                                   </p>
-                                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.activeEnrollments} Active
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.pendingEnrollments} Pending
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.completedEnrollments}{" "}
                                       Completed
                                     </span>
                                   </div>
                                 </div>
-                                <div className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shrink-0 group-hover:scale-110 transition-transform ml-3">
-                                  <GraduationCap className="w-6 h-6 text-purple-600" />
+                                <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-purple-600" />
                                 </div>
                               </div>
-                              <div className="mt-3 flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="mt-2 sm:mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1 sm:h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-1000"
                                     style={{
@@ -2496,7 +2511,7 @@ export default function DashboardPage() {
                                     }}
                                   />
                                 </div>
-                                <span className="text-xs font-medium text-purple-600 flex-shrink-0">
+                                <span className="text-[10px] sm:text-xs font-medium text-purple-600 flex-shrink-0">
                                   {adminStats.totalEnrollments > 0
                                     ? Math.round(
                                         (adminStats.activeEnrollments /
@@ -2510,33 +2525,33 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Revenue Card */}
-                            <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1 overflow-hidden">
-                              <div className="flex items-start justify-between">
+                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1 overflow-hidden">
+                              <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-500 mb-1">
+                                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
                                     Revenue
                                   </p>
-                                  <p className="text-3xl font-bold text-amber-600">
+                                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-600 truncate">
                                     {formatCurrency(adminStats.totalRevenue)}
                                   </p>
-                                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.successfulPayments} Success
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-red-600 bg-red-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.failedPayments} Failed
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-gray-500 bg-gray-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                                       {adminStats.totalPayments} Total
                                     </span>
                                   </div>
                                 </div>
-                                <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform ml-3">
-                                  <IndianRupee className="w-6 h-6 text-amber-600" />
+                                <div className="p-2 sm:p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform flex-shrink-0">
+                                  <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-amber-600" />
                                 </div>
                               </div>
-                              <div className="mt-3 flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="mt-2 sm:mt-3 flex items-center gap-2">
+                                <div className="flex-1 h-1 sm:h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-1000"
                                     style={{
@@ -2544,7 +2559,7 @@ export default function DashboardPage() {
                                     }}
                                   />
                                 </div>
-                                <span className="text-xs font-medium text-amber-600 flex-shrink-0">
+                                <span className="text-[10px] sm:text-xs font-medium text-amber-600 flex-shrink-0">
                                   {adminStats.totalPayments > 0
                                     ? Math.round(
                                         (adminStats.successfulPayments /
@@ -2661,7 +2676,7 @@ export default function DashboardPage() {
                                             </p>
                                           </div>
                                           <span
-                                            className={`px-2 py-0.5 text-xs rounded-full ${
+                                            className={`px-2 py-0.5 text-xs capitalize rounded-full ${
                                               enrollment.status === "active" ||
                                               enrollment.enrollment_status ===
                                                 "active"
@@ -3354,6 +3369,37 @@ export default function DashboardPage() {
                         <span className="hidden xs:inline">Create Program</span>
                         <span className="xs:hidden">Create</span>
                       </button>
+
+                       <button
+                            onClick={handleExportCSV}
+                            disabled={isExporting}
+                            className={`
+                              flex items-center gap-2 px-3 py-2 rounded-lg font-medium
+                              transition-all duration-200 ease-in-out
+                              ${isExporting 
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                                : "bg-linear-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:shadow-emerald-200 active:scale-95"
+                              }
+                              border-0 shadow-sm
+                            `}
+                          >
+                            {isExporting ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>Exporting...</span>
+                                <span className="ml-1 text-xs opacity-75">Please wait</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4" />
+                                <span>Export Data</span>
+                                <span className="hidden sm:inline text-xs opacity-80">
+                                  CSV
+                                </span>
+                                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                              </>
+                            )}
+                          </button>
                     </div>
                   </div>
 
@@ -3461,8 +3507,6 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   )}
-
-                  {/* Create/Edit Program Form - kept as is */}
                   {/* Create/Edit Program Form */}
                   {showCreateProgram && (
                     <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
@@ -4587,13 +4631,12 @@ export default function DashboardPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredPrograms.map((program) => {
-                        const assessment = assessments[program.id];
                         return (
                           <ProgramCard
                             key={program.id}
                             program={program}
                             onSelectCourse={handleSelectCourse}
-                            assessment={assessment}
+                            assessment={program?.assessment}
                             getStatusBadge={getStatusBadge}
                             onEditProgram={handleEditProgram}
                             onDeleteProgram={handleDeleteProgram}
@@ -4672,16 +4715,6 @@ export default function DashboardPage() {
               ) : activeTab === "admin" ? (
                 // Admin Management Tab
                 <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Admin Management
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Manage users and enrollments
-                      </p>
-                    </div>
-                  </div>
                   <AdminManagement
                     session={session}
                     onStatsUpdate={(stats) => {
@@ -4695,18 +4728,8 @@ export default function DashboardPage() {
               ) : activeTab === "payments" ? (
                 // Payments Tab
                 <div>
-                  {/* <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Payment Management
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        View and manage all payments
-                      </p>
-                    </div>
-                  </div> */}
+                
                   <PaymentManagement
-                    session={session}
                     onStatsUpdate={(stats) => {
                       setAdminStats((prev) => ({
                         ...prev,

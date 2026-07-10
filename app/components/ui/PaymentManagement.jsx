@@ -27,12 +27,18 @@ import {
   Hash,
   Tag,
   Shield,
-  Users
+  Download,
+  ChevronDown,
+  Users,
+  IndianRupeeIcon
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { paymentService } from "@/helper/services/paymentService";
+import useCSVExport from "@/helper/hooks/useCSVExport";
+import { useSession } from "next-auth/react";
 
-const PaymentManagement = ({ session }) => {
+const PaymentManagement = () => {
+  const {data:session} = useSession();
   const [payments, setPayments] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,7 +46,9 @@ const PaymentManagement = ({ session }) => {
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
   const [copied, setCopied] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  
+  const [statsLoading, setStatsLoading] = useState(false);
+  const {isExporting, exportPayments} = useCSVExport(session);
+
   // Check if user is admin or internal
   const isAdminOrInternal = () => {
     if (!session?.user?.role) return false;
@@ -69,7 +77,7 @@ const PaymentManagement = ({ session }) => {
     weeklyRevenue: 0,
     monthlyRevenue: 0
   });
-  const [statsLoading, setStatsLoading] = useState(false);
+  
 
   // Fetch payments based on user role
   const fetchPayments = async () => {
@@ -231,7 +239,7 @@ const PaymentManagement = ({ session }) => {
       case 'wallet':
         return <DollarSign className="w-4 h-4" />;
       case 'razorpay':
-        return <Receipt className="w-4 h-4" />;
+        return <IndianRupeeIcon className="w-4 h-4" />;
       default:
         return <Receipt className="w-4 h-4" />;
     }
@@ -263,6 +271,15 @@ const PaymentManagement = ({ session }) => {
         My Payments
       </span>
     );
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      await exportPayments();
+    } catch (error) {
+      // Error handled by hook
+      console.error("Export failed:", error);
+    }
   };
 
   return (
@@ -374,7 +391,7 @@ const PaymentManagement = ({ session }) => {
         {/* Header and Search */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-[200px] relative">
+            <div className="flex-1 min-w-50 relative">
               <input
                 type="text"
                 placeholder={isAdmin 
@@ -402,6 +419,36 @@ const PaymentManagement = ({ session }) => {
               <RefreshCw className="w-4 h-4" />
               <span className="text-sm">Refresh</span>
             </button>
+            <button
+                  onClick={handleExportCSV}
+                  disabled={isExporting}
+                  className={`
+                    flex items-center gap-2 px-3 py-2 rounded-lg font-medium
+                    transition-all duration-200 ease-in-out
+                    ${isExporting 
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                      : "bg-linear-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg hover:shadow-emerald-200 active:scale-95"
+                    }
+                    border-0 shadow-sm
+                  `}
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Exporting...</span>
+                      <span className="ml-1 text-xs opacity-75">Please wait</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      <span>Export Data</span>
+                      <span className="hidden sm:inline text-xs opacity-80">
+                        CSV
+                      </span>
+                      <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                    </>
+                  )}
+                </button>
           </div>
         </div>
 
@@ -537,7 +584,7 @@ const PaymentManagement = ({ session }) => {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getStatusBadge(payment.status)}`}>
+                      <span className={`inline-flex items-center gap-1 uppercase tracking-[1.36px]  px-2 py-1 text-xs rounded-full ${getStatusBadge(payment.status)}`}>
                         {getStatusIcon(payment.status)}
                         {payment.status || "N/A"}
                       </span>
@@ -581,7 +628,7 @@ const PaymentManagement = ({ session }) => {
                 <h2 className="text-lg font-semibold text-gray-900">
                   Payment Details
                 </h2>
-                <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${getStatusBadge(selectedPayment.status)}`}>
+                <span className={`ml-2 px-2 py-0.5 text-xs uppercase tracking-[1.36px]  rounded-full ${getStatusBadge(selectedPayment.status)}`}>
                   {selectedPayment.status}
                 </span>
               </div>
@@ -631,7 +678,7 @@ const PaymentManagement = ({ session }) => {
                 </div>
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-xs text-gray-500">Payment Method</p>
-                  <p className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                  <p className="text-sm font-medium text-gray-900 uppercase tracking-[1.36px]  flex items-center gap-1">
                     {getPaymentMethodIcon(selectedPayment.payment_method)}
                     {selectedPayment.payment_method || "N/A"}
                   </p>
