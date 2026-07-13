@@ -24,6 +24,11 @@ import {
   Timer,
   HelpCircle,
   Sparkles,
+  Download,
+  ExternalLink,
+  FileText,
+  Printer,
+  Share2,
 } from "lucide-react";
 import { assessmentApi } from "@/helper/services/assessmentApi";
 
@@ -48,6 +53,7 @@ const AssessmentPage = () => {
   const [flaggedQuestions, setFlaggedQuestions] = useState(new Set());
   const [startTime, setStartTime] = useState(null);
   const [isClient, setIsClient] = useState(false);
+  const [certificate, setCertificate] = useState(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -217,7 +223,23 @@ const AssessmentPage = () => {
       console.log("Submit response:", response);
 
       if (response?.meta?.status === 200 && response?.data) {
-        setResults(response.data);
+        // Handle the new response structure
+        const resultData = response.data;
+        setResults({
+          score: resultData.percentage || resultData.score || 0,
+          total: resultData.total || questions.length,
+          percentage: resultData.percentage || 0,
+          passed: resultData.passed || false,
+          correct_answers: resultData.correct_answers || 0,
+          wrong_answers: resultData.wrong_answers || 0,
+          answers: resultData.answers || [],
+        });
+        
+        // Store certificate data if present
+        if (resultData.certificate) {
+          setCertificate(resultData.certificate);
+        }
+        
         setShowResults(true);
       } else {
         setError(response?.meta?.message || "Failed to submit assessment");
@@ -240,8 +262,27 @@ const AssessmentPage = () => {
     setCurrentQuestionIndex(0);
     setFlaggedQuestions(new Set());
     setStartTime(new Date());
+    setCertificate(null);
     if (assessment?.duration_minutes) {
       setTimeRemaining(assessment.duration_minutes * 60);
+    }
+  };
+
+  const handleDownloadCertificate = () => {
+    if (certificate?.certificate_url) {
+      window.open(certificate.certificate_url, '_blank');
+    } else {
+      // If certificate URL is not available, show a message or generate a preview
+      toast.info('Certificate download will be available soon.');
+    }
+  };
+
+  const handleViewCertificate = () => {
+    if (certificate?.certificate_url) {
+      window.open(certificate.certificate_url, '_blank');
+    } else {
+      // Navigate to certificate page or show preview
+      router.push(`/programs/${programId}/certificate/${certificate?.id}`);
     }
   };
 
@@ -324,7 +365,7 @@ const AssessmentPage = () => {
 
   // Results view
   if (showResults && results) {
-    const passed = results.score >= (assessment.passing_score || 60);
+    const passed = results.passed || results.score >= (assessment.passing_score || 60);
     const answeredCount = getAnsweredCount();
 
     return (
@@ -353,7 +394,7 @@ const AssessmentPage = () => {
                     <XCircle className="w-12 h-12 text-[#CC0000]" />
                   )}
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-gray-900 font-serif">
                   {passed ? '🎉 Congratulations!' : 'Keep Learning!'}
                 </h2>
                 <p className="text-gray-600 mt-2">
@@ -372,7 +413,7 @@ const AssessmentPage = () => {
               <div className="p-6 border-b border-[#D4A574]/20">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-[#CC0000]">{results.score || 0}%</p>
+                    <p className="text-2xl font-bold text-[#CC0000]">{results.percentage || results.score || 0}%</p>
                     <p className="text-xs text-gray-500">Score</p>
                   </div>
                   <div className="text-center">
@@ -389,6 +430,57 @@ const AssessmentPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Certificate Section - Show if passed and certificate exists */}
+              {passed && certificate && (
+                <div className="p-6 border-b border-[#D4A574]/20 bg-[#FDF8F0]">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-[#CC0000]/10 rounded-lg">
+                        <Award className="w-6 h-6 text-[#CC0000]" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Certificate</h4>
+                        <p className="text-xs text-gray-500">
+                          {certificate.certificate_code}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Issued: {new Date(certificate.issued_at).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {certificate.certificate_url ? (
+                        <button
+                          onClick={handleDownloadCertificate}
+                          className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors shadow-md hover:shadow-lg"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Certificate
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleViewCertificate}
+                          className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors shadow-md hover:shadow-lg"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          View Certificate
+                        </button>
+                      )}
+                      <button
+                        onClick={() => window.print()}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#FDF8F0] text-gray-700 rounded-lg hover:bg-[#F5E6D3] transition-colors border border-[#D4A574]/20"
+                      >
+                        <Printer className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">

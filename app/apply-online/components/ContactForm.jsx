@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, User, Mail, MessageCircle, Phone, Loader2, CheckCircle, Sparkles } from 'lucide-react';
+import { Send, User, Mail, MessageCircle, Phone, Loader2, CheckCircle, Sparkles, AlertCircle } from 'lucide-react';
+import fetchApiResponse from '@/helper/api_data_store';
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState(null);
 
   const validateForm = () => {
     const newErrors = {};
@@ -29,6 +31,8 @@ export default function ContactForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError(null);
+    
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -36,11 +40,44 @@ export default function ContactForm() {
     }
 
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', message: '' });
-    setTimeout(() => setIsSubmitted(false), 5000);
+
+    try {
+      // Prepare payload
+      const payload = {
+        full_name: formData.name.trim(),
+        email: formData.email.trim(),
+        mobile: formData.phone.trim() || undefined,
+        message: formData.message.trim(),
+      };
+
+      console.log('Submitting contact form:', payload);
+
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/contact/submit`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log('Contact form response:', response);
+
+      if (response?.meta?.status === 200 || response?.meta?.status === 201) {
+        setIsSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', message: '' });
+        setTimeout(() => setIsSubmitted(false), 5000);
+      } else {
+        setApiError(response?.meta?.message || 'Failed to send message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setApiError('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -49,6 +86,7 @@ export default function ContactForm() {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+    if (apiError) setApiError(null);
   };
 
   return (
@@ -163,6 +201,14 @@ export default function ContactForm() {
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
+                {/* API Error */}
+                {apiError && (
+                  <div className="p-3 bg-[#CC0000]/10 border border-[#CC0000]/30 rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-[#CC0000] shrink-0 mt-0.5" />
+                    <p className="text-sm text-[#CC0000]">{apiError}</p>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Full Name <span className="text-[#CC0000]">*</span>

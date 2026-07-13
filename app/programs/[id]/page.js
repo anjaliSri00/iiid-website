@@ -923,7 +923,7 @@ const ProgramDetailPage = () => {
                 >
                   <ArrowLeft size={22} />
                 </button>
-                <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate max-w-[120px] sm:max-w-md">
+                <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate max-w-30 sm:max-w-md">
                   {program.title}
                 </h1>
               </div>

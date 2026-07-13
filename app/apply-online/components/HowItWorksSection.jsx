@@ -152,7 +152,7 @@ export default function HowItWorksSection() {
         >
           <div className="inline-flex items-center gap-4 bg-[#FDF8F0] px-6 py-3 rounded-full shadow-md border border-[#D4A574]/30">
             <span className="text-sm text-gray-600">Ready to start your journey?</span>
-            <Link href="#programs">
+            <Link href="/#programs">
               <button className="bg-[#CC0000] text-white px-6 py-2 rounded-full hover:bg-[#B30000] hover:shadow-lg transition-all duration-300 text-sm font-medium inline-flex items-center gap-2">
                 Enroll Now
                 <ArrowRight className="w-4 h-4" />

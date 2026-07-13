@@ -36,7 +36,7 @@ export default function About() {
           {/* Certificate Image - Full View */}
           <div className="w-full max-w-5xl mx-auto mt-8 md:mt-12">
             <div 
-              className="bg-white p-8 md:p-12 rounded-2xl shadow-2xl  flex items-center justify-center transition-all duration-500 hover:shadow-3xl"
+              className="bg-[#FDF8F0] p-8 md:p-12 rounded-2xl shadow-2xl  flex items-center justify-center transition-all duration-500 hover:shadow-3xl"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >

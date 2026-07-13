@@ -10,7 +10,8 @@ import {
   Image, Camera, Edit2, Save, X, AlertCircle, CheckCircle,
   Loader2, Upload, File, Trash2, Shield, Award, Clock,
   ChevronRight, UserCircle, BadgeCheck, ExternalLink,
-  Eye, Download, Star, Linkedin, Github, Twitter
+  Eye, Download, Star, Linkedin, Github, Twitter,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import fetchApiResponse from '@/helper/api_data_store';
@@ -304,9 +305,12 @@ export default function ProfilePage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+       <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-100 rounded-full border-t-blue-600 animate-spin mx-auto"></div>
+          <div className="relative w-16 h-16 mx-auto">
+            <div className="w-16 h-16 border-4 border-[#D4A574]/30 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#CC0000] rounded-full animate-spin"></div>
+          </div>
           <p className="mt-4 text-gray-600">Loading profile...</p>
         </div>
       </div>
@@ -315,14 +319,14 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-xl shadow-lg max-w-md">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+      <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4">
+        <div className="text-center bg-white p-8 rounded-xl shadow-lg border border-[#D4A574]/30 max-w-md">
+          <AlertCircle className="w-16 h-16 text-[#CC0000] mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-700">Profile not found</h3>
           <p className="text-gray-500 mt-2">Unable to load your profile data</p>
           <button
             onClick={fetchProfile}
-            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-4 px-6 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
           >
             Retry
           </button>
@@ -333,19 +337,20 @@ export default function ProfilePage() {
 
   return (
     <>
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-[##FDF8F0] py-8 px-4 sm:px-6 lg:px-8">
+         <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+             <div>
+            
+            <h1 className="text-2xl font-bold text-gray-900 font-serif">Profile</h1>
             <p className="text-sm text-gray-500 mt-1">Manage your personal information</p>
           </div>
           <div className="mt-4 md:mt-0 flex gap-3">
-            {!isEditing ? (
+             {!isEditing ? (
               <button
                 onClick={handleEditToggle}
-                className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors shadow-md hover:shadow-lg"
               >
                 <Edit2 className="w-4 h-4" />
                 Edit Profile
@@ -354,7 +359,7 @@ export default function ProfilePage() {
               <>
                 <button
                   onClick={handleEditToggle}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#FDF8F0] text-gray-700 rounded-lg hover:bg-[#F5E6D3] transition-colors border border-[#D4A574]/20"
                 >
                   <X className="w-4 h-4" />
                   Cancel
@@ -362,7 +367,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSubmit}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 shadow-md hover:shadow-lg"
                 >
                   {saving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -377,35 +382,36 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-lg border border-[#D4A574]/20 overflow-hidden">
           {/* Cover Section */}
-          <div className="relative h-28 bg-rose-200">
+          <div className="relative h-28 bg-gradient-to-r from-[#CC0000] to-[#DC2626]">
             <div className="absolute inset-0 opacity-50"></div>
+            
+        
             
             {/* Status Badges */}
             <div className="absolute top-3 right-3 flex gap-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm ${
+              <span className={`px-3 py-1 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm border border-[#D4A574]/20 ${
                 profile.role_type?.includes('student') 
-                  ? 'text-red-700' 
+                  ? 'text-[#CC0000]' 
                   : profile.role_type?.includes('designer')
                   ? 'text-purple-700'
                   : 'text-green-700'
               }`}>
                 {profile.role_type?.join(', ') || 'User'}
               </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm ${
-                profile.is_active ? 'text-green-700' : 'text-red-700'
+              <span className={`px-3 py-1 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm border border-[#D4A574]/20 ${
+                profile.is_active ? 'text-green-700' : 'text-[#CC0000]'
               }`}>
                 {profile.is_active ? 'Active' : 'Inactive'}
               </span>
             </div>
           </div>
-
           {/* Avatar Section */}
           <div className="relative px-6">
             <div className="relative -mt-14">
               <div className="relative inline-block">
-                <div className="w-28 h-28 rounded-full border-4 border-white bg-gray-100 shadow-md overflow-hidden">
+                <div className="w-28 h-28 rounded-full border-4 border-white  bg-[#FDF8F0] shadow-md overflow-hidden">
                   {avatarPreview || profile.avatar_url ? (
                     <img
                       src={avatarPreview || profile.avatar_url}
@@ -413,7 +419,7 @@ export default function ProfilePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-blue-100 text-rose-600 text-3xl font-bold">
+                    <div className="w-full h-full flex items-center justify-center bg-[#FDF8F0] text-[#CC0000] text-3xl font-bold">
                       {profile.full_name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                   )}
@@ -421,7 +427,7 @@ export default function ProfilePage() {
                 {isEditing && (
                   <label
                     htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 p-1.5 bg-rose-600 rounded-full cursor-pointer hover:bg-rose-700 transition-colors shadow-sm"
+                    className="absolute bottom-0 right-0 p-1.5 bg-[#CC0000] rounded-full cursor-pointer hover:bg-[#B30000] transition-colors shadow-sm border-2 border-white"
                   >
                     <Camera className="w-3.5 h-3.5 text-white" />
                     <input
@@ -444,6 +450,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile Content */}
+                  
           <div className="px-6 pb-6">
             {/* User Name and Code */}
             <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between">
@@ -454,54 +461,48 @@ export default function ProfilePage() {
                     name="full_name"
                     value={editedData.full_name || ''}
                     onChange={handleChange}
-                    className="text-xl font-semibold text-gray-900 bg-transparent border-b-2 border-rose-500 focus:outline-none px-2 py-1 w-full max-w-sm"
+                    className="text-xl font-semibold text-gray-900 bg-transparent border-b-2 border-[#CC0000] focus:outline-none px-2 py-1 w-full max-w-sm font-serif"
                     placeholder="Full Name"
                   />
                 ) : (
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 font-serif">
                     {profile.full_name}
                     {profile.is_active && (
-                      <BadgeCheck className="w-4 h-4 text-rose-500" />
+                      <BadgeCheck className="w-4 h-4 text-[#CC0000]" />
                     )}
                   </h2>
                 )}
                 <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                  <span>{profile.user_code}</span>
-                  <span className="text-gray-300">|</span>
+                  <span className="text-[#CC0000] font-medium">{profile.user_code}</span>
+                  <span className="text-[#D4A574]">|</span>
                   <span>{profile.email}</span>
                 </div>
               </div>
-              {/* <div className="mt-3 md:mt-0 text-sm text-gray-500">
-                Joined {new Date(profile.created_at).toLocaleDateString('en-IN', {
-                  month: 'short',
-                  year: 'numeric'
-                })}
-              </div> */}
             </div>
 
             {/* Divider */}
-            <hr className="my-6 border-gray-200" />
+            <hr className="my-6 border-[#D4A574]/20" />
 
             {/* Profile Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Personal Information */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <User className="w-4 h-4" />
+                  <User className="w-4 h-4 text-[#CC0000]" />
                   Personal Information
                 </h3>
 
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                    <Phone className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div>
                       <p className="text-xs text-gray-500">Mobile</p>
                       <p className="text-sm font-medium text-gray-900">{profile.mobile}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Briefcase className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                    <Briefcase className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">Experience</p>
                       {isEditing ? (
@@ -509,11 +510,11 @@ export default function ProfilePage() {
                           name="years_of_experience"
                           value={editedData.years_of_experience || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                         >
                           <option value="">Select experience</option>
                           <option value="fresher">Fresher</option>
-                          <option value="1">1-5 Years</option>
+                          <option value="1-5">1-5 Years</option>
                           <option value="5-10">5-10 Years</option>
                           <option value="10+">10+ Years</option>
                         </select>
@@ -528,13 +529,13 @@ export default function ProfilePage() {
               {/* Professional Information */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" />
+                  <Briefcase className="w-4 h-4 text-[#CC0000]" />
                   Professional Information
                 </h3>
 
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <GraduationCap className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                    <GraduationCap className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">Qualification</p>
                       {isEditing ? (
@@ -542,7 +543,7 @@ export default function ProfilePage() {
                           name="highest_qualification"
                           value={editedData.highest_qualification || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                         >
                           <option value="">Select qualification</option>
                           <option value="10th">10th Pass</option>
@@ -559,8 +560,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Building className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                    <Building className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">Organization</p>
                       {isEditing ? (
@@ -569,7 +570,7 @@ export default function ProfilePage() {
                           name="current_organization"
                           value={editedData.current_organization || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="Organization name"
                         />
                       ) : (
@@ -583,13 +584,13 @@ export default function ProfilePage() {
               {/* Address Information */}
               <div className="md:col-span-2">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="w-4 h-4 text-[#CC0000]" />
                   Address
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                    <MapPin className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">City</p>
                       {isEditing ? (
@@ -598,7 +599,7 @@ export default function ProfilePage() {
                           name="city"
                           value={editedData.city || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="City"
                         />
                       ) : (
@@ -607,8 +608,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                    <MapPin className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">State</p>
                       {isEditing ? (
@@ -617,7 +618,7 @@ export default function ProfilePage() {
                           name="state"
                           value={editedData.state || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="State"
                         />
                       ) : (
@@ -626,8 +627,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Hash className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                    <Hash className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">PIN Code</p>
                       {isEditing ? (
@@ -636,7 +637,7 @@ export default function ProfilePage() {
                           name="pincode"
                           value={editedData.pincode || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="PIN Code"
                         />
                       ) : (
@@ -646,8 +647,8 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg mt-3">
-                  <Home className="w-5 h-5 text-gray-400 mt-0.5" />
+                <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20 mt-3">
+                  <Home className="w-5 h-5 text-[#D4A574] mt-0.5" />
                   <div className="flex-1">
                     <p className="text-xs text-gray-500">Full Address</p>
                     {isEditing ? (
@@ -656,7 +657,7 @@ export default function ProfilePage() {
                         value={editedData.full_address || ''}
                         onChange={handleChange}
                         rows="2"
-                        className="text-sm text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                         placeholder="Full address"
                       />
                     ) : (
@@ -669,17 +670,17 @@ export default function ProfilePage() {
               {/* Documents Section */}
               <div className="md:col-span-2">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
+                  <FileText className="w-4 h-4 text-[#CC0000]" />
                   Documents
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Aadhaar Card */}
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="p-4 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                          <Shield className="w-5 h-5 text-blue-600" />
+                        <div className="p-2 bg-[#CC0000]/10 rounded-lg">
+                          <Shield className="w-5 h-5 text-[#CC0000]" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-700">Aadhaar Card</p>
@@ -688,7 +689,7 @@ export default function ProfilePage() {
                               href={editedData.aadhaar_card_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs text-rose-600 hover:underline flex items-center gap-1 mt-1"
+                              className="text-xs text-[#CC0000] hover:underline flex items-center gap-1 mt-1"
                             >
                               <Eye className="w-3 h-3" />
                               View Document
@@ -700,7 +701,7 @@ export default function ProfilePage() {
                       </div>
                       {isEditing && (
                         <label className="cursor-pointer">
-                          <div className="p-1.5 text-rose-600 hover:bg-blue-50 rounded-lg transition-colors">
+                          <div className="p-1.5 text-[#CC0000] hover:bg-[#FDF8F0] rounded-lg transition-colors">
                             <Upload className="w-4 h-4" />
                           </div>
                           <input
@@ -715,14 +716,14 @@ export default function ProfilePage() {
                     </div>
                     {uploadingDocument.aadhaar && (
                       <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <Loader2 className="w-3 h-3 animate-spin text-[#CC0000]" />
                         Uploading...
                       </div>
                     )}
                   </div>
 
                   {/* Experience Letter */}
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="p-4 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-purple-50 rounded-lg">
@@ -735,7 +736,7 @@ export default function ProfilePage() {
                               href={editedData.experience_letter_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs text-rose-600 hover:underline flex items-center gap-1 mt-1"
+                              className="text-xs text-[#CC0000] hover:underline flex items-center gap-1 mt-1"
                             >
                               <Eye className="w-3 h-3" />
                               View Document
@@ -747,7 +748,7 @@ export default function ProfilePage() {
                       </div>
                       {isEditing && (
                         <label className="cursor-pointer">
-                          <div className="p-1.5 text-rose-600 hover:bg-blue-50 rounded-lg transition-colors">
+                          <div className="p-1.5 text-[#CC0000] hover:bg-[#FDF8F0] rounded-lg transition-colors">
                             <Upload className="w-4 h-4" />
                           </div>
                           <input
@@ -762,7 +763,7 @@ export default function ProfilePage() {
                     </div>
                     {uploadingDocument.experience && (
                       <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <Loader2 className="w-3 h-3 animate-spin text-[#CC0000]" />
                         Uploading...
                       </div>
                     )}
@@ -773,8 +774,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-      </div>
-      
-      </>
+    </div>
+    </>
   );
 }

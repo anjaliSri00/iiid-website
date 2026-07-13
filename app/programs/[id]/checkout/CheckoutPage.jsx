@@ -459,13 +459,13 @@ const CheckoutPage = () => {
   const totalAmount = (program.final_price || program.original_price) + gstAmount;
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-red-50 to-white py-8 md:py-12">
+    <div className="min-h-screen bg-[#FDF8F0] py-8 md:py-12">
       <div className="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
           <Link 
             href={`/programs/${program.id}`}
-            className="inline-flex items-center text-gray-600 hover:text-red-600 transition-colors mb-4 text-sm group"
+            className="inline-flex items-center text-gray-600 hover:text-[#CC0000] transition-colors mb-4 text-sm group"
           >
             <ArrowLeft size={18} className="mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Program Details
@@ -482,7 +482,7 @@ const CheckoutPage = () => {
             </div>
             <div className="bg-red-50 px-4 py-2 rounded-lg border border-red-200">
               <p className="text-xs text-gray-600">Total Amount</p>
-              <p className="text-xl font-bold text-red-600">₹{totalAmount.toFixed(2)}</p>
+              <p className="text-xl font-bold text-[#CC0000]">₹{totalAmount.toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -553,7 +553,7 @@ const CheckoutPage = () => {
                 {step === 1 && (
                   <div className="space-y-5">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <CheckCircle size={20} className="text-red-600" />
+                      <CheckCircle size={20} className="text-[#CC0000]" />
                       Review Your Order
                     </h2>
 
@@ -600,7 +600,7 @@ const CheckoutPage = () => {
                       )}
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Total Amount</span>
-                        <span className="text-lg font-bold text-red-600">
+                        <span className="text-lg font-bold text-[#CC0000]">
                           ₹{totalAmount.toFixed(2)}
                         </span>
                       </div>
@@ -672,7 +672,7 @@ const CheckoutPage = () => {
                         type="button"
                         onClick={handleNext}
                         disabled={!formData.agreeTerms || program.status !== 'published'}
-                        className={`px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
+                        className={`px-6 py-2.5 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
                           (!formData.agreeTerms || program.status !== 'published') && 'opacity-50 cursor-not-allowed'
                         }`}
                       >
@@ -689,12 +689,12 @@ const CheckoutPage = () => {
                           name="agreeTerms"
                           checked={formData.agreeTerms}
                           onChange={handleChange}
-                          className="mt-0.5 accent-red-600"
+                          className="mt-0.5 accent-[#CC0000]"
                           required
                         />
                         <span className="text-xs text-gray-600">
-                          I agree to the <a href="#" className="text-red-600 hover:underline">Terms & Conditions</a> and 
-                          <a href="#" className="text-red-600 hover:underline ml-1">Privacy Policy</a>. 
+                          I agree to the <a href="#" className="text-[#CC0000] hover:underline">Terms & Conditions</a> and 
+                          <a href="#" className="text-[#CC0000] hover:underline ml-1">Privacy Policy</a>. 
                           I understand that this is a binding agreement.
                         </span>
                       </label>
@@ -706,7 +706,7 @@ const CheckoutPage = () => {
                 {step === 2 && (
                   <div className="space-y-5">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <CreditCard size={20} className="text-red-600" />
+                      <CreditCard size={20} className="text-[#CC0000]" />
                       Payment Method
                     </h2>
 
@@ -721,7 +721,7 @@ const CheckoutPage = () => {
                             value="razorpay"
                             checked={formData.paymentMethod === 'razorpay'}
                             onChange={handleChange}
-                            className="mt-1 accent-red-600"
+                          className="mt-1 accent-[#CC0000]"
                           />
                           <div>
                             <div className="flex items-center gap-2">
@@ -760,7 +760,7 @@ const CheckoutPage = () => {
                       <button
                         type="submit"
                         disabled={isProcessing || !formData.agreeTerms || program.status !== 'published'}
-                        className={`px-8 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
+                        className={`px-8 py-2.5 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
                           (isProcessing || !formData.agreeTerms || program.status !== 'published') && 'opacity-70 cursor-not-allowed'
                         }`}
                       >
@@ -780,8 +780,8 @@ const CheckoutPage = () => {
 
                     {program.status !== 'published' && (
                       <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                        <div className="flex items-center gap-2 text-xs text-red-700">
-                          <AlertCircle size={14} className="text-red-600" />
+                        <div className="flex items-center gap-2 text-xs text-[#B30000]">
+                          <AlertCircle size={14} className="text-[#CC0000]" />
                           <span>This course is not yet published and cannot be enrolled.</span>
                         </div>
                       </div>
@@ -811,7 +811,7 @@ const CheckoutPage = () => {
                     </div>
                   ) : (
                     <div className="w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
-                      <GraduationCap className="w-8 h-8 text-red-600" />
+                      <GraduationCap className="w-8 h-8 text-[#CC0000]" />
                     </div>
                   )}
                   <div>
@@ -873,7 +873,7 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-gray-200">
                     <span className="text-gray-900">Total</span>
-                    <span className="text-red-600">₹{totalAmount.toFixed(2)}</span>
+                    <span className="text-[#CC0000]">₹{totalAmount.toFixed(2)}</span>
                   </div>
                 </div>
 

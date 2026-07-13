@@ -15,6 +15,8 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { logo } from '@/public/img'
+import Image from 'next/image'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -34,16 +36,22 @@ export default function Footer() {
             className="space-y-4"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#CC0000] rounded-lg flex items-center justify-center">
-                <Award className="w-6 h-6 text-white" />
+ <Link href="/" className="flex items-center group">
+              <div className="relative h-10 md:h-12 flex items-center justify-center group-hover:opacity-80 transition-opacity">
+                <Image
+                  src={logo}
+                  alt="IIID - International Institute of Interior Design" 
+                  width={180} 
+                  height={48}
+                  className="object-contain h-full w-auto"
+                  priority
+                />
               </div>
-              <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#CC0000]">
-                IIID
-              </h3>
+            </Link>
             </div>
-            <p className="text-gray-700 text-sm leading-relaxed font-medium">
+            {/* <p className="text-gray-700 text-sm leading-relaxed font-medium">
               International Institute of Interior Designers
-            </p>
+            </p> */}
             <p className="text-gray-600 text-sm leading-relaxed">
               Professional certification recognizing your expertise and experience in interior design.
             </p>
@@ -52,19 +60,19 @@ export default function Footer() {
             <div className="flex space-x-3 pt-2">
               <Link 
                 href="#" 
-                className="w-10 h-10 bg-[#CC0000]/10 text-[#CC0000] rounded-full flex items-center justify-center hover:bg-[#CC0000] hover:text-white transition-all duration-300"
+                className="w-10 h-10 bg-[#CC0000]/10 text-[#CC0000] rounded-lg flex items-center justify-center hover:bg-[#CC0000] hover:text-white transition-all duration-300"
               >
                 <FaFacebook size={18} />
               </Link>
               <Link 
                 href="#" 
-                className="w-10 h-10 bg-[#CC0000]/10 text-[#CC0000] rounded-full flex items-center justify-center hover:bg-[#CC0000] hover:text-white transition-all duration-300"
+                className="w-10 h-10 bg-[#CC0000]/10 text-[#CC0000] rounded-lg flex items-center justify-center hover:bg-[#CC0000] hover:text-white transition-all duration-300"
               >
                 <FaLinkedin size={18} />
               </Link>
               <Link 
                 href="#" 
-                className="w-10 h-10 bg-[#CC0000]/10 text-[#CC0000] rounded-full flex items-center justify-center hover:bg-[#CC0000] hover:text-white transition-all duration-300"
+                className="w-10 h-10 bg-[#CC0000]/10 text-[#CC0000] rounded-lg flex items-center justify-center hover:bg-[#CC0000] hover:text-white transition-all duration-300"
               >
                 <FaInstagram size={18} />
               </Link>
@@ -129,25 +137,25 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors block group flex items-center gap-2">
+                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors  group flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-[#D4A574] rounded-full group-hover:bg-[#CC0000] transition-colors"></span>
                   Residential Interior Design
                 </a>
               </li>
               <li>
-                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors block group flex items-center gap-2">
+                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors  group flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-[#D4A574] rounded-full group-hover:bg-[#CC0000] transition-colors"></span>
                   Workplace Interior Design
                 </a>
               </li>
               <li>
-                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors block group flex items-center gap-2">
+                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors  group flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-[#D4A574] rounded-full group-hover:bg-[#CC0000] transition-colors"></span>
                   Retail Interior Design
                 </a>
               </li>
               <li>
-                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors block group flex items-center gap-2">
+                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors  group flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-[#D4A574] rounded-full group-hover:bg-[#CC0000] transition-colors"></span>
                   Diploma in Hospitality Design
                 </a>
@@ -202,7 +210,7 @@ export default function Footer() {
             </div>
 
             {/* Newsletter Signup */}
-            <div className="pt-4">
+            {/* <div className="pt-4">
               <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#D4A574]" />
                 Newsletter
@@ -221,7 +229,7 @@ export default function Footer() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
-            </div>
+            </div> */}
           </motion.div>
         </div>
       </div>

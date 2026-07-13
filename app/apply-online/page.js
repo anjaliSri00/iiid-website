@@ -98,9 +98,9 @@ export default function ApplyOnline() {
       </Suspense>
 
       {/* 3. Programs Section - Available programs */}
-      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse"></div>}>
+      {/* <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse"></div>}>
         <Programs />
-      </Suspense>
+      </Suspense> */}
 
       {/* 4. How It Works Section - Step by step guide */}
       <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>

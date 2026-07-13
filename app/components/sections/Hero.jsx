@@ -19,18 +19,18 @@ export default function Hero() {
   };
 
   return (
-    <section id="home" className="relative w-full text-white min-h-[600px]">
+    <section id="home" className="relative w-full text-white min-h-150">
       {/* Background Overlay */}
       <div className="absolute inset-0 bg-black/50 z-10"></div>
       
       {/* Swiper Carousel */}
-      <div className="relative z-0 w-full h-[600px]">
+      <div className="relative z-0 w-full h-150">
         <SwiperCard onSlideChange={handleSlideChange} />
       </div>
 
       {/* Dynamic Content Overlay */}
       <div className="absolute inset-0 z-20 flex items-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-sm md:max-w-md lg:max-w-lg bg-red-100/70 text-black backdrop-blur-sm p-6 md:p-8 rounded-lg transition-all duration-500">
+        <div className="max-w-sm md:max-w-md lg:max-w-lg bg-orange-50/70 text-black backdrop-blur-sm p-6 md:p-8 rounded-lg transition-all duration-500">
           <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 leading-tight">
             {activeSlide.mainTitle}
           </h1>

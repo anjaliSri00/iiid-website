@@ -2134,7 +2134,7 @@ export default function DashboardPage() {
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 overflow-hidden sticky top-24">
-              <div className="bg-linear-to-br from-slate-50 via-red-50 to-rose-50 border-red-200/30 px-6 py-8">
+              <div className="bg-[#FDF8F0] border-red-200/30 px-6 py-8">
                 <div className="flex flex-col items-center">
                   <div className="relative">
                     <div className="w-24 h-24 rounded-full border-4 border-white/30 bg-white/10 overflow-hidden shadow-lg">
@@ -2165,7 +2165,7 @@ export default function DashboardPage() {
                     {profile.user_code}
                   </p>
                   <div className="mt-3 flex gap-2 flex-wrap justify-center">
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-white text-red-800 uppercase">
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#EEDBDD] text-red-800 uppercase">
                       {profile.role_type?.join(", ") || "User"}
                     </span>
                     <span
@@ -2215,7 +2215,7 @@ export default function DashboardPage() {
                 </div>
                 <Link
                   href="/profile"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all mt-2"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FDF8F0] text-[#CC0000] rounded-xl hover:bg-[#fff5e4] transition-all mt-2"
                 >
                   <User className="w-4 h-4" />
                   View Full Profile
@@ -4980,7 +4980,7 @@ export default function DashboardPage() {
                       <button
                         type="submit"
                         disabled={passwordLoading}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium bg-[#CC0000] text-white hover:bg-[#B30000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {passwordLoading ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
