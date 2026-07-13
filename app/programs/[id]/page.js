@@ -165,7 +165,7 @@ const ProgramDetailPage = () => {
         window.location.href = path;
       }
     },
-    [isRouterReady, router]
+    [isRouterReady, router],
   );
 
   useEffect(() => {
@@ -176,16 +176,25 @@ const ProgramDetailPage = () => {
 
   useEffect(() => {
     if (selectedLesson) {
-      hasMarkedCompleteRef.current = completedLessons.includes(selectedLesson.id);
+      hasMarkedCompleteRef.current = completedLessons.includes(
+        selectedLesson.id,
+      );
     }
   }, [selectedLesson, completedLessons]);
 
   useEffect(() => {
-    if (program && program.lessons && program.lessons.length > 0 && program.is_purchased && isClient && isAuthenticated) {
+    if (
+      program &&
+      program.lessons &&
+      program.lessons.length > 0 &&
+      program.is_purchased &&
+      isClient &&
+      isAuthenticated
+    ) {
       loadAllLessonProgress();
 
       const firstVideoLesson = program.lessons.find(
-        (lesson) => lesson.video_url || lesson.external_video_url
+        (lesson) => lesson.video_url || lesson.external_video_url,
       );
       if (firstVideoLesson) {
         setSelectedLesson(firstVideoLesson);
@@ -207,7 +216,13 @@ const ProgramDetailPage = () => {
       progressInterval.current = null;
     }
 
-    if (isPlaying && selectedLesson && program?.is_purchased && videoRef.current && isAuthenticated) {
+    if (
+      isPlaying &&
+      selectedLesson &&
+      program?.is_purchased &&
+      videoRef.current &&
+      isAuthenticated
+    ) {
       progressInterval.current = setInterval(() => {
         if (videoRef.current && currentTime > 0) {
           saveProgress(currentTime, false);
@@ -225,7 +240,12 @@ const ProgramDetailPage = () => {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (selectedLesson && currentTime > 0 && !completedLessons.includes(selectedLesson.id) && isAuthenticated) {
+      if (
+        selectedLesson &&
+        currentTime > 0 &&
+        !completedLessons.includes(selectedLesson.id) &&
+        isAuthenticated
+      ) {
         saveProgress(currentTime, false);
       }
     };
@@ -236,7 +256,8 @@ const ProgramDetailPage = () => {
     };
   }, [selectedLesson, currentTime, completedLessons, isAuthenticated]);
 
-  const allLessonsCompleted = program?.lessons?.length > 0 &&
+  const allLessonsCompleted =
+    program?.lessons?.length > 0 &&
     program.lessons.every((lesson) => completedLessons.includes(lesson.id));
 
   const fetchProgramDetails = async () => {
@@ -263,7 +284,7 @@ const ProgramDetailPage = () => {
         {
           method: "GET",
           headers: headers,
-        }
+        },
       );
 
       if (response.meta?.status === 200 && response.data) {
@@ -318,7 +339,13 @@ const ProgramDetailPage = () => {
   };
 
   const loadLessonProgress = async (lessonId) => {
-    if (!session?.accessToken || !program?.is_purchased || !isClient || !isAuthenticated) return;
+    if (
+      !session?.accessToken ||
+      !program?.is_purchased ||
+      !isClient ||
+      !isAuthenticated
+    )
+      return;
 
     try {
       const result = await progressApi.getLessonProgress(lessonId, session);
@@ -338,7 +365,13 @@ const ProgramDetailPage = () => {
   };
 
   const loadAllLessonProgress = async () => {
-    if (!session?.accessToken || !program?.is_purchased || !program?.lessons || !isClient || !isAuthenticated) {
+    if (
+      !session?.accessToken ||
+      !program?.is_purchased ||
+      !program?.lessons ||
+      !isClient ||
+      !isAuthenticated
+    ) {
       return;
     }
 
@@ -379,7 +412,13 @@ const ProgramDetailPage = () => {
 
   const saveProgress = useCallback(
     async (watchedSeconds, completed = false) => {
-      if (!selectedLesson || !program?.is_purchased || !session?.accessToken || !isClient || !isAuthenticated) {
+      if (
+        !selectedLesson ||
+        !program?.is_purchased ||
+        !session?.accessToken ||
+        !isClient ||
+        !isAuthenticated
+      ) {
         return;
       }
 
@@ -404,7 +443,11 @@ const ProgramDetailPage = () => {
           data.completed = true;
         }
 
-        const result = await progressApi.updateProgress(selectedLesson.id, data, session);
+        const result = await progressApi.updateProgress(
+          selectedLesson.id,
+          data,
+          session,
+        );
 
         if (result.success) {
           lastSavedTime.current = watchedSeconds;
@@ -415,7 +458,10 @@ const ProgramDetailPage = () => {
             [selectedLesson.id]: result.data,
           }));
 
-          if (result.data.completed && !completedLessons.includes(selectedLesson.id)) {
+          if (
+            result.data.completed &&
+            !completedLessons.includes(selectedLesson.id)
+          ) {
             setCompletedLessons((prev) => [...prev, selectedLesson.id]);
             hasMarkedCompleteRef.current = true;
           }
@@ -433,11 +479,24 @@ const ProgramDetailPage = () => {
         setIsUpdatingProgress(false);
       }
     },
-    [selectedLesson, program?.is_purchased, session, completedLessons, isClient, isAuthenticated]
+    [
+      selectedLesson,
+      program?.is_purchased,
+      session,
+      completedLessons,
+      isClient,
+      isAuthenticated,
+    ],
   );
 
   const handleMarkComplete = async () => {
-    if (!selectedLesson || !program?.is_purchased || !isClient || !isAuthenticated) return;
+    if (
+      !selectedLesson ||
+      !program?.is_purchased ||
+      !isClient ||
+      !isAuthenticated
+    )
+      return;
     if (completedLessons.includes(selectedLesson.id)) return;
     if (isMarkingComplete) return;
 
@@ -458,10 +517,23 @@ const ProgramDetailPage = () => {
 
   const handleVideoEnded = useCallback(async () => {
     setIsPlaying(false);
-    if (selectedLesson && !completedLessons.includes(selectedLesson.id) && !hasMarkedCompleteRef.current && isClient && isAuthenticated) {
+    if (
+      selectedLesson &&
+      !completedLessons.includes(selectedLesson.id) &&
+      !hasMarkedCompleteRef.current &&
+      isClient &&
+      isAuthenticated
+    ) {
       await saveProgress(duration, true);
     }
-  }, [selectedLesson, completedLessons, duration, saveProgress, isClient, isAuthenticated]);
+  }, [
+    selectedLesson,
+    completedLessons,
+    duration,
+    saveProgress,
+    isClient,
+    isAuthenticated,
+  ]);
 
   const handleVideoPause = useCallback(() => {
     if (videoRef.current && currentTime > 0 && isClient && isAuthenticated) {
@@ -479,7 +551,12 @@ const ProgramDetailPage = () => {
   };
 
   const togglePlay = () => {
-    if (videoRef.current && isClient && isAuthenticated && program?.is_purchased) {
+    if (
+      videoRef.current &&
+      isClient &&
+      isAuthenticated &&
+      program?.is_purchased
+    ) {
       if (isPlaying) {
         videoRef.current.pause();
         handleVideoPause();
@@ -600,7 +677,12 @@ const ProgramDetailPage = () => {
   const selectLesson = (lesson) => {
     if (!isClient) return;
 
-    if (selectedLesson && currentTime > 0 && !completedLessons.includes(selectedLesson.id) && isAuthenticated) {
+    if (
+      selectedLesson &&
+      currentTime > 0 &&
+      !completedLessons.includes(selectedLesson.id) &&
+      isAuthenticated
+    ) {
       saveProgress(currentTime, false);
     }
 
@@ -641,7 +723,10 @@ const ProgramDetailPage = () => {
           videoRef.current.currentTime = savedProgress.watched_seconds;
           setCurrentTime(savedProgress.watched_seconds);
         }
-        videoRef.current.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        videoRef.current.removeEventListener(
+          "loadedmetadata",
+          handleLoadedMetadata,
+        );
       };
       videoRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
     }
@@ -660,7 +745,10 @@ const ProgramDetailPage = () => {
         setIsPlaying(false);
         handleVideoPause();
       }
-    } else if (mode === "video" && (selectedLesson?.video_url || selectedLesson?.external_video_url)) {
+    } else if (
+      mode === "video" &&
+      (selectedLesson?.video_url || selectedLesson?.external_video_url)
+    ) {
       setContentViewMode("video");
       setShowPdf(false);
       setSelectedPdfUrl(null);
@@ -687,7 +775,10 @@ const ProgramDetailPage = () => {
     if (!progress) return 0;
     const lesson = program?.lessons?.find((l) => l.id === lessonId);
     if (!lesson || !lesson.duration_seconds) return 0;
-    return Math.min((progress.watched_seconds / lesson.duration_seconds) * 100, 100);
+    return Math.min(
+      (progress.watched_seconds / lesson.duration_seconds) * 100,
+      100,
+    );
   };
 
   const handleEnrollClick = () => {
@@ -747,7 +838,9 @@ const ProgramDetailPage = () => {
           <div className="w-16 h-16 border-4 border-gray-100 rounded-full"></div>
           <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin"></div>
         </div>
-        <p className="mt-4 text-gray-600 font-medium">Loading program details...</p>
+        <p className="mt-4 text-gray-600 font-medium">
+          Loading program details...
+        </p>
       </div>
     );
   }
@@ -759,8 +852,12 @@ const ProgramDetailPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4">
             <BookOpen className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Program not found</h2>
-          <p className="text-gray-600 mb-6">{error || "The program you're looking for doesn't exist."}</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Program not found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error || "The program you're looking for doesn't exist."}
+          </p>
           <Link
             href="/#programs"
             className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -774,23 +871,44 @@ const ProgramDetailPage = () => {
   }
 
   const hasDiscount = program.discount > 0;
-  const savedAmount = hasDiscount ? program.original_price - program.final_price : 0;
+  const savedAmount = hasDiscount
+    ? program.original_price - program.final_price
+    : 0;
   const isLessonPurchased = program.is_purchased;
-  const hasBothVideoAndPdf = selectedLesson &&
+  const hasBothVideoAndPdf =
+    selectedLesson &&
     (selectedLesson.video_url || selectedLesson.external_video_url) &&
     selectedLesson.pdf_url;
-  const isLessonCompleted = selectedLesson && completedLessons.includes(selectedLesson.id);
+  const isLessonCompleted =
+    selectedLesson && completedLessons.includes(selectedLesson.id);
 
   return (
     <>
       <Head>
         <title>{program.title} | Learn with Us</title>
-        <meta name="description" content={program.description || `Enroll in ${program.title} and start learning today`} />
+        <meta
+          name="description"
+          content={
+            program.description ||
+            `Enroll in ${program.title} and start learning today`
+          }
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta property="og:title" content={program.title} />
-        <meta property="og:description" content={program.description || `Enroll in ${program.title} and start learning today`} />
-        {program.thumbnail_url && <meta property="og:image" content={program.thumbnail_url} />}
-        <link rel="canonical" href={`https://yourdomain.com/programs/${program.id}`} />
+        <meta
+          property="og:description"
+          content={
+            program.description ||
+            `Enroll in ${program.title} and start learning today`
+          }
+        />
+        {program.thumbnail_url && (
+          <meta property="og:image" content={program.thumbnail_url} />
+        )}
+        <link
+          rel="canonical"
+          href={`https://yourdomain.com/programs/${program.id}`}
+        />
       </Head>
 
       <div className="min-h-screen bg-gray-50">
@@ -864,7 +982,9 @@ const ProgramDetailPage = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:hidden">
-                  <h2 className="font-semibold text-gray-900">Course Content</h2>
+                  <h2 className="font-semibold text-gray-900">
+                    Course Content
+                  </h2>
                   <button
                     onClick={() => setIsSidebarOpen(false)}
                     className="p-1 hover:bg-gray-100 rounded"
@@ -903,12 +1023,20 @@ const ProgramDetailPage = () => {
                       <div className="space-y-1">
                         {program.lessons.map((lesson, index) => {
                           const isSelected = selectedLesson?.id === lesson.id;
-                          const isLocked = !isLessonPurchased && !lesson.is_free_preview && isAuthenticated;
+                          const isLocked =
+                            !isLessonPurchased &&
+                            !lesson.is_free_preview &&
+                            isAuthenticated;
                           const isFreePreview = lesson.is_free_preview;
-                          const isCompleted = completedLessons.includes(lesson.id);
-                          const hasVideo = lesson.video_url || lesson.external_video_url;
+                          const isCompleted = completedLessons.includes(
+                            lesson.id,
+                          );
+                          const hasVideo =
+                            lesson.video_url || lesson.external_video_url;
                           const hasPdf = lesson.pdf_url;
-                          const progressPercent = getLessonProgressPercentage(lesson.id);
+                          const progressPercent = getLessonProgressPercentage(
+                            lesson.id,
+                          );
                           const showLock = !isAuthenticated || isLocked;
 
                           return (
@@ -925,7 +1053,9 @@ const ProgramDetailPage = () => {
                                   ? "hover:bg-red-50"
                                   : "cursor-not-allowed opacity-60"
                               } ${
-                                isSelected ? "bg-red-50 border-2 border-red-200 shadow-sm" : "hover:bg-gray-50"
+                                isSelected
+                                  ? "bg-red-50 border-2 border-red-200 shadow-sm"
+                                  : "hover:bg-gray-50"
                               }`}
                             >
                               <div className="shrink-0">
@@ -940,7 +1070,9 @@ const ProgramDetailPage = () => {
                                 ) : (
                                   <div
                                     className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
-                                      isSelected ? "bg-red-600 text-white" : "bg-gray-200 text-gray-600"
+                                      isSelected
+                                        ? "bg-red-600 text-white"
+                                        : "bg-gray-200 text-gray-600"
                                     }`}
                                   >
                                     {index + 1}
@@ -952,7 +1084,9 @@ const ProgramDetailPage = () => {
                                 <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                                   <h4
                                     className={`text-xs sm:text-sm font-medium ${
-                                      isSelected ? "text-red-600" : "text-gray-900"
+                                      isSelected
+                                        ? "text-red-600"
+                                        : "text-gray-900"
                                     }`}
                                   >
                                     {lesson.title}
@@ -964,34 +1098,44 @@ const ProgramDetailPage = () => {
                                   )}
                                 </div>
 
-                                {isLessonPurchased && !showLock && progressPercent > 0 && !isCompleted && (
-                                  <div className="mt-1">
-                                    <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-                                      <div
-                                        className="h-full bg-red-500 rounded-full transition-all duration-300"
-                                        style={{ width: `${Math.min(progressPercent, 100)}%` }}
-                                      />
+                                {isLessonPurchased &&
+                                  !showLock &&
+                                  progressPercent > 0 &&
+                                  !isCompleted && (
+                                    <div className="mt-1">
+                                      <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                          className="h-full bg-red-500 rounded-full transition-all duration-300"
+                                          style={{
+                                            width: `${Math.min(progressPercent, 100)}%`,
+                                          }}
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
                                 <div className="flex items-center gap-2 sm:gap-3 mt-1 text-[10px] sm:text-xs text-gray-500 flex-wrap">
                                   {hasVideo && (
                                     <span className="flex items-center gap-0.5 sm:gap-1">
                                       <Video className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                      <span className="hidden xs:inline">Video</span>
+                                      <span className="hidden xs:inline">
+                                        Video
+                                      </span>
                                     </span>
                                   )}
                                   {hasPdf && (
                                     <span className="flex items-center gap-0.5 sm:gap-1">
                                       <FileText className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                      <span className="hidden xs:inline">PDF</span>
+                                      <span className="hidden xs:inline">
+                                        PDF
+                                      </span>
                                     </span>
                                   )}
                                   {lesson.duration_seconds && (
                                     <span className="flex items-center gap-0.5 sm:gap-1">
                                       <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                      {Math.floor(lesson.duration_seconds / 60)}m
+                                      {Math.floor(lesson.duration_seconds / 60)}
+                                      m
                                     </span>
                                   )}
                                   {!isAuthenticated && (
@@ -1049,33 +1193,38 @@ const ProgramDetailPage = () => {
                     )}
                   </div>
 
-                  {isLessonPurchased && program.lessons?.length > 0 && isAuthenticated && (
-                    <div className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-                      <div className="flex items-center justify-between text-xs sm:text-sm">
-                        <span className="text-gray-600">
-                          Progress: {completedLessons.length}/{program.lessons.length}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-600">{getOverallProgress()}%</span>
-                          {progressSaveStatus === "saving" && (
-                            <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 animate-spin" />
-                          )}
-                          {progressSaveStatus === "saved" && (
-                            <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
-                          )}
-                          {progressSaveStatus === "error" && (
-                            <X className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
-                          )}
+                  {isLessonPurchased &&
+                    program.lessons?.length > 0 &&
+                    isAuthenticated && (
+                      <div className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+                        <div className="flex items-center justify-between text-xs sm:text-sm">
+                          <span className="text-gray-600">
+                            Progress: {completedLessons.length}/
+                            {program.lessons.length}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-600">
+                              {getOverallProgress()}%
+                            </span>
+                            {progressSaveStatus === "saving" && (
+                              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 animate-spin" />
+                            )}
+                            {progressSaveStatus === "saved" && (
+                              <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                            )}
+                            {progressSaveStatus === "error" && (
+                              <X className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="w-full h-1.5 sm:h-2 bg-gray-200 rounded-full mt-1.5 sm:mt-2 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-300"
+                            style={{ width: `${getOverallProgress()}%` }}
+                          />
                         </div>
                       </div>
-                      <div className="w-full h-1.5 sm:h-2 bg-gray-200 rounded-full mt-1.5 sm:mt-2 overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-300"
-                          style={{ width: `${getOverallProgress()}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
+                    )}
 
                   {!isAuthenticated && (
                     <div className="p-3 sm:p-4 border-t border-gray-200 bg-gradient-to-r from-amber-50 to-amber-100 flex-shrink-0">
@@ -1088,7 +1237,8 @@ const ProgramDetailPage = () => {
                             Login to access course content
                           </p>
                           <p className="text-[10px] sm:text-xs text-amber-600">
-                            Sign in to track your progress and access all lessons
+                            Sign in to track your progress and access all
+                            lessons
                           </p>
                         </div>
                         <button
@@ -1128,8 +1278,8 @@ const ProgramDetailPage = () => {
                         activeTab === "assessment"
                           ? "text-red-600 border-b-2 border-red-600"
                           : allLessonsCompleted
-                          ? "text-gray-500 hover:text-gray-700"
-                          : "text-gray-300 cursor-not-allowed"
+                            ? "text-gray-500 hover:text-gray-700"
+                            : "text-gray-300 cursor-not-allowed"
                       }`}
                     >
                       <ClipboardCheck className="w-4 h-4" />
@@ -1199,7 +1349,9 @@ const ProgramDetailPage = () => {
                             ) : (
                               <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
                                 <FileText className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
-                                <p className="text-sm sm:text-base">No PDF available for this lesson</p>
+                                <p className="text-sm sm:text-base">
+                                  No PDF available for this lesson
+                                </p>
                               </div>
                             )}
                           </div>
@@ -1219,7 +1371,10 @@ const ProgramDetailPage = () => {
                                 onEnded={handleVideoEnded}
                                 onPause={handleVideoPause}
                                 controls={false}
-                                src={selectedLesson.video_url || selectedLesson.external_video_url}
+                                src={
+                                  selectedLesson.video_url ||
+                                  selectedLesson.external_video_url
+                                }
                                 poster={program.thumbnail_url}
                                 onClick={togglePlay}
                                 playsInline
@@ -1231,10 +1386,11 @@ const ProgramDetailPage = () => {
                               {lessonProgress[selectedLesson?.id] && (
                                 <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/70 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
                                   {Math.min(
-                                    (lessonProgress[selectedLesson.id].watched_seconds /
+                                    (lessonProgress[selectedLesson.id]
+                                      .watched_seconds /
                                       (duration || 1)) *
                                       100,
-                                    100
+                                    100,
                                   ).toFixed(0)}
                                   %
                                 </div>
@@ -1377,12 +1533,16 @@ const ProgramDetailPage = () => {
                                     {/* Playback Speed */}
                                     <div className="relative">
                                       <button
-                                        onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                                        onClick={() =>
+                                          setShowSpeedMenu(!showSpeedMenu)
+                                        }
                                         className="text-white hover:text-red-500 transition-colors p-1 flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-sm"
                                         aria-label="Playback speed"
                                       >
                                         <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-                                        <span className="hidden xs:inline">{playbackRate}x</span>
+                                        <span className="hidden xs:inline">
+                                          {playbackRate}x
+                                        </span>
                                       </button>
 
                                       {showSpeedMenu && (
@@ -1390,7 +1550,9 @@ const ProgramDetailPage = () => {
                                           {speedOptions.map((speed) => (
                                             <button
                                               key={speed}
-                                              onClick={() => changePlaybackSpeed(speed)}
+                                              onClick={() =>
+                                                changePlaybackSpeed(speed)
+                                              }
                                               className={`w-full text-left px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded transition-colors ${
                                                 playbackRate === speed
                                                   ? "bg-red-600 text-white"
@@ -1408,7 +1570,11 @@ const ProgramDetailPage = () => {
                                     <button
                                       onClick={toggleFullscreen}
                                       className="text-white hover:text-red-500 transition-colors p-1"
-                                      aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                                      aria-label={
+                                        isFullscreen
+                                          ? "Exit fullscreen"
+                                          : "Enter fullscreen"
+                                      }
                                     >
                                       {isFullscreen ? (
                                         <Minimize className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1423,7 +1589,8 @@ const ProgramDetailPage = () => {
                               {/* Keyboard shortcuts hint */}
                               {showControls && (
                                 <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white/50 text-[8px] sm:text-xs hidden md:block whitespace-nowrap">
-                                  Space: Play/Pause • ← →: Skip 10s • F: Fullscreen • M: Mute
+                                  Space: Play/Pause • ← →: Skip 10s • F:
+                                  Fullscreen • M: Mute
                                 </div>
                               )}
                             </div>
@@ -1500,17 +1667,23 @@ const ProgramDetailPage = () => {
                               {/* Progress Display */}
                               {isAuthenticated && isLessonPurchased && (
                                 <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs">
-                                  <span className="text-gray-500">Progress:</span>
+                                  <span className="text-gray-500">
+                                    Progress:
+                                  </span>
                                   <span className="font-medium text-blue-600">
                                     {(() => {
-                                      const progress = lessonProgress[selectedLesson.id];
-                                      if (!progress || !selectedLesson.duration_seconds)
+                                      const progress =
+                                        lessonProgress[selectedLesson.id];
+                                      if (
+                                        !progress ||
+                                        !selectedLesson.duration_seconds
+                                      )
                                         return "0%";
                                       const percentage = Math.min(
                                         (progress.watched_seconds /
                                           selectedLesson.duration_seconds) *
                                           100,
-                                        100
+                                        100,
                                       );
                                       return `${Math.round(percentage)}%`;
                                     })()}
@@ -1525,8 +1698,16 @@ const ProgramDetailPage = () => {
                                     <X className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-600" />
                                   )}
                                   <span className="text-gray-400">
-                                    ({formatTime(lessonProgress[selectedLesson.id]?.watched_seconds || 0)} /{" "}
-                                    {formatTime(selectedLesson.duration_seconds || 0)})
+                                    (
+                                    {formatTime(
+                                      lessonProgress[selectedLesson.id]
+                                        ?.watched_seconds || 0,
+                                    )}{" "}
+                                    /{" "}
+                                    {formatTime(
+                                      selectedLesson.duration_seconds || 0,
+                                    )}
+                                    )
                                   </span>
                                 </div>
                               )}
@@ -1535,71 +1716,110 @@ const ProgramDetailPage = () => {
                                 {selectedLesson.duration_seconds && (
                                   <span className="flex items-center gap-0.5 sm:gap-1">
                                     <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                    Duration: {Math.floor(selectedLesson.duration_seconds / 60)} min
+                                    Duration:{" "}
+                                    {Math.floor(
+                                      selectedLesson.duration_seconds / 60,
+                                    )}{" "}
+                                    min
                                   </span>
                                 )}
                                 {selectedLesson.is_free_preview && (
-                                  <span className="text-green-600">✓ Free Preview</span>
+                                  <span className="text-green-600">
+                                    ✓ Free Preview
+                                  </span>
                                 )}
                                 {playbackRate !== 1 && (
-                                  <span className="text-purple-600">Speed: {playbackRate}x</span>
+                                  <span className="text-purple-600">
+                                    Speed: {playbackRate}x
+                                  </span>
                                 )}
                                 {currentTime > 0 && (
-                                  <span className="text-gray-400">Current: {formatTime(currentTime)}</span>
+                                  <span className="text-gray-400">
+                                    Current: {formatTime(currentTime)}
+                                  </span>
                                 )}
                               </div>
                             </div>
 
                             <div className="flex flex-wrap gap-2 sm:gap-2">
-                              {selectedLesson.pdf_url && contentViewMode === "video" && (
-                                <button
-                                  onClick={() => switchContentView("pdf")}
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
-                                >
-                                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                  <span className="hidden xs:inline">PDF</span>
-                                </button>
-                              )}
-                              {(selectedLesson.video_url || selectedLesson.external_video_url) &&
+                              {selectedLesson.pdf_url &&
+                                contentViewMode === "video" && (
+                                  <button
+                                    onClick={() => switchContentView("pdf")}
+                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                                  >
+                                    <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                    <span className="hidden xs:inline">
+                                      PDF
+                                    </span>
+                                  </button>
+                                )}
+                              {(selectedLesson.video_url ||
+                                selectedLesson.external_video_url) &&
                                 contentViewMode === "pdf" && (
                                   <button
                                     onClick={() => switchContentView("video")}
                                     className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
                                   >
                                     <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                    <span className="hidden xs:inline">Video</span>
+                                    <span className="hidden xs:inline">
+                                      Video
+                                    </span>
                                   </button>
                                 )}
-                              {!isLessonCompleted && isAuthenticated && isLessonPurchased && (
-                                <button
-                                  onClick={handleMarkComplete}
-                                  disabled={isMarkingComplete || isUpdatingProgress}
-                                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                                >
-                                  {isMarkingComplete ? (
-                                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
-                                  ) : (
-                                    <CheckSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                  )}
-                                  <span className="hidden xs:inline">Mark Completed</span>
-                                  <span className="xs:hidden">Complete</span>
-                                </button>
-                              )}
+                              {isAuthenticated &&
+                                isLessonPurchased &&
+                                selectedLesson &&
+                                (!isLessonCompleted ? (
+                                  <button
+                                    onClick={handleMarkComplete}
+                                    disabled={
+                                      isMarkingComplete || isUpdatingProgress
+                                    }
+                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                  >
+                                    {isMarkingComplete ? (
+                                      <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                                    ) : (
+                                      <CheckSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                    )}
+                                    <span>Mark Completed</span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    disabled
+                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-400 text-white text-xs sm:text-sm rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                                  >
+                                    <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                    <span>Completed</span>
+                                  </button>
+                                ))}
                               {isLessonPurchased && isAuthenticated && (
                                 <button
                                   onClick={() => {
-                                    const currentIndex = program.lessons.findIndex(
-                                      (l) => l.id === selectedLesson.id
-                                    );
-                                    if (currentIndex < program.lessons.length - 1) {
-                                      if (currentTime > 0 && !isLessonCompleted) {
+                                    const currentIndex =
+                                      program.lessons.findIndex(
+                                        (l) => l.id === selectedLesson.id,
+                                      );
+                                    if (
+                                      currentIndex <
+                                      program.lessons.length - 1
+                                    ) {
+                                      if (
+                                        currentTime > 0 &&
+                                        !isLessonCompleted
+                                      ) {
                                         saveProgress(currentTime, false);
                                       }
-                                      selectLesson(program.lessons[currentIndex + 1]);
+                                      selectLesson(
+                                        program.lessons[currentIndex + 1],
+                                      );
                                     }
                                   }}
                                   disabled={
-                                    program.lessons.findIndex((l) => l.id === selectedLesson.id) ===
+                                    program.lessons.findIndex(
+                                      (l) => l.id === selectedLesson.id,
+                                    ) ===
                                     program.lessons.length - 1
                                   }
                                   className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white text-xs sm:text-sm rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -1627,7 +1847,8 @@ const ProgramDetailPage = () => {
                                   Assessment
                                 </h3>
                                 <p className="text-sm text-gray-500">
-                                  Complete the assessment to earn your certificate
+                                  Complete the assessment to earn your
+                                  certificate
                                 </p>
                               </div>
                             </div>
@@ -1637,14 +1858,17 @@ const ProgramDetailPage = () => {
                                 <Award className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 flex-shrink-0 mt-1" />
                                 <div>
                                   <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                    {assessmentData.title || "Course Assessment"}
+                                    {assessmentData.title ||
+                                      "Course Assessment"}
                                   </h4>
                                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                                    {assessmentData.description || "Complete this assessment to test your knowledge and earn your certificate."}
+                                    {assessmentData.description ||
+                                      "Complete this assessment to test your knowledge and earn your certificate."}
                                   </p>
                                   {assessmentData.total_questions && (
                                     <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                                      📝 {assessmentData.total_questions} questions
+                                      📝 {assessmentData.total_questions}{" "}
+                                      questions
                                     </p>
                                   )}
                                   {assessmentData.time_limit && (
@@ -1654,12 +1878,15 @@ const ProgramDetailPage = () => {
                                   )}
                                   {assessmentData.passing_score && (
                                     <p className="text-xs sm:text-sm text-gray-500">
-                                      🎯 Passing score: {assessmentData.passing_score}%
+                                      🎯 Passing score:{" "}
+                                      {assessmentData.passing_score}%
                                     </p>
                                   )}
                                   <button
                                     onClick={() => {
-                                      safeNavigate(`/programs/${program.id}/assessment`);
+                                      safeNavigate(
+                                        `/programs/${program.id}/assessment`,
+                                      );
                                     }}
                                     className="mt-3 sm:mt-4 px-4 sm:px-6 py-2 sm:py-2.5 bg-red-600 text-white text-sm sm:text-base rounded-lg hover:bg-red-700 transition-colors font-semibold inline-flex items-center gap-2"
                                   >
@@ -1688,14 +1915,19 @@ const ProgramDetailPage = () => {
                             Complete all lessons first
                           </p>
                           <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                            You need to complete all {program.lessons?.length || 0} lessons to access the assessment
+                            You need to complete all{" "}
+                            {program.lessons?.length || 0} lessons to access the
+                            assessment
                           </p>
                           <div className="mt-4 flex items-center justify-center gap-2 text-sm">
                             <span className="text-gray-500">Progress:</span>
                             <span className="font-semibold text-red-600">
-                              {completedLessons.length}/{program.lessons?.length || 0}
+                              {completedLessons.length}/
+                              {program.lessons?.length || 0}
                             </span>
-                            <span className="text-gray-400">({getOverallProgress()}%)</span>
+                            <span className="text-gray-400">
+                              ({getOverallProgress()}%)
+                            </span>
                           </div>
                         </div>
                       )}
@@ -1738,7 +1970,8 @@ const ProgramDetailPage = () => {
                                 Login to access this course
                               </p>
                               <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                                Sign in to view lessons, track progress, and enroll
+                                Sign in to view lessons, track progress, and
+                                enroll
                               </p>
                               <button
                                 onClick={handleLoginClick}
@@ -1755,7 +1988,9 @@ const ProgramDetailPage = () => {
                       <div className="h-48 sm:h-64 bg-gradient-to-r from-red-600 to-red-700 flex items-center justify-center p-4">
                         <div className="text-center text-white">
                           <BookOpen className="w-12 h-12 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-4 opacity-50" />
-                          <h1 className="text-xl sm:text-3xl font-bold">{program.title}</h1>
+                          <h1 className="text-xl sm:text-3xl font-bold">
+                            {program.title}
+                          </h1>
                         </div>
                       </div>
                     )}
@@ -1770,7 +2005,9 @@ const ProgramDetailPage = () => {
                       <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
                         <Calendar className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
-                          <p className="text-[10px] sm:text-xs text-gray-500">Duration</p>
+                          <p className="text-[10px] sm:text-xs text-gray-500">
+                            Duration
+                          </p>
                           <p className="font-semibold text-gray-900 text-xs sm:text-sm">
                             {program.duration}
                           </p>
@@ -1780,7 +2017,9 @@ const ProgramDetailPage = () => {
                       <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
                         <Clock className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
-                          <p className="text-[10px] sm:text-xs text-gray-500">Mode</p>
+                          <p className="text-[10px] sm:text-xs text-gray-500">
+                            Mode
+                          </p>
                           <p className="font-semibold text-gray-900 text-xs sm:text-sm capitalize">
                             {program.mode}
                           </p>
@@ -1790,7 +2029,9 @@ const ProgramDetailPage = () => {
                       <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
                         <GraduationCap className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
-                          <p className="text-[10px] sm:text-xs text-gray-500">Level</p>
+                          <p className="text-[10px] sm:text-xs text-gray-500">
+                            Level
+                          </p>
                           <p className="font-semibold text-gray-900 text-xs sm:text-sm capitalize">
                             {program.level || "Beginner"}
                           </p>
@@ -1800,7 +2041,9 @@ const ProgramDetailPage = () => {
                       <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
                         <Award className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
-                          <p className="text-[10px] sm:text-xs text-gray-500">Fee</p>
+                          <p className="text-[10px] sm:text-xs text-gray-500">
+                            Fee
+                          </p>
                           <div className="flex items-baseline gap-1 sm:gap-2">
                             <p className="font-bold text-gray-900 text-xs sm:text-sm">
                               {program.fee}
@@ -1829,7 +2072,9 @@ const ProgramDetailPage = () => {
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
                         <div className="text-center sm:text-left">
                           <p className="text-xs sm:text-sm text-gray-500">
-                            {isAuthenticated ? "Ready to enroll?" : "Get started today"}
+                            {isAuthenticated
+                              ? "Ready to enroll?"
+                              : "Get started today"}
                           </p>
                           <p className="text-xl sm:text-2xl font-bold text-gray-900">
                             {program.fee}
@@ -1842,7 +2087,11 @@ const ProgramDetailPage = () => {
                         </div>
 
                         <button
-                          onClick={isAuthenticated ? handleEnrollClick : handleLoginClick}
+                          onClick={
+                            isAuthenticated
+                              ? handleEnrollClick
+                              : handleLoginClick
+                          }
                           className="w-full sm:w-auto bg-red-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg text-sm sm:text-base flex items-center justify-center gap-2"
                         >
                           {isAuthenticated ? (
