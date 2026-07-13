@@ -13,7 +13,7 @@ export default function About() {
         <div className="flex flex-col gap-8 md:gap-12 justify-center items-center">
           {/* Text Content */}
           <div className="flex flex-col justify-center items-center text-center">
-            <h2 className="text-3xl md:text-4xl montserrat-600 lg:text-5xl text-gray-900 mb-6">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold lg:text-5xl text-gray-900 mb-6">
               About IIID
             </h2>
             <p className="text-black montserrat-400 text-base md:text-lg lg:text-xl max-w-4xl mx-auto mb-6 md:mb-8 leading-8 text-justify">

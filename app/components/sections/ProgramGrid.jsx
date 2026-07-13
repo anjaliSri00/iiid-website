@@ -7,7 +7,9 @@ import {
   Clock, 
   GraduationCap, 
   BookOpen, 
-  TrendingDown
+  TrendingDown,
+  Star,
+  Video
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -70,16 +72,30 @@ const ProgramGrid = ({ programs = [] }) => {
                 {/* Discount Badge */}
                 {hasDiscount && (
                   <div className="absolute top-3 left-3">
-                    <span className="px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-full shadow-md flex items-center gap-1">
-                      <TrendingDown className="w-3 h-3" />
+                       <span className="px-3 py-1 bg-[#CC0000] text-white text-xs font-semibold rounded-full shadow-md flex items-center gap-1">
+                          <TrendingDown className="w-3 h-3" />
                       {program.discount}% OFF
                     </span>
                   </div>
                 )}
+                 <div className="absolute top-3 right-3">
+                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[#CC0000] text-xs font-semibold rounded-full shadow-md flex items-center gap-1">
+                      <Video className="w-3 h-3" />
+                      {program.mode || 'Online'}
+                    </span>
+                  </div>
+                {/* <div className="absolute bottom-3 left-3">
+                    <span className="px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                      4.9
+                      <span className="text-white/60">(128)</span>
+                    </span>
+                  </div> */}
+
 
                 {/* Category Badge - Bottom Left */}
                 <div className="absolute bottom-3 left-3">
-                  <span className="px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-full shadow-md">
+                  <span className="px-3 py-1 bg-[#CC0000] text-white text-xs font-semibold rounded-full shadow-md">
                     {program.category || 'General'}
                   </span>
                 </div>
@@ -150,7 +166,9 @@ const ProgramGrid = ({ programs = [] }) => {
                   </div>
                   
                   <div className={`
-                    w-full px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-between text-sm bg-red-600 text-white shadow-md
+                    w-full px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-between text-sm
+                        bg-[#CC0000] hover:shadow-lg hover:bg-[#B30000]
+                     text-white shadow-md
                   `}>
                     <span className="font-medium">View Details</span>
                     <span className={`transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`}>

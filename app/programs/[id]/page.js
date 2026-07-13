@@ -34,6 +34,7 @@ import {
   LogIn,
   ShoppingCart,
   Eye,
+  Sparkles,
 } from "lucide-react";
 import fetchApiResponse from "@/helper/api_data_store";
 import { useRouter } from "next/navigation";
@@ -138,7 +139,6 @@ const ProgramDetailPage = () => {
     const handleSession = async () => {
       try {
         if (status === "unauthenticated") {
-          // Don't redirect, just show the page with locked content
           return;
         }
 
@@ -325,7 +325,6 @@ const ProgramDetailPage = () => {
             return fetchProgramDetails();
           }
         }
-        // If not authenticated or token refresh failed, still show the page
         setError("Please login to access course content");
       } else {
         setError(response.meta?.message || "Failed to fetch program details");
@@ -543,7 +542,7 @@ const ProgramDetailPage = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      published: "bg-green-100 text-green-700",
+      published: "bg-[#CC0000]/10 text-[#CC0000]",
       draft: "bg-yellow-100 text-yellow-700",
       archived: "bg-gray-100 text-gray-700",
     };
@@ -821,10 +820,10 @@ const ProgramDetailPage = () => {
   // Loading state
   if (!isClient || status === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#FDF8F0] flex flex-col items-center justify-center">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-gray-100 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin"></div>
+          <div className="w-16 h-16 border-4 border-[#D4A574]/30 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#CC0000] rounded-full animate-spin"></div>
         </div>
         <p className="mt-4 text-gray-600 font-medium">Loading...</p>
       </div>
@@ -833,10 +832,10 @@ const ProgramDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#FDF8F0] flex flex-col items-center justify-center">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-gray-100 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin"></div>
+          <div className="w-16 h-16 border-4 border-[#D4A574]/30 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#CC0000] rounded-full animate-spin"></div>
         </div>
         <p className="mt-4 text-gray-600 font-medium">
           Loading program details...
@@ -847,10 +846,10 @@ const ProgramDetailPage = () => {
 
   if (error || !program) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4">
-            <BookOpen className="w-8 h-8 text-red-600" />
+      <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4">
+        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg border border-[#D4A574]/30">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#CC0000]/10 rounded-full mb-4">
+            <BookOpen className="w-8 h-8 text-[#CC0000]" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Program not found
@@ -860,7 +859,7 @@ const ProgramDetailPage = () => {
           </p>
           <Link
             href="/#programs"
-            className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
           >
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Programs
@@ -911,15 +910,15 @@ const ProgramDetailPage = () => {
         />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#FDF8F0]">
         {/* Top Navigation Bar */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div className="bg-white border-b border-[#D4A574]/20 sticky top-0 z-40 shadow-sm">
           <div className="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-14 sm:h-16">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => router.back()}
-                  className="text-gray-600 hover:text-red-600 transition-colors p-1"
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors p-1"
                   aria-label="Go back"
                 >
                   <ArrowLeft size={22} />
@@ -932,7 +931,7 @@ const ProgramDetailPage = () => {
                 {!isAuthenticated ? (
                   <button
                     onClick={handleLoginClick}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white text-xs sm:text-sm rounded-lg hover:bg-red-700 transition-colors"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors"
                   >
                     <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="hidden xs:inline">Login</span>
@@ -945,7 +944,7 @@ const ProgramDetailPage = () => {
                 ) : (
                   <button
                     onClick={handleEnrollClick}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white text-xs sm:text-sm rounded-lg hover:bg-red-700 transition-colors"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors"
                   >
                     <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="hidden xs:inline">Enroll Now</span>
@@ -953,7 +952,7 @@ const ProgramDetailPage = () => {
                 )}
                 <button
                   onClick={toggleSidebar}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+                  className="p-2 hover:bg-[#FDF8F0] rounded-lg transition-colors lg:hidden"
                   aria-label="Toggle sidebar"
                 >
                   <List className="w-5 h-5" />
@@ -981,13 +980,13 @@ const ProgramDetailPage = () => {
                 } lg:relative lg:block lg:w-80 xl:w-96 lg:shadow-none lg:animate-none`}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:hidden">
+                <div className="flex items-center justify-between p-4 border-b border-[#D4A574]/20 lg:hidden">
                   <h2 className="font-semibold text-gray-900">
                     Course Content
                   </h2>
                   <button
                     onClick={() => setIsSidebarOpen(false)}
-                    className="p-1 hover:bg-gray-100 rounded"
+                    className="p-1 hover:bg-[#FDF8F0] rounded"
                     aria-label="Close sidebar"
                   >
                     <X className="w-5 h-5" />
@@ -995,7 +994,7 @@ const ProgramDetailPage = () => {
                 </div>
 
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-20 max-h-[calc(100vh-120px)] flex flex-col">
-                  <div className="p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white flex-shrink-0">
+                  <div className="p-3 sm:p-4 border-b border-[#D4A574]/20 bg-gradient-to-r from-[#FDF8F0] to-white flex-shrink-0">
                     <div className="flex items-center justify-between">
                       <h2 className="font-semibold text-gray-900 text-sm sm:text-base">
                         Course Content
@@ -1006,7 +1005,7 @@ const ProgramDetailPage = () => {
                     </div>
                     {loadingProgress && (
                       <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <Loader2 className="w-3 h-3 animate-spin text-[#CC0000]" />
                         Loading progress...
                       </div>
                     )}
@@ -1050,11 +1049,11 @@ const ProgramDetailPage = () => {
                               }}
                               className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all cursor-pointer ${
                                 !showLock || isFreePreview
-                                  ? "hover:bg-red-50"
+                                  ? "hover:bg-[#FDF8F0]"
                                   : "cursor-not-allowed opacity-60"
                               } ${
                                 isSelected
-                                  ? "bg-red-50 border-2 border-red-200 shadow-sm"
+                                  ? "bg-[#FDF8F0] border-2 border-[#CC0000] shadow-sm"
                                   : "hover:bg-gray-50"
                               }`}
                             >
@@ -1071,7 +1070,7 @@ const ProgramDetailPage = () => {
                                   <div
                                     className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
                                       isSelected
-                                        ? "bg-red-600 text-white"
+                                        ? "bg-[#CC0000] text-white"
                                         : "bg-gray-200 text-gray-600"
                                     }`}
                                   >
@@ -1085,7 +1084,7 @@ const ProgramDetailPage = () => {
                                   <h4
                                     className={`text-xs sm:text-sm font-medium ${
                                       isSelected
-                                        ? "text-red-600"
+                                        ? "text-[#CC0000]"
                                         : "text-gray-900"
                                     }`}
                                   >
@@ -1105,7 +1104,7 @@ const ProgramDetailPage = () => {
                                     <div className="mt-1">
                                       <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
                                         <div
-                                          className="h-full bg-red-500 rounded-full transition-all duration-300"
+                                          className="h-full bg-[#CC0000] rounded-full transition-all duration-300"
                                           style={{
                                             width: `${Math.min(progressPercent, 100)}%`,
                                           }}
@@ -1155,7 +1154,7 @@ const ProgramDetailPage = () => {
                               {!showLock || isFreePreview ? (
                                 <div className="shrink-0 mt-0.5">
                                   {isSelected ? (
-                                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-600 text-white rounded-full flex items-center justify-center">
+                                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#CC0000] text-white rounded-full flex items-center justify-center">
                                       <Play className="w-3 h-3 sm:w-4 sm:h-4" />
                                     </div>
                                   ) : isCompleted ? (
@@ -1196,7 +1195,7 @@ const ProgramDetailPage = () => {
                   {isLessonPurchased &&
                     program.lessons?.length > 0 &&
                     isAuthenticated && (
-                      <div className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+                      <div className="p-3 sm:p-4 border-t border-[#D4A574]/20 bg-[#FDF8F0] flex-shrink-0">
                         <div className="flex items-center justify-between text-xs sm:text-sm">
                           <span className="text-gray-600">
                             Progress: {completedLessons.length}/
@@ -1207,19 +1206,19 @@ const ProgramDetailPage = () => {
                               {getOverallProgress()}%
                             </span>
                             {progressSaveStatus === "saving" && (
-                              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 animate-spin" />
+                              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 text-[#CC0000] animate-spin" />
                             )}
                             {progressSaveStatus === "saved" && (
                               <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                             )}
                             {progressSaveStatus === "error" && (
-                              <X className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
+                              <X className="w-3 h-3 sm:w-4 sm:h-4 text-[#CC0000]" />
                             )}
                           </div>
                         </div>
                         <div className="w-full h-1.5 sm:h-2 bg-gray-200 rounded-full mt-1.5 sm:mt-2 overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-300"
+                            className="h-full bg-[#CC0000] rounded-full transition-all duration-300"
                             style={{ width: `${getOverallProgress()}%` }}
                           />
                         </div>
@@ -1227,7 +1226,7 @@ const ProgramDetailPage = () => {
                     )}
 
                   {!isAuthenticated && (
-                    <div className="p-3 sm:p-4 border-t border-gray-200 bg-gradient-to-r from-amber-50 to-amber-100 flex-shrink-0">
+                    <div className="p-3 sm:p-4 border-t border-[#D4A574]/20 bg-gradient-to-r from-amber-50 to-amber-100 flex-shrink-0">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-amber-200 rounded-full">
                           <Lock className="w-4 h-4 text-amber-700" />
@@ -1243,7 +1242,7 @@ const ProgramDetailPage = () => {
                         </div>
                         <button
                           onClick={handleLoginClick}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-600 text-white text-xs sm:text-sm rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
+                          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors whitespace-nowrap"
                         >
                           Login Now
                         </button>
@@ -1257,14 +1256,14 @@ const ProgramDetailPage = () => {
             {/* Right Content Area */}
             <div className="flex-1 min-w-0">
               {isLessonPurchased && isAuthenticated ? (
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
                   {/* Tab Navigation */}
-                  <div className="flex border-b border-gray-200 bg-gray-50/50">
+                  <div className="flex border-b border-[#D4A574]/20 bg-[#FDF8F0]/50">
                     <button
                       onClick={() => setActiveTab("content")}
                       className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
                         activeTab === "content"
-                          ? "text-red-600 border-b-2 border-red-600"
+                          ? "text-[#CC0000] border-b-2 border-[#CC0000]"
                           : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
@@ -1276,7 +1275,7 @@ const ProgramDetailPage = () => {
                       disabled={!allLessonsCompleted}
                       className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
                         activeTab === "assessment"
-                          ? "text-red-600 border-b-2 border-red-600"
+                          ? "text-[#CC0000] border-b-2 border-[#CC0000]"
                           : allLessonsCompleted
                             ? "text-gray-500 hover:text-gray-700"
                             : "text-gray-300 cursor-not-allowed"
@@ -1301,12 +1300,12 @@ const ProgramDetailPage = () => {
                   {activeTab === "content" && (
                     <>
                       {selectedLesson && hasBothVideoAndPdf && (
-                        <div className="flex items-center gap-2 p-2 bg-gray-50 border-b border-gray-200 overflow-x-auto">
+                        <div className="flex items-center gap-2 p-2 bg-[#FDF8F0] border-b border-[#D4A574]/20 overflow-x-auto">
                           <button
                             onClick={() => switchContentView("video")}
                             className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                               contentViewMode === "video"
-                                ? "bg-red-600 text-white"
+                                ? "bg-[#CC0000] text-white"
                                 : "bg-white text-gray-600 hover:bg-gray-100"
                             }`}
                           >
@@ -1317,7 +1316,7 @@ const ProgramDetailPage = () => {
                             onClick={() => switchContentView("pdf")}
                             className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                               contentViewMode === "pdf"
-                                ? "bg-red-600 text-white"
+                                ? "bg-[#CC0000] text-white"
                                 : "bg-white text-gray-600 hover:bg-gray-100"
                             }`}
                           >
@@ -1465,7 +1464,7 @@ const ProgramDetailPage = () => {
                                     onChange={handleSeek}
                                     className="flex-1 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer hover:h-1.5 transition-all
                                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 sm:[&::-webkit-slider-thumb]:w-3 sm:[&::-webkit-slider-thumb]:h-3 
-                                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
+                                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#CC0000]"
                                     aria-label="Video progress"
                                   />
                                   <span className="text-white text-[10px] sm:text-xs font-mono">
@@ -1478,7 +1477,7 @@ const ProgramDetailPage = () => {
                                   <div className="flex items-center gap-1 sm:gap-2">
                                     <button
                                       onClick={togglePlay}
-                                      className="text-white hover:text-red-500 transition-colors p-1"
+                                      className="text-white hover:text-[#CC0000] transition-colors p-1"
                                       aria-label={isPlaying ? "Pause" : "Play"}
                                     >
                                       {isPlaying ? (
@@ -1489,14 +1488,14 @@ const ProgramDetailPage = () => {
                                     </button>
                                     <button
                                       onClick={skipBackward}
-                                      className="text-white hover:text-red-500 transition-colors p-1 hidden sm:block"
+                                      className="text-white hover:text-[#CC0000] transition-colors p-1 hidden sm:block"
                                       aria-label="Skip backward 10 seconds"
                                     >
                                       <Rewind className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </button>
                                     <button
                                       onClick={skipForward}
-                                      className="text-white hover:text-red-500 transition-colors p-1 hidden sm:block"
+                                      className="text-white hover:text-[#CC0000] transition-colors p-1 hidden sm:block"
                                       aria-label="Skip forward 10 seconds"
                                     >
                                       <FastForward className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1504,7 +1503,7 @@ const ProgramDetailPage = () => {
                                     <div className="flex items-center gap-1 sm:gap-2">
                                       <button
                                         onClick={toggleMute}
-                                        className="text-white hover:text-red-500 transition-colors p-1"
+                                        className="text-white hover:text-[#CC0000] transition-colors p-1"
                                         aria-label={isMuted ? "Unmute" : "Mute"}
                                       >
                                         {isMuted ? (
@@ -1523,7 +1522,7 @@ const ProgramDetailPage = () => {
                                         className="w-12 sm:w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer
                                         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 
                                         [&::-webkit-slider-thumb]:h-2.5 sm:[&::-webkit-slider-thumb]:w-3 sm:[&::-webkit-slider-thumb]:h-3 
-                                        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
+                                        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#CC0000]"
                                         aria-label="Volume"
                                       />
                                     </div>
@@ -1536,7 +1535,7 @@ const ProgramDetailPage = () => {
                                         onClick={() =>
                                           setShowSpeedMenu(!showSpeedMenu)
                                         }
-                                        className="text-white hover:text-red-500 transition-colors p-1 flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-sm"
+                                        className="text-white hover:text-[#CC0000] transition-colors p-1 flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-sm"
                                         aria-label="Playback speed"
                                       >
                                         <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1555,7 +1554,7 @@ const ProgramDetailPage = () => {
                                               }
                                               className={`w-full text-left px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded transition-colors ${
                                                 playbackRate === speed
-                                                  ? "bg-red-600 text-white"
+                                                  ? "bg-[#CC0000] text-white"
                                                   : "text-white hover:bg-gray-700"
                                               }`}
                                             >
@@ -1569,7 +1568,7 @@ const ProgramDetailPage = () => {
                                     {/* Fullscreen */}
                                     <button
                                       onClick={toggleFullscreen}
-                                      className="text-white hover:text-red-500 transition-colors p-1"
+                                      className="text-white hover:text-[#CC0000] transition-colors p-1"
                                       aria-label={
                                         isFullscreen
                                           ? "Exit fullscreen"
@@ -1631,7 +1630,7 @@ const ProgramDetailPage = () => {
 
                       {/* Lesson Info */}
                       {selectedLesson && (
-                        <div className="p-3 sm:p-4 border-t border-gray-200">
+                        <div className="p-3 sm:p-4 border-t border-[#D4A574]/20">
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -1670,7 +1669,7 @@ const ProgramDetailPage = () => {
                                   <span className="text-gray-500">
                                     Progress:
                                   </span>
-                                  <span className="font-medium text-blue-600">
+                                  <span className="font-medium text-[#CC0000]">
                                     {(() => {
                                       const progress =
                                         lessonProgress[selectedLesson.id];
@@ -1689,13 +1688,13 @@ const ProgramDetailPage = () => {
                                     })()}
                                   </span>
                                   {isUpdatingProgress && (
-                                    <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-600 animate-spin" />
+                                    <Loader2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#CC0000] animate-spin" />
                                   )}
                                   {progressSaveStatus === "saved" && (
                                     <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-600" />
                                   )}
                                   {progressSaveStatus === "error" && (
-                                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-600" />
+                                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#CC0000]" />
                                   )}
                                   <span className="text-gray-400">
                                     (
@@ -1746,7 +1745,7 @@ const ProgramDetailPage = () => {
                                 contentViewMode === "video" && (
                                   <button
                                     onClick={() => switchContentView("pdf")}
-                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-[#D4A574] text-[#CC0000] text-xs sm:text-sm rounded-lg hover:bg-[#C4955A] transition-colors flex items-center gap-1"
                                   >
                                     <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span className="hidden xs:inline">
@@ -1759,7 +1758,7 @@ const ProgramDetailPage = () => {
                                 contentViewMode === "pdf" && (
                                   <button
                                     onClick={() => switchContentView("video")}
-                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
+                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors flex items-center gap-1"
                                   >
                                     <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span className="hidden xs:inline">
@@ -1822,7 +1821,7 @@ const ProgramDetailPage = () => {
                                     ) ===
                                     program.lessons.length - 1
                                   }
-                                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white text-xs sm:text-sm rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                 >
                                   Next →
                                 </button>
@@ -1853,9 +1852,9 @@ const ProgramDetailPage = () => {
                               </div>
                             </div>
 
-                            <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200">
+                            <div className="bg-[#FDF8F0] rounded-lg p-4 sm:p-6 border border-[#D4A574]/30">
                               <div className="flex items-start gap-3">
-                                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 flex-shrink-0 mt-1" />
+                                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
                                 <div>
                                   <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
                                     {assessmentData.title ||
@@ -1888,7 +1887,7 @@ const ProgramDetailPage = () => {
                                         `/programs/${program.id}/assessment`,
                                       );
                                     }}
-                                    className="mt-3 sm:mt-4 px-4 sm:px-6 py-2 sm:py-2.5 bg-red-600 text-white text-sm sm:text-base rounded-lg hover:bg-red-700 transition-colors font-semibold inline-flex items-center gap-2"
+                                    className="mt-3 sm:mt-4 px-4 sm:px-6 py-2 sm:py-2.5 bg-[#CC0000] text-white text-sm sm:text-base rounded-lg hover:bg-[#B30000] transition-colors font-semibold inline-flex items-center gap-2"
                                   >
                                     <Play className="w-4 h-4" />
                                     Start Assessment
@@ -1921,7 +1920,7 @@ const ProgramDetailPage = () => {
                           </p>
                           <div className="mt-4 flex items-center justify-center gap-2 text-sm">
                             <span className="text-gray-500">Progress:</span>
-                            <span className="font-semibold text-red-600">
+                            <span className="font-semibold text-[#CC0000]">
                               {completedLessons.length}/
                               {program.lessons?.length || 0}
                             </span>
@@ -1936,7 +1935,7 @@ const ProgramDetailPage = () => {
                 </div>
               ) : (
                 // Not Enrolled or Not Authenticated - Show Program Details
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
                   <div className="relative">
                     {program.thumbnail_url ? (
                       <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden">
@@ -1956,7 +1955,7 @@ const ProgramDetailPage = () => {
                         </div>
                         {hasDiscount && (
                           <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
-                            <span className="px-2 sm:px-4 py-1 sm:py-2 bg-red-600 text-white text-[10px] sm:text-sm font-semibold rounded-full shadow-lg flex items-center gap-1 sm:gap-2">
+                            <span className="px-2 sm:px-4 py-1 sm:py-2 bg-[#CC0000] text-white text-[10px] sm:text-sm font-semibold rounded-full shadow-lg flex items-center gap-1 sm:gap-2">
                               <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
                               {program.discount}% OFF
                             </span>
@@ -1975,7 +1974,7 @@ const ProgramDetailPage = () => {
                               </p>
                               <button
                                 onClick={handleLoginClick}
-                                className="mt-3 px-4 sm:px-6 py-2 bg-red-600 text-white text-sm sm:text-base rounded-lg hover:bg-red-700 transition-colors font-medium inline-flex items-center gap-2"
+                                className="mt-3 px-4 sm:px-6 py-2 bg-[#CC0000] text-white text-sm sm:text-base rounded-lg hover:bg-[#B30000] transition-colors font-medium inline-flex items-center gap-2"
                               >
                                 <LogIn className="w-4 h-4" />
                                 Login Now
@@ -1985,7 +1984,7 @@ const ProgramDetailPage = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="h-48 sm:h-64 bg-gradient-to-r from-red-600 to-red-700 flex items-center justify-center p-4">
+                      <div className="h-48 sm:h-64 bg-gradient-to-r from-[#CC0000] to-[#DC2626] flex items-center justify-center p-4">
                         <div className="text-center text-white">
                           <BookOpen className="w-12 h-12 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-4 opacity-50" />
                           <h1 className="text-xl sm:text-3xl font-bold">
@@ -2002,8 +2001,8 @@ const ProgramDetailPage = () => {
                     </h1>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                        <Calendar className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                        <Calendar className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
                             Duration
@@ -2014,8 +2013,8 @@ const ProgramDetailPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                        <Clock className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                        <Clock className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
                             Mode
@@ -2026,8 +2025,8 @@ const ProgramDetailPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                        <GraduationCap className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                        <GraduationCap className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
                             Level
@@ -2038,8 +2037,8 @@ const ProgramDetailPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                        <Award className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                        <Award className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
                             Fee
@@ -2068,7 +2067,7 @@ const ProgramDetailPage = () => {
                       </p>
                     </div>
 
-                    <div className="pt-4 sm:pt-6 border-t border-gray-200">
+                    <div className="pt-4 sm:pt-6 border-t border-[#D4A574]/20">
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
                         <div className="text-center sm:text-left">
                           <p className="text-xs sm:text-sm text-gray-500">
@@ -2092,7 +2091,7 @@ const ProgramDetailPage = () => {
                               ? handleEnrollClick
                               : handleLoginClick
                           }
-                          className="w-full sm:w-auto bg-red-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg text-sm sm:text-base flex items-center justify-center gap-2"
+                          className="w-full sm:w-auto bg-[#CC0000] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg hover:bg-[#B30000] transition-colors font-semibold shadow-md hover:shadow-lg text-sm sm:text-base flex items-center justify-center gap-2"
                         >
                           {isAuthenticated ? (
                             <>

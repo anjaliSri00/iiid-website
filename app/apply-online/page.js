@@ -1,15 +1,11 @@
 import { Suspense } from 'react';
-import { Metadata } from 'next';
 import Loading from './loading';
-import BenefitsSection from './components/BenefitsSection';
-import CoursesSection from './components/CoursesSection';
-import HowItWorksSection from './components/HowItWorksSection';
-import CTASection from './components/CTASection';
-import ScholarshipSection from './components/ScholarshipSection';
 import HeroSection from './components/HeroSection';
-import ProgramGrid from '../components/sections/ProgramGrid';
+import BenefitsSection from './components/BenefitsSection';
 import Programs from '../components/sections/Programs';
+import HowItWorksSection from './components/HowItWorksSection';
 import FaqList from './components/FaqList';
+import ContactForm from './components/ContactForm';
 
 // SEO Metadata
 export const metadata = {
@@ -91,46 +87,35 @@ export default function ApplyOnline() {
         }}
       />
 
-      {/* Async Loaded Components with Suspense */}
+      {/* 1. Hero Section - Top of page */}
       <Suspense fallback={<Loading />}>
         <HeroSection />
       </Suspense>
 
-      <Suspense fallback={<div className="h-32 bg-gray-50 animate-pulse"></div>}>
+      {/* 2. Benefits Section - Why choose us */}
+      <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
         <BenefitsSection />
       </Suspense>
 
-       <Suspense className="bg-gray-50 animate-pulse max-w-screen-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 lg:py-10" fallback={<Loading />}>
+      {/* 3. Programs Section - Available programs */}
+      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse"></div>}>
         <Programs />
       </Suspense>
-      {/* <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
-        <HowItWorksSection />
-      </Suspense> */}
 
+      {/* 4. How It Works Section - Step by step guide */}
       <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
+        <HowItWorksSection />
+      </Suspense>
+
+      {/* 7. FAQ Section - Frequently asked questions */}
+      <Suspense fallback={<div className="h-96 bg-white animate-pulse"></div>}>
         <FaqList />
       </Suspense>
-
-
-      {/* <Suspense fallback={<div className="h-96 bg-white animate-pulse"></div>}>
-        <CoursesSection />
+ <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse"></div>}>
+        <ContactForm />
       </Suspense>
-
-      <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
-        <HowItWorksSection />
-      </Suspense>
-
-      <Suspense fallback={<div className="h-96 bg-white animate-pulse"></div>}>
-        <ScholarshipSection />
-      </Suspense>
-
-      <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
-        <FAQSection />
-      </Suspense>
-
-      <Suspense fallback={<div className="h-32 bg-red-600 animate-pulse"></div>}>
-        <CTASection />
-      </Suspense>  */}
-          </div>
+     
+       
+    </div>
   );
 }

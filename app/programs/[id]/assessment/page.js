@@ -23,6 +23,7 @@ import {
   RefreshCw,
   Timer,
   HelpCircle,
+  Sparkles,
 } from "lucide-react";
 import { assessmentApi } from "@/helper/services/assessmentApi";
 
@@ -91,7 +92,6 @@ const AssessmentPage = () => {
         throw new Error("No access token available");
       }
 
-      // Fetch assessment using the API
       const response = await assessmentApi.getAssessment(programId, currentSession);
       
       console.log("Assessment API Response:", response);
@@ -101,27 +101,30 @@ const AssessmentPage = () => {
         setAssessment(data);
         setAssessmentId(data.id);
         
-        // Transform questions to a consistent format
-        const transformedQuestions = (data.questions || []).map((q) => ({
-          id: q.id,
-          question: q.question_text,
-          description: q.description || "",
-          options: [
-            q.option_a,
-            q.option_b,
-            q.option_c,
-            q.option_d,
-          ].filter(opt => opt && opt.trim() !== ""),
-          correct_answer: q.correct_answer || 0,
-          marks: q.marks || 1,
-          order_number: q.order_number || 0,
-        }));
+        // Transform questions to include option letters
+        const transformedQuestions = (data.questions || []).map((q) => {
+          const options = [
+            { label: "A", value: q.option_a },
+            { label: "B", value: q.option_b },
+            { label: "C", value: q.option_c },
+            { label: "D", value: q.option_d },
+          ].filter(opt => opt.value && opt.value.trim() !== "");
+
+          return {
+            id: q.id,
+            question: q.question_text,
+            description: q.description || "",
+            options: options,
+            correct_answer: q.correct_answer || "A",
+            marks: q.marks || 1,
+            order_number: q.order_number || 0,
+          };
+        });
         
         setQuestions(transformedQuestions);
         
-        // Set time limit from duration_minutes
         if (data.duration_minutes) {
-          setTimeRemaining(data.duration_minutes * 60); // Convert to seconds
+          setTimeRemaining(data.duration_minutes * 60);
         }
 
         setStartTime(new Date());
@@ -143,11 +146,11 @@ const AssessmentPage = () => {
     await handleSubmitAssessment(true);
   };
 
-  const handleAnswerSelect = (questionId, optionIndex) => {
+  const handleAnswerSelect = (questionId, optionLabel) => {
     if (submitted || showResults) return;
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: optionIndex,
+      [questionId]: optionLabel,
     }));
   };
 
@@ -172,9 +175,8 @@ const AssessmentPage = () => {
   const handleSubmitAssessment = async (autoSubmit = false) => {
     if (submitted || isSubmitting || showResults) return;
 
-    // Check if all questions are answered
     const unanswered = questions.filter(
-      (q) => answers[q.id] === undefined || answers[q.id] === null
+      (q) => !answers[q.id] || answers[q.id] === ""
     );
 
     if (!autoSubmit && unanswered.length > 0) {
@@ -193,21 +195,18 @@ const AssessmentPage = () => {
         currentSession = await update();
       }
 
-      // Prepare answers payload
+      // Prepare answers payload with option letters (A, B, C, D)
       const answerPayload = questions.map((q) => ({
         question_id: q.id,
-        selected_option: answers[q.id] !== undefined && answers[q.id] !== null 
-          ? answers[q.id] 
-          : -1,
+        selected_option: answers[q.id] || "", // Send "A", "B", "C", or "D"
       }));
 
-      console.log("Submitting assessment:", { 
+      console.log("Submitting assessment payload:", { 
         courseId: programId, 
         assessmentId: assessmentId,
         answers: answerPayload 
       });
 
-      // Submit assessment using the API
       const response = await assessmentApi.submitAssessment(
         programId,
         assessmentId,
@@ -255,7 +254,7 @@ const AssessmentPage = () => {
 
   const getAnsweredCount = () => {
     return Object.keys(answers).filter(
-      (key) => answers[key] !== undefined && answers[key] !== null
+      (key) => answers[key] && answers[key] !== ""
     ).length;
   };
 
@@ -264,13 +263,17 @@ const AssessmentPage = () => {
     return Math.round((getAnsweredCount() / questions.length) * 100);
   };
 
+  const getOptionLabel = (index) => {
+    return String.fromCharCode(65 + index); // A, B, C, D
+  };
+
   // Loading state
   if (!isClient || status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#FDF8F0] flex flex-col items-center justify-center">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-gray-100 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin"></div>
+          <div className="w-16 h-16 border-4 border-[#D4A574]/30 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#CC0000] rounded-full animate-spin"></div>
         </div>
         <p className="mt-4 text-gray-600 font-medium">Loading assessment...</p>
       </div>
@@ -279,16 +282,16 @@ const AssessmentPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
+      <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4">
+        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg border border-[#D4A574]/30">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#CC0000]/10 rounded-full mb-4">
+            <AlertCircle className="w-8 h-8 text-[#CC0000]" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Assessment Error</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <Link
             href={`/programs/${programId}`}
-            className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
           >
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Program
@@ -300,8 +303,8 @@ const AssessmentPage = () => {
 
   if (!assessment || questions.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4">
+        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg border border-[#D4A574]/30">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-50 rounded-full mb-4">
             <BookOpen className="w-8 h-8 text-yellow-600" />
           </div>
@@ -309,7 +312,7 @@ const AssessmentPage = () => {
           <p className="text-gray-600 mb-6">This program doesn't have an assessment yet.</p>
           <Link
             href={`/programs/${programId}`}
-            className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
           >
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Program
@@ -331,47 +334,53 @@ const AssessmentPage = () => {
           <meta name="description" content={`Assessment results for ${assessment.title}`} />
         </Head>
 
-        <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#FDF8F0] py-6 px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <Link
               href={`/programs/${programId}`}
-              className="inline-flex items-center text-gray-600 hover:text-red-600 transition-colors mb-6"
+              className="inline-flex items-center text-gray-600 hover:text-[#CC0000] transition-colors mb-6"
             >
               <ArrowLeft size={20} className="mr-2" />
               Back to Program
             </Link>
 
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className={`p-6 text-center ${passed ? 'bg-green-50' : 'bg-red-50'}`}>
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 bg-white shadow-lg">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
+              <div className={`p-6 text-center ${passed ? 'bg-[#FDF8F0]' : 'bg-[#CC0000]/5'}`}>
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 bg-white shadow-lg border border-[#D4A574]/20">
                   {passed ? (
-                    <CheckCircle className="w-12 h-12 text-green-600" />
+                    <CheckCircle className="w-12 h-12 text-[#CC0000]" />
                   ) : (
-                    <XCircle className="w-12 h-12 text-red-600" />
+                    <XCircle className="w-12 h-12 text-[#CC0000]" />
                   )}
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {passed ? 'Congratulations!' : 'Keep Learning!'}
+                  {passed ? '🎉 Congratulations!' : 'Keep Learning!'}
                 </h2>
                 <p className="text-gray-600 mt-2">
                   {passed 
                     ? 'You have successfully passed the assessment!' 
                     : 'You didn\'t pass this time. Review the material and try again.'}
                 </p>
+                {passed && (
+                  <div className="mt-3 inline-flex items-center gap-2 bg-[#CC0000]/10 px-4 py-2 rounded-full">
+                    <Award className="w-5 h-5 text-[#CC0000]" />
+                    <span className="text-sm font-medium text-[#CC0000]">Certificate Earned!</span>
+                  </div>
+                )}
               </div>
 
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-6 border-b border-[#D4A574]/20">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">{results.score || 0}%</p>
+                    <p className="text-2xl font-bold text-[#CC0000]">{results.score || 0}%</p>
                     <p className="text-xs text-gray-500">Score</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">{results.correct_answers || 0}</p>
+                    <p className="text-2xl font-bold text-green-600">{results.correct_answers || 0}</p>
                     <p className="text-xs text-gray-500">Correct</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">{results.wrong_answers || 0}</p>
+                    <p className="text-2xl font-bold text-[#CC0000]">{results.wrong_answers || 0}</p>
                     <p className="text-xs text-gray-500">Wrong</p>
                   </div>
                   <div className="text-center">
@@ -400,8 +409,8 @@ const AssessmentPage = () => {
                         className={`p-4 rounded-lg border ${
                           isCorrect
                             ? 'border-green-200 bg-green-50'
-                            : userAnswer !== undefined && userAnswer !== null && userAnswer !== -1
-                            ? 'border-red-200 bg-red-50'
+                            : userAnswer && userAnswer !== ""
+                            ? 'border-[#CC0000]/20 bg-[#CC0000]/5'
                             : 'border-gray-200 bg-gray-50'
                         }`}
                       >
@@ -409,8 +418,8 @@ const AssessmentPage = () => {
                           <div className="shrink-0 mt-0.5">
                             {isCorrect ? (
                               <CheckCircle className="w-5 h-5 text-green-600" />
-                            ) : userAnswer !== undefined && userAnswer !== null && userAnswer !== -1 ? (
-                              <XCircle className="w-5 h-5 text-red-600" />
+                            ) : userAnswer && userAnswer !== "" ? (
+                              <XCircle className="w-5 h-5 text-[#CC0000]" />
                             ) : (
                               <AlertCircle className="w-5 h-5 text-gray-400" />
                             )}
@@ -421,8 +430,8 @@ const AssessmentPage = () => {
                             </p>
                             <div className="mt-2 space-y-1">
                               {q.options?.map((option, optIndex) => {
-                                const isSelected = userAnswer === optIndex;
-                                const isCorrectAnswer = q.correct_answer === optIndex;
+                                const isSelected = userAnswer === option.label;
+                                const isCorrectAnswer = q.correct_answer === option.label;
 
                                 return (
                                   <div
@@ -431,18 +440,18 @@ const AssessmentPage = () => {
                                       isSelected && isCorrectAnswer
                                         ? 'bg-green-200 text-green-900'
                                         : isSelected && !isCorrectAnswer
-                                        ? 'bg-red-200 text-red-900'
+                                        ? 'bg-[#CC0000]/10 text-[#CC0000]'
                                         : isCorrectAnswer
                                         ? 'bg-green-100 text-green-800'
                                         : 'bg-gray-100 text-gray-600'
                                     }`}
                                   >
-                                    {String.fromCharCode(65 + optIndex)}. {option}
+                                    {option.label}. {option.value}
                                     {isCorrectAnswer && (
                                       <span className="ml-2 text-green-600 font-medium">✓ Correct</span>
                                     )}
                                     {isSelected && !isCorrectAnswer && (
-                                      <span className="ml-2 text-red-600 font-medium">✗ Your answer</span>
+                                      <span className="ml-2 text-[#CC0000] font-medium">✗ Your answer</span>
                                     )}
                                   </div>
                                 );
@@ -459,7 +468,7 @@ const AssessmentPage = () => {
                   {!passed && (
                     <button
                       onClick={handleRetry}
-                      className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                      className="flex-1 px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors font-semibold flex items-center justify-center gap-2"
                     >
                       <RefreshCw className="w-5 h-5" />
                       Retry Assessment
@@ -467,7 +476,7 @@ const AssessmentPage = () => {
                   )}
                   <Link
                     href={`/programs/${programId}`}
-                    className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold text-center"
+                    className="flex-1 px-6 py-3 bg-[#FDF8F0] text-gray-700 rounded-lg hover:bg-[#F5E6D3] transition-colors font-semibold text-center border border-[#D4A574]/20"
                   >
                     Back to Program
                   </Link>
@@ -492,15 +501,15 @@ const AssessmentPage = () => {
         <meta name="description" content={`Take the assessment for ${assessment.title}`} />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#FDF8F0]">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div className="bg-white border-b border-[#D4A574]/20 sticky top-0 z-40 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-14 sm:h-16">
               <div className="flex items-center gap-3">
                 <Link
                   href={`/programs/${programId}`}
-                  className="text-gray-600 hover:text-red-600 transition-colors p-1"
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors p-1"
                 >
                   <ArrowLeft size={22} />
                 </Link>
@@ -511,8 +520,8 @@ const AssessmentPage = () => {
               <div className="flex items-center gap-3">
                 {timeRemaining !== null && (
                   <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
-                    timeRemaining < 60 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
+                    timeRemaining < 60 ? 'bg-[#CC0000]/10 text-[#CC0000]' : 'bg-[#FDF8F0] text-gray-700'
+                  } border border-[#D4A574]/20`}>
                     <Timer className="w-4 h-4" />
                     <span>{formatTime(timeRemaining)}</span>
                   </div>
@@ -526,13 +535,13 @@ const AssessmentPage = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-white border-b border-[#D4A574]/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-4">
               <div className="flex-1">
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#D4A574]/20 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-red-600 rounded-full transition-all duration-300"
+                    className="h-full bg-[#CC0000] rounded-full transition-all duration-300"
                     style={{ width: `${getProgressPercentage()}%` }}
                   />
                 </div>
@@ -546,9 +555,9 @@ const AssessmentPage = () => {
 
         {/* Main Content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
             {/* Question Navigation */}
-            <div className="p-4 border-b border-gray-200 bg-gray-50/50 overflow-x-auto">
+            <div className="p-4 border-b border-[#D4A574]/20 bg-[#FDF8F0]/50 overflow-x-auto">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">
                   Question {currentQuestionIndex + 1} of {totalQuestions}
@@ -559,7 +568,7 @@ const AssessmentPage = () => {
                     className={`p-2 rounded-lg transition-colors ${
                       flaggedQuestions.has(currentQuestion.id)
                         ? 'bg-yellow-100 text-yellow-700'
-                        : 'hover:bg-gray-200 text-gray-400'
+                        : 'hover:bg-[#FDF8F0] text-gray-400'
                     }`}
                     aria-label="Flag question"
                   >
@@ -571,7 +580,7 @@ const AssessmentPage = () => {
               {/* Question indicator dots */}
               <div className="flex gap-1.5 mt-3 overflow-x-auto pb-1">
                 {questions.map((q, index) => {
-                  const isAnswered = answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== -1;
+                  const isAnswered = answers[q.id] && answers[q.id] !== "";
                   const isFlagged = flaggedQuestions.has(q.id);
                   const isCurrent = index === currentQuestionIndex;
 
@@ -581,16 +590,16 @@ const AssessmentPage = () => {
                       onClick={() => handleQuestionNavigate(index)}
                       className={`w-8 h-8 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
                         isCurrent
-                          ? 'ring-2 ring-red-600 ring-offset-2'
+                          ? 'ring-2 ring-[#CC0000] ring-offset-2'
                           : ''
                       } ${
                         isAnswered
                           ? isFlagged
                             ? 'bg-yellow-500 text-white'
-                            : 'bg-green-500 text-white'
+                            : 'bg-[#CC0000] text-white'
                           : isFlagged
                           ? 'bg-yellow-200 text-yellow-800'
-                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                          : 'bg-[#D4A574]/20 text-gray-600 hover:bg-[#D4A574]/30'
                       }`}
                     >
                       {index + 1}
@@ -604,7 +613,7 @@ const AssessmentPage = () => {
             <div className="p-4 sm:p-6">
               <div className="mb-6">
                 <div className="flex items-start gap-3">
-                  <span className="text-lg font-semibold text-red-600 shrink-0">
+                  <span className="text-lg font-semibold text-[#CC0000] shrink-0">
                     Q{currentQuestionIndex + 1}.
                   </span>
                   <div>
@@ -628,33 +637,32 @@ const AssessmentPage = () => {
               {/* Options */}
               <div className="space-y-3">
                 {currentQuestion.options?.map((option, index) => {
-                  const isSelected = answers[currentQuestion.id] === index;
-                  const optionLabel = String.fromCharCode(65 + index);
+                  const isSelected = answers[currentQuestion.id] === option.label;
 
                   return (
                     <button
                       key={index}
-                      onClick={() => handleAnswerSelect(currentQuestion.id, index)}
+                      onClick={() => handleAnswerSelect(currentQuestion.id, option.label)}
                       disabled={submitted || showResults}
                       className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all flex items-start gap-3 ${
                         isSelected
-                          ? 'border-red-600 bg-red-50'
-                          : 'border-gray-200 hover:border-red-300 hover:bg-red-50/50'
+                          ? 'border-[#CC0000] bg-[#FDF8F0]'
+                          : 'border-[#D4A574]/20 hover:border-[#CC0000]/30 hover:bg-[#FDF8F0]'
                       } ${(submitted || showResults) ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
                     >
                       <div className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                         isSelected
-                          ? 'border-red-600 bg-red-600 text-white'
-                          : 'border-gray-300 text-gray-400'
+                          ? 'border-[#CC0000] bg-[#CC0000] text-white'
+                          : 'border-[#D4A574]/40 text-gray-400'
                       }`}>
                         {isSelected ? (
                           <CheckCircle className="w-4 h-4" />
                         ) : (
-                          <span className="text-xs font-medium">{optionLabel}</span>
+                          <span className="text-xs font-medium">{option.label}</span>
                         )}
                       </div>
                       <span className={`text-sm sm:text-base ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-700'}`}>
-                        {option}
+                        {option.value}
                       </span>
                     </button>
                   );
@@ -667,7 +675,7 @@ const AssessmentPage = () => {
                   <button
                     onClick={() => handleQuestionNavigate(currentQuestionIndex - 1)}
                     disabled={currentQuestionIndex === 0}
-                    className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none px-4 py-2 border border-[#D4A574]/20 text-gray-700 rounded-lg hover:bg-[#FDF8F0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     Previous
@@ -675,7 +683,7 @@ const AssessmentPage = () => {
                   {currentQuestionIndex < totalQuestions - 1 ? (
                     <button
                       onClick={() => handleQuestionNavigate(currentQuestionIndex + 1)}
-                      className="flex-1 sm:flex-none px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 sm:flex-none px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors flex items-center justify-center gap-2"
                     >
                       Next
                       <ChevronRight className="w-4 h-4" />
@@ -716,7 +724,7 @@ const AssessmentPage = () => {
           </div>
 
           {/* Question palette - Mobile friendly */}
-          <div className="mt-4 bg-white rounded-lg shadow-lg p-4 sm:hidden">
+          <div className="mt-4 bg-white rounded-lg shadow-lg p-4 sm:hidden border border-[#D4A574]/20">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-700">Question Palette</span>
               <span className="text-xs text-gray-500">
@@ -725,7 +733,7 @@ const AssessmentPage = () => {
             </div>
             <div className="flex flex-wrap gap-2">
               {questions.map((q, index) => {
-                const isAnswered = answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== -1;
+                const isAnswered = answers[q.id] && answers[q.id] !== "";
                 const isFlagged = flaggedQuestions.has(q.id);
                 const isCurrent = index === currentQuestionIndex;
 
@@ -735,16 +743,16 @@ const AssessmentPage = () => {
                     onClick={() => handleQuestionNavigate(index)}
                     className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
                       isCurrent
-                        ? 'ring-2 ring-red-600 ring-offset-2'
+                        ? 'ring-2 ring-[#CC0000] ring-offset-2'
                         : ''
                     } ${
                       isAnswered
                         ? isFlagged
                           ? 'bg-yellow-500 text-white'
-                          : 'bg-green-500 text-white'
+                          : 'bg-[#CC0000] text-white'
                         : isFlagged
                         ? 'bg-yellow-200 text-yellow-800'
-                        : 'bg-gray-200 text-gray-600'
+                        : 'bg-[#D4A574]/20 text-gray-600'
                     }`}
                   >
                     {index + 1}
@@ -757,11 +765,11 @@ const AssessmentPage = () => {
           {/* Legend */}
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-600">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-[#CC0000] rounded-full"></div>
               <span>Answered</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 bg-gray-200 rounded-full"></div>
+              <div className="w-3 h-3 bg-[#D4A574]/20 rounded-full"></div>
               <span>Unanswered</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -769,7 +777,7 @@ const AssessmentPage = () => {
               <span>Flagged</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+              <div className="w-3 h-3 border-2 border-[#CC0000] rounded-full"></div>
               <span>Current</span>
             </div>
           </div>

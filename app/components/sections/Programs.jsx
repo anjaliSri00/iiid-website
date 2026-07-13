@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import ProgramGrid from './ProgramGrid';
-import { Loader2, RefreshCw, BookOpen } from 'lucide-react';
+import { Loader2, RefreshCw, BookOpen, Sparkles } from 'lucide-react';
 import fetchApiResponse from '@/helper/api_data_store';
+import { motion } from 'framer-motion';
+
 
 export default function Programs() {
   const { data: session } = useSession();
@@ -82,15 +84,29 @@ export default function Programs() {
   };
 
   return (
-    <section id="programs" className="py-16 md:py-20 bg-linear-to-b from-red-50 to-white">
+    <section id="programs" className="py-16 md:py-20 bg-[#FDF8F0]">
       <div className="max-w-screen-3xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl montserrat-600 lg:text-5xl text-gray-900 mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 bg-[#8B0000]/10 px-4 py-2 rounded-full mb-4"
+          >
+            <Sparkles className="w-4 h-4 text-[#8B0000]" />
+            <span className="text-sm font-medium text-[#8B0000]">Our Programs</span>
+          </motion.div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-serif">
             Programs
           </h2>
-          <p className="text-base montserrat-400 md:text-lg lg:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed max-sm:text-justify">
-            IIID offers a flexible training and certification program primarily based on the assessment of professional experience and competence, with limited structured learning modules. The program focuses on evaluating existing knowledge, practical expertise, and industry experience in alignment with professional standards.
+          
+          <p className="text-base md:text-lg lg:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed max-sm:text-justify">
+            IIID offers a flexible training and certification program primarily based on the assessment 
+            of professional experience and competence, with limited structured learning modules. 
+            The program focuses on evaluating existing knowledge, practical expertise, and industry 
+            experience in alignment with professional standards.
           </p>
         </div>
         
@@ -98,8 +114,8 @@ export default function Programs() {
         {loading && (
           <div className="flex flex-col justify-center items-center py-16">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-red-100 rounded-full"></div>
-              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-[#D4A574]/30 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#8B0000] rounded-full animate-spin"></div>
             </div>
             <p className="mt-4 text-gray-600 font-medium">Loading programs...</p>
           </div>
@@ -107,15 +123,15 @@ export default function Programs() {
 
         {/* Error State */}
         {error && !loading && (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-red-100 max-w-2xl mx-auto">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4">
-              <BookOpen className="w-8 h-8 text-red-600" />
+          <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-[#D4A574]/30 max-w-2xl mx-auto">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#8B0000]/10 rounded-full mb-4">
+              <BookOpen className="w-8 h-8 text-[#8B0000]" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Programs</h3>
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={handleRetry}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-300 font-medium shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#8B0000] to-[#A52A2A] text-white rounded-lg hover:shadow-lg transition-all duration-300 font-medium"
             >
               <RefreshCw className="w-4 h-4" />
               Retry
@@ -131,3 +147,4 @@ export default function Programs() {
     </section>
   );
 }
+
