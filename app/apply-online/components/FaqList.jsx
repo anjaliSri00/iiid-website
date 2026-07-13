@@ -4,11 +4,8 @@
 import { useState, useEffect } from "react";
 import {
   HelpCircle,
-  Search,
   ChevronDown,
   ChevronUp,
-  MessageSquare,
-  FileText,
   Loader2,
 } from "lucide-react";
 import fetchApiResponse from "@/helper/api_data_store";
@@ -16,11 +13,7 @@ import fetchApiResponse from "@/helper/api_data_store";
 const FaqList = ({ session }) => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPage, setSelectedPage] = useState("all");
-  const [pages, setPages] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);
-  const [stats, setStats] = useState({ total: 0, pages: 0 });
 
   // Fetch FAQs
   const fetchFAQs = async () => {
@@ -37,18 +30,14 @@ const FaqList = ({ session }) => {
         const faqData = Array.isArray(response.data) ? response.data : [];
         setFaqs(faqData);
         
-        // Extract unique page names (filter out null values)
-        const uniquePages = [...new Set(
-          faqData
-            .map(faq => faq.page_name)
-            .filter(name => name !== null && name !== undefined && name !== "")
-        )];
-        setPages(uniquePages);
-
-        setStats({
-          total: faqData.length,
-          pages: uniquePages.length,
-        });
+        // Auto-expand the first FAQ where is_collapsed is true
+        const initiallyOpen = faqData
+          .filter(faq => faq.is_collapsed === true)
+          .map(faq => faq.id);
+        
+        if (initiallyOpen.length > 0) {
+          setExpandedFaq(initiallyOpen[0]); // Only expand the first one
+        }
       }
     } catch (error) {
       console.error("Error fetching FAQs:", error);
@@ -57,19 +46,17 @@ const FaqList = ({ session }) => {
     }
   };
 
-  // Toggle Expand
+  // Toggle Expand - Closes other accordions when opening a new one
   const toggleExpand = (faqId) => {
+    // If clicking the same FAQ, close it
+    // If clicking a different FAQ, close the current one and open the new one
     setExpandedFaq(expandedFaq === faqId ? null : faqId);
   };
 
-  // Filter FAQs
-  const filteredFaqs = faqs.filter((faq) => {
-    const matchesSearch = 
-      faq.question?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.answer?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPage = selectedPage === "all" || faq.page_name === selectedPage;
-    return matchesSearch && matchesPage;
-  });
+  // Check if a FAQ is expanded
+  const isExpanded = (faqId) => {
+    return expandedFaq === faqId;
+  };
 
   // Initial fetch
   useEffect(() => {
@@ -91,29 +78,22 @@ const FaqList = ({ session }) => {
           Find answers to commonly asked questions about our platform and services
         </p>
       </div>
-      
 
       {/* FAQs List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-red-600" />
         </div>
-      ) : filteredFaqs.length === 0 ? (
+      ) : faqs.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
           <HelpCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500">No FAQs found</p>
-          <p className="text-sm text-gray-400 mt-1">
-            {searchTerm || selectedPage !== "all"
-              ? "Try adjusting your search or filters"
-              : "Check back later for updates"}
-          </p>
+          <p className="text-sm text-gray-400 mt-1">Check back later for updates</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredFaqs.map((faq) => {
-            // For public view: if is_collapsed is true, answer is hidden by default
-            // User can click to expand and see the answer
-            const isOpen = expandedFaq === faq.id;
+          {faqs.map((faq) => {
+            const open = isExpanded(faq.id);
             
             return (
               <div
@@ -126,13 +106,17 @@ const FaqList = ({ session }) => {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      
                       <h3 className="text-base font-semibold text-gray-900 pr-4">
                         {faq.question}
                       </h3>
+                      {faq.page_name && (
+                        <span className="text-xs text-gray-400 mt-1 block">
+                          {faq.page_name}
+                        </span>
+                      )}
                     </div>
                     <div className="shrink-0 mt-1">
-                      {isOpen ? (
+                      {open ? (
                         <ChevronUp className="w-5 h-5 text-gray-400" />
                       ) : (
                         <ChevronDown className="w-5 h-5 text-gray-400" />
@@ -141,8 +125,8 @@ const FaqList = ({ session }) => {
                   </div>
                 </button>
 
-                {/* Answer Section - Show when user clicks to expand */}
-                {isOpen && (
+                {/* Answer Section - Show when expanded */}
+                {open && (
                   <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 border-t border-gray-100">
                     <div className="pt-4 text-gray-700 leading-relaxed whitespace-pre-wrap">
                       {faq.answer}
