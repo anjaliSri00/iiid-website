@@ -9,7 +9,7 @@ export default function HeroSection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="relative bg-gradient-to-br from-[#CC0000] via-[#DC2626] to-[#B30000] text-white py-16 md:py-24 overflow-hidden"
+      className="relative bg-gradient-to-br from-[#8B0000] via-[#CC0000] to-[#B30000] text-white py-16 md:py-24 overflow-hidden"
     >
       {/* Decorative elements */}
       <div className="absolute inset-0 opacity-10">
@@ -19,16 +19,7 @@ export default function HeroSection() {
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="inline-flex items-center gap-2 bg-[#ffff]/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-[#D4A574]/30"
-          >
-            <Sparkles className="w-4 h-4 text-[#ffff]" />
-            <span className="text-sm font-medium text-[#ffff]">Internationally Recognized</span>
-          </motion.div>
-          
+         
           <motion.h1 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

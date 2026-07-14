@@ -80,8 +80,12 @@ export default function Header() {
                 About
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+              {/* <Link href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
                 Programs
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
+              </Link> */}
+              <Link href="/contact-us" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+              Contact Us
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
             </nav>
@@ -213,6 +217,12 @@ export default function Header() {
                 >
                   Programs
                 </Link>
+                 <Link href="/contact-us"
+                                   onClick={() => setIsOpen(false)}
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
+                  >
+              Contact Us
+              </Link>
                 
                 {/* Mobile Auth */}
                 <div className="pt-4 border-t border-[#D4A574]/20">

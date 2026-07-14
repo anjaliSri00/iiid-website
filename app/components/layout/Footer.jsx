@@ -92,34 +92,34 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <a href="#home" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
+                <Link href="/" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
                   <ChevronRight size={16} className="mr-2 text-[#D4A574] group-hover:translate-x-1 transition-transform" />
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
+                <Link href="/apply-online" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
                   <ChevronRight size={16} className="mr-2 text-[#D4A574] group-hover:translate-x-1 transition-transform" />
-                  Programs
-                </a>
+                  Apply Online
+                </Link>
               </li>
               <li>
-                <a href="#about" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
+                <Link href="#about" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
                   <ChevronRight size={16} className="mr-2 text-[#D4A574] group-hover:translate-x-1 transition-transform" />
                   About IIID
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#certification" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
+                <Link href="#certification" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
                   <ChevronRight size={16} className="mr-2 text-[#D4A574] group-hover:translate-x-1 transition-transform" />
                   Certification
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#faq" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
+                <Link href="/contact-us" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
                   <ChevronRight size={16} className="mr-2 text-[#D4A574] group-hover:translate-x-1 transition-transform" />
-                  FAQ
-                </a>
+                  Contact Us
+                </Link>
               </li>
             </ul>
           </motion.div>

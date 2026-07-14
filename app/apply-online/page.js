@@ -4,8 +4,9 @@ import HeroSection from './components/HeroSection';
 import BenefitsSection from './components/BenefitsSection';
 import Programs from '../components/sections/Programs';
 import HowItWorksSection from './components/HowItWorksSection';
-import FaqList from './components/FaqList';
+import FaqList from '../components/ui/FaqList';
 import ContactForm from './components/ContactForm';
+import Faq, { getFAQs } from '@/helper/lib/faq';
 
 // SEO Metadata
 export const metadata = {
@@ -50,7 +51,8 @@ export const metadata = {
   },
 };
 
-export default function ApplyOnline() {
+export default async function ApplyOnline({ faqs, error }) {
+  const result = await getFAQs(1);
   return (
     <div className="min-h-screen bg-white">
       {/* JSON-LD Structured Data */}
@@ -87,35 +89,27 @@ export default function ApplyOnline() {
         }}
       />
 
-      {/* 1. Hero Section - Top of page */}
       <Suspense fallback={<Loading />}>
         <HeroSection />
       </Suspense>
 
-      {/* 2. Benefits Section - Why choose us */}
       <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
         <BenefitsSection />
       </Suspense>
 
-      {/* 3. Programs Section - Available programs */}
-      {/* <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse"></div>}>
-        <Programs />
-      </Suspense> */}
-
-      {/* 4. How It Works Section - Step by step guide */}
       <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
         <HowItWorksSection />
       </Suspense>
 
-      {/* 7. FAQ Section - Frequently asked questions */}
       <Suspense fallback={<div className="h-96 bg-white animate-pulse"></div>}>
-        <FaqList />
+        <FaqList 
+        faqs={result.props.faqs}
+          pageId={1}
+          error={result.props.error}
+        />
       </Suspense>
- <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse"></div>}>
-        <ContactForm />
-      </Suspense>
+
      
-       
     </div>
   );
 }
