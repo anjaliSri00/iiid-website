@@ -994,7 +994,7 @@ const ProgramDetailPage = () => {
                 </div>
 
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-20 max-h-[calc(100vh-120px)] flex flex-col">
-                  <div className="p-3 sm:p-4 border-b border-[#D4A574]/20 bg-gradient-to-r from-[#FDF8F0] to-white flex-shrink-0">
+                  <div className="p-3 sm:p-4 border-b border-[#D4A574]/20 bg-gradient-to-r from-[#FDF8F0] to-white shrink-0">
                     <div className="flex items-center justify-between">
                       <h2 className="font-semibold text-gray-900 text-sm sm:text-base">
                         Course Content
