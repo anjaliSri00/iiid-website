@@ -2,53 +2,60 @@ name: Deploy to Vercel
 
 on:
   push:
-    branches: [staging]
+    branches: [staging]  # Changed to match your working file pattern
   pull_request:
     branches: [staging]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Vercel deployments work best on GitHub-hosted runners
+    
+    strategy:
+      matrix:
+        node-version: [20.x]  # Keep Node.js 20 for Vercel compatibility
     
     steps:
-      - name: Checkout code
+      # Checkout your repo
+      - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Setup Node.js
+
+      # Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      
-      - name: Debug - Show Node version
-        run: node --version
-      
-      - name: Debug - Show npm version
-        run: npm --version
-      
-      - name: Debug - Show directory contents
-        run: ls -la
-      
-      - name: Debug - Show package.json
-        run: cat package.json
-      
+          cache-dependency-path: package-lock.json
+
+      # Create .env file dynamically from GitHub Secrets (like your working file)
+      - name: Create environment file
+        run: |
+          echo "Creating .env file..."
+          cat <<EOF > .env
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_RAZORPAY_KEY_ID=${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
+          GITHUB_ID=${{ secrets.GITHUB_ID }}
+          GITHUB_SECRET=${{ secrets.GITHUB_SECRET }}
+          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+          EOF
+          echo "✅ .env file created successfully"
+
+      # Install dependencies (matching your working file)
       - name: Install dependencies
-        run: npm ci
-      
-      - name: Debug - Check if Next.js is installed
-        run: npx next --version
-      
-      - name: Build project
-        run: npm run build
-        env:
-          NODE_ENV: production
-      
-      - name: Debug - Check if build folder exists
-        run: ls -la .next || echo "Build folder not found"
-      
+        run: npm ci --prefer-offline --no-audit
+
+      # Build Next.js app (matching your working file)
+      - name: Build Next.js app
+        run: |
+          export NEXT_TELEMETRY_DISABLED=1
+          npm run build
+
+      # Install Vercel CLI
       - name: Install Vercel CLI
         run: npm install --global vercel
-      
+
+      # Deploy to Vercel
       - name: Deploy to Vercel
         run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
