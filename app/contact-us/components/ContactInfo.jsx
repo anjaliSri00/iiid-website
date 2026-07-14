@@ -92,7 +92,7 @@ export default function ContactInfo() {
       {/* Address */}
       <motion.div
         variants={itemVariants}
-        className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
+        className="bg-white rounded-2xl py-4 px-6 shadow-lg border border-gray-100"
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Building className="w-5 h-5 text-[#CC0000]" />
@@ -103,8 +103,8 @@ export default function ContactInfo() {
             <MapPin className="w-5 h-5 text-[#CC0000] shrink-0 mt-0.5" />
             <p className="text-sm text-gray-600">
               IIID,<br />
-              Hyderabad,<br />
-              Telangana, India
+              {/* Hyderabad,<br /> */}
+              {/* Telangana, India */}
             </p>
           </div>
           <div className="pt-3 border-t border-gray-100">
@@ -123,7 +123,7 @@ export default function ContactInfo() {
       {/* Social Links */}
       <motion.div
         variants={itemVariants}
-        className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
+        className="bg-white rounded-2xl py-4 px-6 shadow-lg border border-gray-100"
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Globe className="w-5 h-5 text-[#CC0000]" />

@@ -88,16 +88,7 @@ export default function Programs() {
       <div className="max-w-screen-3xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 bg-[#8B0000]/10 px-4 py-2 rounded-full mb-4"
-          >
-            <Sparkles className="w-4 h-4 text-[#8B0000]" />
-            <span className="text-sm font-medium text-[#8B0000]">Our Programs</span>
-          </motion.div>
-          
+        
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-serif">
             Programs
           </h2>

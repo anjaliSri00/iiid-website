@@ -64,7 +64,7 @@ export default async function ContactPage() {
       </div>
 
       {/* FAQ Section with SSR Data */}
-      <section className="py-16 mt-8">
+      <section className="pt-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <FaqList 
                faqs={faqs}

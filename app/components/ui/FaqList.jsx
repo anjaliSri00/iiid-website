@@ -13,7 +13,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 
-const FaqList = ({ faqs, loading = false }) => {
+const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
   const [expandedFaq, setExpandedFaq] = useState(null);
 
   // Set expanded FAQs based on is_collapsed field
@@ -62,8 +62,11 @@ const FaqList = ({ faqs, loading = false }) => {
     },
   };
 
+  // Check if ANY FAQ has page_id !== 2 (not on contact page)
+  const showContactCta = !hideContactCta && faqs && faqs.length > 0 && !faqs.some(faq => faq.page_id === 2);
+
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-10 md:py-24 ">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <motion.div
@@ -86,7 +89,7 @@ const FaqList = ({ faqs, loading = false }) => {
 
         {/* FAQs List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100">
+          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl">
             <Loader2 className="w-10 h-10 animate-spin text-[#CC0000]" />
             <p className="mt-3 text-gray-500 font-medium">Loading FAQs...</p>
             <p className="text-sm text-gray-400">Please wait while we fetch the questions</p>
@@ -180,8 +183,8 @@ const FaqList = ({ faqs, loading = false }) => {
           </motion.div>
         )}
 
-        {/* Still have questions? */}
-        {!loading && faqs && faqs.length > 0 && (
+        {/* Still have questions? - Show only if NOT on Contact Us page */}
+        {!loading && showContactCta && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
