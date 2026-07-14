@@ -17,20 +17,40 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
+      
+      - name: Debug - Show Node version
+        run: node --version
+      
+      - name: Debug - Show npm version
+        run: npm --version
+      
+      - name: Debug - Show directory contents
+        run: ls -la
+      
+      - name: Debug - Show package.json
+        run: cat package.json
       
       - name: Install dependencies
         run: npm ci
       
+      - name: Debug - Check if Next.js is installed
+        run: npx next --version
+      
       - name: Build project
         run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Debug - Check if build folder exists
+        run: ls -la .next || echo "Build folder not found"
+      
+      - name: Install Vercel CLI
+        run: npm install --global vercel
       
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v20
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-oidc-token: ${{ secrets.VERCEL_OIDC_TOKEN }}
-          vercel-args: '--prod'
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
