@@ -105,7 +105,7 @@ export const AssessmentList = ({
                               Edit
                             </button>
                             <button
-                              onClick={() => handleDeleteAssessment(program.id, assessment.id)}
+                              onClick={() => handleDeleteAssessment(program?.id, assessment?.id)}
                               className="text-xs text-red-600 hover:text-red-700"
                             >
                               Delete

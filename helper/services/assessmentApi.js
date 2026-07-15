@@ -50,6 +50,7 @@ export const assessmentApi = {
   // Delete assessment
   deleteAssessment: async (courseId, assessmentId, session) => {
     try {
+      console.log(assessmentId)
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}`,
         {
@@ -67,9 +68,8 @@ export const assessmentApi = {
     }
   },
 
-  
   // Activate assessment
-  activateAssessment: async (courseId,assessmentId, session) => {
+  activateAssessment: async (courseId, assessmentId, session) => {
     try {
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}/activate`,
@@ -89,7 +89,7 @@ export const assessmentApi = {
   },
 
   // Deactivate assessment
-  deactivateAssessment: async (courseId,assessmentId, session) => {
+  deactivateAssessment: async (courseId, assessmentId, session) => {
     try {
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}/deactivate`,
@@ -108,7 +108,7 @@ export const assessmentApi = {
     }
   },
 
-  // Get assessment details
+  // Get assessment details (student view - returns assessment with questions)
   getAssessment: async (courseId, session) => {
     try {
       const response = await fetchApiResponse(
@@ -128,10 +128,29 @@ export const assessmentApi = {
     }
   },
 
+  // Get assessment details by ID (admin view - includes all questions with correct answers)
+  getAssessmentById: async (courseId, assessmentId, session) => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}`,
+        {
+          method: "GET",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error fetching assessment details:", error);
+      throw error;
+    }
+  },
+
   // Add question to assessment
   addQuestion: async (courseId, assessmentId, data, session) => {
     try {
-       
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}/questions`,
         {
@@ -193,7 +212,7 @@ export const assessmentApi = {
     }
   },
 
-  // Submit assessment (student)
+  // Submit MCQ assessment (student)
   submitAssessment: async (courseId, assessmentId, answers, session) => {
     try {
       const response = await fetchApiResponse(
@@ -211,6 +230,50 @@ export const assessmentApi = {
       return response;
     } catch (error) {
       console.error("Error submitting assessment:", error);
+      throw error;
+    }
+  },
+
+  // Submit PDF task (student)
+  submitPdfTask: async (courseId, assessmentId, fileUrl, session) => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}/submit-pdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+          body: JSON.stringify({ file_url: fileUrl }),
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error submitting PDF task:", error);
+      throw error;
+    }
+  },
+
+  // Review PDF task (admin)
+  reviewPdfTask: async (courseId,attemptId, reviewData, session) => {
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/attempts/${attemptId}/review`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+          body: JSON.stringify(reviewData),
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error reviewing PDF task:", error);
       throw error;
     }
   },

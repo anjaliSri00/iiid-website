@@ -15,6 +15,8 @@ export const QuestionForm = ({
   resetQuestionForm,
   courseId,
   assessmentId,
+    onSuccess,
+
 }) => {
 //   console.log("QuestionForm rendered with:", { courseId, assessmentId, editingQuestion });
 

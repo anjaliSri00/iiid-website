@@ -1,8 +1,9 @@
 // components/Assessment/AssessmentForm.js
 
-import React from "react";
-import { X, Save, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import React, { useState } from "react";
+import { Save, Loader2, CheckCircle, AlertCircle, Upload, X, FileText } from "lucide-react";
 import { toast } from "react-toastify";
+import { uploadService } from "@/helper/services/uploadService";
 
 const AssessmentForm = ({
   editingAssessment,
@@ -18,7 +19,79 @@ const AssessmentForm = ({
   setAssessmentSuccess,
   courseId,
   onCancel,
+  session, // Add session prop
 }) => {
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Handle PDF file upload
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      toast.error('Please upload a PDF file');
+      e.target.value = '';
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size should be less than 10MB');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadedFile(file);
+    setUploadProgress(0);
+    setIsUploading(true);
+
+    try {
+      // Upload file using uploadService
+      const result = await uploadService.uploadPDF(file, session, {
+        progressCallback: (progress) => {
+          setUploadProgress(progress);
+        },
+      });
+
+      // Update form data with the uploaded URL
+      handleAssessmentFormChange({
+        target: {
+          name: 'pdf_template_url',
+          value: result.url,
+        }
+      });
+
+      toast.success('PDF uploaded successfully!');
+      e.target.value = '';
+    } catch (error) {
+      console.error('Error uploading PDF:', error);
+      toast.error(error.message || 'Failed to upload PDF');
+      e.target.value = '';
+    } finally {
+      setIsUploading(false);
+      setTimeout(() => setUploadProgress(0), 1000);
+    }
+  };
+
+  // Remove uploaded file
+  const removeFile = () => {
+    setUploadedFile(null);
+    setUploadProgress(0);
+    setIsUploading(false);
+    handleAssessmentFormChange({
+      target: {
+        name: 'pdf_template_url',
+        value: '',
+      }
+    });
+    // Reset file input
+    const fileInput = document.getElementById('pdf-upload');
+    if (fileInput) fileInput.value = '';
+  };
+
   return (
     <div>
       {assessmentSuccess && (
@@ -40,7 +113,7 @@ const AssessmentForm = ({
       <form onSubmit={(e) => {
         e.preventDefault();
         if (courseId) {
-          handleAssessmentSubmit(courseId);
+          handleAssessmentSubmit();
         } else {
           toast.error("Please select a course first");
         }
@@ -53,7 +126,7 @@ const AssessmentForm = ({
             <input
               type="text"
               name="title"
-              value={assessmentFormData.title}
+              value={assessmentFormData.title || ""}
               onChange={handleAssessmentFormChange}
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.title ? "border-red-300" : "border-gray-300"
@@ -67,11 +140,31 @@ const AssessmentForm = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              Assessment Type *
+            </label>
+            <select
+              name="type"
+              value={assessmentFormData.type || "mcq"}
+              onChange={handleAssessmentFormChange}
+              className={`w-full px-3 py-2 border ${
+                assessmentErrors.type ? "border-red-300" : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+            >
+              <option value="mcq">MCQ (Multiple Choice Questions)</option>
+              <option value="pdf_task">PDF Task</option>
+            </select>
+            {assessmentErrors.type && (
+              <p className="mt-1 text-sm text-red-600">{assessmentErrors.type}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
               name="status"
-              value={assessmentFormData.status}
+              value={assessmentFormData.status || "draft"}
               onChange={handleAssessmentFormChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
             >
@@ -87,7 +180,7 @@ const AssessmentForm = ({
             <input
               type="number"
               name="passing_score"
-              value={assessmentFormData.passing_score}
+              value={assessmentFormData.passing_score || ""}
               onChange={handleAssessmentFormChange}
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.passing_score ? "border-red-300" : "border-gray-300"
@@ -108,7 +201,7 @@ const AssessmentForm = ({
             <input
               type="number"
               name="duration_minutes"
-              value={assessmentFormData.duration_minutes}
+              value={assessmentFormData.duration_minutes || ""}
               onChange={handleAssessmentFormChange}
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.duration_minutes ? "border-red-300" : "border-gray-300"
@@ -123,11 +216,11 @@ const AssessmentForm = ({
 
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description *
+              Description
             </label>
             <textarea
               name="description"
-              value={assessmentFormData.description}
+              value={assessmentFormData.description || ""}
               onChange={handleAssessmentFormChange}
               rows="2"
               className={`w-full px-3 py-2 border ${
@@ -139,13 +232,158 @@ const AssessmentForm = ({
               <p className="mt-1 text-sm text-red-600">{assessmentErrors.description}</p>
             )}
           </div>
+
+          {/* Conditional fields for PDF Task */}
+          {assessmentFormData.type === "pdf_task" && (
+            <>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Instructions *
+                </label>
+                <textarea
+                  name="instructions"
+                  value={assessmentFormData.instructions || ""}
+                  onChange={handleAssessmentFormChange}
+                  rows="3"
+                  className={`w-full px-3 py-2 border ${
+                    assessmentErrors.instructions ? "border-red-300" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                  placeholder="Provide detailed instructions for the PDF task..."
+                />
+                {assessmentErrors.instructions && (
+                  <p className="mt-1 text-sm text-red-600">{assessmentErrors.instructions}</p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  PDF Template *
+                </label>
+                
+                {/* PDF Upload Area */}
+                <div className="mt-1">
+                  {!assessmentFormData.pdf_template_url ? (
+                    <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-red-400 transition-colors">
+                      <div className="space-y-1 text-center">
+                        {!isUploading ? (
+                          <>
+                            <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                            <div className="flex text-sm text-gray-600">
+                              <label
+                                htmlFor="pdf-upload"
+                                className="relative cursor-pointer bg-white rounded-md font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500"
+                              >
+                                <span>Upload a PDF file</span>
+                                <input
+                                  id="pdf-upload"
+                                  name="pdf_upload"
+                                  type="file"
+                                  accept=".pdf"
+                                  className="sr-only"
+                                  onChange={handlePdfUpload}
+                                  disabled={isUploading}
+                                />
+                              </label>
+                              <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              PDF up to 10MB
+                            </p>
+                          </>
+                        ) : (
+                          <div className="w-full">
+                            <div className="flex items-center justify-center gap-3">
+                              <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
+                              <div className="text-left">
+                                <p className="text-sm font-medium text-gray-700">
+                                  Uploading...
+                                </p>
+                                <div className="w-48 h-1.5 bg-gray-200 rounded-full mt-1">
+                                  <div
+                                    className="h-1.5 bg-red-600 rounded-full transition-all duration-300"
+                                    style={{ width: `${uploadProgress}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {uploadProgress}%
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-red-500" />
+                        <div className="text-left">
+                          <p className="text-sm font-medium text-gray-700 truncate max-w-xs">
+                            {uploadedFile?.name || 'PDF Template'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {uploadedFile && (uploadedFile.size / 1024 / 1024).toFixed(2) + ' MB'}
+                          </p>
+                          {assessmentFormData.pdf_template_url && !uploadedFile && (
+                            <p className="text-xs text-green-600 truncate max-w-xs">
+                              {assessmentFormData.pdf_template_url.split('/').pop()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <label className="cursor-pointer px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors text-sm border border-blue-200">
+                          <Upload className="w-4 h-4 inline mr-1" />
+                          Replace
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept=".pdf"
+                            onChange={handlePdfUpload}
+                            disabled={isUploading}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={removeFile}
+                          className="px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors text-sm border border-red-200"
+                          disabled={isUploading}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show existing file if editing and no new file uploaded */}
+                  {editingAssessment && editingAssessment.pdf_template_url && !assessmentFormData.pdf_template_url && !uploadedFile && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-blue-700">
+                          Current file: {editingAssessment.pdf_template_url.split('/').pop()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Upload a new file to replace the existing one
+                      </p>
+                    </div>
+                  )}
+
+                  {assessmentErrors.pdf_template_url && (
+                    <p className="mt-1 text-sm text-red-600">{assessmentErrors.pdf_template_url}</p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-4 border-t">
           <button
             type="submit"
-            disabled={assessmentSaving}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+            disabled={assessmentSaving || isUploading}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {assessmentSaving ? (
               <Loader2 className="w-4 h-4 animate-spin" />

@@ -61,7 +61,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ProgramCard = ({
   program,
-  assessment,
+  assessment = [], // Now accepts array of assessments
   setSelectedAssessmentId,
   onEditProgram,
   onDeleteProgram,
@@ -100,9 +100,13 @@ const ProgramCard = ({
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [selectedAssessmentIdForAction, setSelectedAssessmentIdForAction] = useState(null);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
   const router = useRouter();
+
+  // Ensure assessment is always an array
+  const assessments = Array.isArray(assessment) ? assessment : [];
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -113,7 +117,6 @@ const ProgramCard = ({
       }
     };
 
-    // Close menu on escape key
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
         setShowMenu(false);
@@ -135,7 +138,6 @@ const ProgramCard = ({
   useEffect(() => {
     if (showMenu) {
       const handleResize = () => {
-        // Force re-render to update position
         setShowMenu(prev => {
           setShowMenu(false);
           setTimeout(() => setShowMenu(true), 10);
@@ -147,19 +149,19 @@ const ProgramCard = ({
     }
   }, [showMenu]);
 
-  const handleActivate = async () => {
+  const handleActivate = async (assessmentId) => {
     setIsActivating(true);
     try {
-      await onActivateAssessment(program.id, assessment.id);
+      await onActivateAssessment(program.id, assessmentId);
     } finally {
       setIsActivating(false);
     }
   };
 
-  const handleDeactivate = async () => {
+  const handleDeactivate = async (assessmentId) => {
     setIsDeactivating(true);
     try {
-      await onDeactivateAssessment(program.id, assessment.id);
+      await onDeactivateAssessment(program.id, assessmentId);
     } finally {
       setIsDeactivating(false);
     }
@@ -210,15 +212,29 @@ const ProgramCard = ({
     return colors[status] || colors.draft;
   };
 
-  const toggleAssessment = () => {
-    if (!assessment) return;
+  const getTypeBadge = (type) => {
+    if (type === 'pdf_task') {
+      return {
+        label: 'PDF Task',
+        className: 'bg-orange-50 text-orange-600 border-orange-200'
+      };
+    }
+    return {
+      label: 'MCQ',
+      className: 'bg-purple-50 text-purple-600 border-purple-200'
+    };
+  };
+
+  const toggleAssessment = (assessmentId) => {
     setExpandedAssessment(prev => {
-      const newState = prev === assessment.id ? null : assessment.id;
+      const newState = prev === assessmentId ? null : assessmentId;
       return newState;
     });
   };
 
-  const isExpanded = assessment && expandedAssessment === assessment.id;
+  const isExpanded = (assessmentId) => {
+    return expandedAssessment === assessmentId;
+  };
 
   // Get dropdown position based on viewport
   const getDropdownPosition = () => {
@@ -226,21 +242,15 @@ const ProgramCard = ({
     
     const width = window.innerWidth;
     
-    // For very small screens, position from left
     if (width < 380) {
       return 'left-0';
     }
-    
-    // For small screens, position from right with some offset
     if (width < 640) {
       return 'right-0';
     }
-    
-    // For larger screens, default right position
     return 'right-0';
   };
 
-  // Get dropdown width based on viewport
   const getDropdownWidth = () => {
     if (typeof window === 'undefined') return 'w-48';
     
@@ -249,11 +259,9 @@ const ProgramCard = ({
     if (width < 380) {
       return 'w-[calc(100vw-2rem)] min-w-[200px] max-w-[280px]';
     }
-    
     if (width < 640) {
       return 'w-56';
     }
-    
     return 'w-48 sm:w-56 md:w-60';
   };
 
@@ -294,9 +302,15 @@ const ProgramCard = ({
                 {program.course_code}
               </span>
             )}
+            {/* Assessment count badge */}
+            {assessments.length > 0 && (
+              <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-red-50 border border-red-200 rounded-full text-[9px] sm:text-xs font-medium text-red-600 flex-shrink-0">
+                {assessments.length} Assessment{assessments.length > 1 ? 's' : ''}
+              </span>
+            )}
           </div>
           
-          {/* Quick Actions Dropdown - Improved for Mobile */}
+          {/* Quick Actions Dropdown */}
           <div className="relative flex-shrink-0">
             <motion.button
               ref={buttonRef}
@@ -327,7 +341,6 @@ const ProgramCard = ({
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {/* Dropdown Header for Mobile */}
                   <div className="block sm:hidden px-3 py-2 border-b border-gray-100">
                     <p className="text-xs font-semibold text-gray-600">Course Actions</p>
                   </div>
@@ -409,7 +422,6 @@ const ProgramCard = ({
                     <span className="truncate">Delete Program</span>
                   </button>
 
-                  {/* Close button for mobile */}
                   <div className="block sm:hidden border-t border-gray-100 mt-1 pt-1.5">
                     <button
                       onClick={() => setShowMenu(false)}
@@ -468,22 +480,22 @@ const ProgramCard = ({
                     {program.description}
                   </p>
                   
-                  {/* Tags - Responsive grid */}
+                  {/* Tags */}
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
                     <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
-                      <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-400 flex-shrink-0" />
+                      <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-400 shrink-0" />
                       <span className="truncate max-w-[60px] sm:max-w-none">{program.category || "General"}</span>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
-                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400 flex-shrink-0" />
+                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400 shrink-0" />
                       {program.duration || "N/A"}
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 uppercase tracking-[1.36px] text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
-                      <GraduationCap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-purple-400 flex-shrink-0" />
+                      <GraduationCap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-purple-400 shrink-0" />
                       <span className="truncate max-w-[50px] sm:max-w-none">{program.level || "Beginner"}</span>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs uppercase tracking-[1.36px] text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
-                      <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400 flex-shrink-0" />
+                      <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400 shrink-0" />
                       {program.mode || "Online"}
                     </div>
                     {program.final_price && (
@@ -508,282 +520,404 @@ const ProgramCard = ({
           </div>
         </div>
 
-        {/* Assessment Section */}
+        {/* Assessment Section - Multiple Assessments */}
         <div className="px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6">
           <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm overflow-hidden">
             {/* Assessment Header */}
-            <div 
-              className="px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 cursor-pointer hover:bg-white/30 transition-colors"
-              onClick={toggleAssessment} 
-            >
+            <div className="px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 flex-1 min-w-0">
                 <div className="p-1 sm:p-1.5 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg text-white flex-shrink-0">
                   <FileCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </div>
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
-                  <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Assessment</span>
-                  {assessment && (
-                    <>
-                      <span className={`px-1.5 sm:px-2 py-0.5 uppercase tracking-[1.36px] rounded-full text-[8px] sm:text-[10px] font-medium border ${getStatusColor(assessment.status)} whitespace-nowrap`}>
-                        {assessment.status}
-                      </span>
-                      {assessment.is_active ? (
-                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
-                          <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-emerald-500" />
-                          Live
-                        </span>
-                      ) : (
-                        <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium bg-gray-50 text-gray-600 border border-gray-200 whitespace-nowrap">
-                          Draft
-                        </span>
-                      )}
-                      <span className="text-[8px] sm:text-[10px] text-gray-400 whitespace-nowrap">
-                        {assessment.questions?.length || 0} questions
-                      </span>
-                    </>
-                  )}
-                </div>
+                <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">
+                  Assessments ({assessments.length})
+                </span>
               </div>
-
-              <div className="flex flex-wrap items-center gap-0.5 sm:gap-1 flex-shrink-0">
-                {assessment ? (
-                  <>
-                    <div className="flex flex-wrap items-center gap-0.5 sm:gap-1">
-                      {assessment.is_active ? (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDeactivate(); }}
-                          disabled={isDeactivating}
-                          className="p-1 sm:p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
-                          title="Deactivate Assessment"
-                        >
-                          {isDeactivating ? (
-                            <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
-                          ) : (
-                            <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          )}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleActivate(); }}
-                          disabled={isActivating}
-                          className="p-1 sm:p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
-                          title="Activate Assessment"
-                        >
-                          {isActivating ? (
-                            <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
-                          ) : (
-                            <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          )}
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onEditAssessment(program.id, assessment); }}
-                        className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Edit Assessment"
-                      >
-                        <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onDeleteAssessment(program.id, assessment.id); }}
-                        className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Assessment"
-                      >
-                        <Trash2Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setExpandedAssessment(expandedAssessment === assessment.id ? null : assessment.id); }}
-                      className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <motion.div
-                        animate={{ rotate: isExpanded ? 180 : 0 }} 
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      </motion.div>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onCreateAssessment(program.id); }}
-                    className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 rounded-lg transition-colors shadow-sm whitespace-nowrap"
-                  >
-                    <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    <span className="hidden xs:inline">Create Assessment</span>
-                    <span className="xs:hidden">Create</span>
-                  </button>
-                )}
-              </div>
+              <button
+                onClick={() => onCreateAssessment(program.id)}
+                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 rounded-lg transition-colors shadow-sm whitespace-nowrap"
+              >
+                <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span className="hidden xs:inline">Add Assessment</span>
+                <span className="xs:hidden">Add</span>
+              </button>
             </div>
 
-            {/* Expanded Assessment Details */}
-            <AnimatePresence>
-              {isExpanded && assessment && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="px-3 sm:px-4 py-2 sm:py-3 border-t border-gray-200/50 bg-white/30 overflow-hidden"
-                >
-                  {/* Stats Grid - Responsive */}
-                  <div className="grid grid-cols-2 xs:grid-cols-4 gap-1.5 sm:gap-2.5 mb-2 sm:mb-3">
-                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
-                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Title</p>
-                      <p className="text-[10px] sm:text-xs font-semibold text-gray-800 capitalize truncate">{assessment.title}</p>
-                    </div>
-                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
-                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Passing</p>
-                      <p className="text-[10px] sm:text-xs font-bold text-emerald-600">{assessment.passing_score}%</p>
-                    </div>
-                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
-                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Duration</p>
-                      <p className="text-[10px] sm:text-xs font-bold text-blue-600">{assessment.duration_minutes}m</p>
-                    </div>
-                    <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
-                      <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Questions</p>
-                      <p className="text-[10px] sm:text-xs font-bold text-purple-600">{assessment.questions?.length || 0}</p>
-                    </div>
-                  </div>
-
-                  {/* Questions */}
-                  {assessment.questions && assessment.questions.length > 0 && (
-                    <div>
-                      <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                        <div className="flex items-center gap-1 sm:gap-1.5">
-                          <ListChecks className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500 flex-shrink-0" />
-                          <span className="text-[10px] sm:text-xs font-semibold text-gray-700 whitespace-nowrap">
-                            Questions ({assessment.questions.length})
+            {/* Assessments List */}
+            {assessments.length > 0 ? (
+              <div className="space-y-2 px-3 sm:px-4 pb-3">
+                {assessments.map((assessment, index) => {
+                  const isPdfTask = assessment.type === 'pdf_task';
+                  const isMcq = assessment.type === 'mcq' || !assessment.type;
+                  const typeInfo = getTypeBadge(assessment.type);
+                  const expanded = isExpanded(assessment.id);
+                  
+                  return (
+                    <div
+                      key={assessment.id || index}
+                      className="bg-white/80 rounded-lg border border-gray-200/60 hover:border-red-200 transition-colors overflow-hidden"
+                    >
+                      {/* Assessment Item Header */}
+                      <div 
+                        className="px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 cursor-pointer hover:bg-white/50 transition-colors"
+                        onClick={() => toggleAssessment(assessment.id)}
+                      >
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 flex-1 min-w-0">
+                          <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-red-50 text-red-600 text-[9px] sm:text-xs font-bold rounded-full flex-shrink-0">
+                            {index + 1}
                           </span>
+                          <span className="text-xs sm:text-sm font-medium text-gray-800 truncate">
+                            {assessment.title || `Assessment ${index + 1}`}
+                          </span>
+                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium border ${getStatusColor(assessment.status)} whitespace-nowrap`}>
+                            {assessment.status || "draft"}
+                          </span>
+                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium border ${typeInfo.className} whitespace-nowrap`}>
+                            {typeInfo.label}
+                          </span>
+                          {assessment.is_active && (
+                            <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                              <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-emerald-500" />
+                              Live
+                            </span>
+                          )}
                         </div>
-                        <button
-                          onClick={() => {
-                            setSelectedAssessmentId(program.id);
-                            setShowAddQuestion(true);
-                            setEditingQuestion(null);
-                            resetQuestionForm();
-                          }}
-                          className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors whitespace-nowrap"
-                        >
-                          <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                          <span className="hidden xs:inline">Add</span>
-                        </button>
+
+                        <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+                          {/* Activate/Deactivate buttons */}
+                          {assessment.is_active ? (
+                            <button
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                handleDeactivate(assessment.id); 
+                              }}
+                              disabled={isDeactivating}
+                              className="p-1 sm:p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
+                              title="Deactivate Assessment"
+                            >
+                              {isDeactivating && selectedAssessmentIdForAction === assessment.id ? (
+                                <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
+                              ) : (
+                                <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                              )}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setSelectedAssessmentIdForAction(assessment.id);
+                                handleActivate(assessment.id); 
+                              }}
+                              disabled={isActivating}
+                              className="p-1 sm:p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+                              title="Activate Assessment"
+                            >
+                              {isActivating && selectedAssessmentIdForAction === assessment.id ? (
+                                <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
+                              ) : (
+                                <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                              )}
+                            </button>
+                          )}
+                          
+                          <button
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              onEditAssessment(program.id, assessment, index); 
+                            }}
+                            className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Edit Assessment"
+                          >
+                            <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          </button>
+                          
+                          <button
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              if (confirm(`Are you sure you want to delete "${assessment.title}"?`)) {
+                                onDeleteAssessment(program.id, assessment.id);
+                              }
+                            }}
+                            className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Assessment"
+                          >
+                            <Trash2Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          </button>
+                          
+                          <button
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              toggleAssessment(assessment.id); 
+                            }}
+                            className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <motion.div
+                              animate={{ rotate: expanded ? 180 : 0 }} 
+                              transition={{ duration: 0.2 }}
+                            >
+                              <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </motion.div>
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="space-y-1 sm:space-y-1.5 max-h-32 sm:max-h-48 overflow-y-auto pr-0.5 sm:pr-1 custom-scrollbar">
-                        {assessment.questions.map((question, idx) => (
-                          <div
-                            key={question.id || idx}
-                            className="group/question bg-white rounded-lg p-1.5 sm:p-2.5 border border-gray-200/60 hover:border-red-200 transition-colors"
+                      {/* Expanded Assessment Details */}
+                      <AnimatePresence>
+                        {expanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="px-3 sm:px-4 py-2 sm:py-3 border-t border-gray-200/50 bg-white/30 overflow-hidden"
                           >
-                            <div className="flex flex-col xs:flex-row items-start gap-1.5 sm:gap-2.5">
-                              <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-full text-white text-[8px] sm:text-[10px] font-bold flex-shrink-0">
-                                {idx + 1}
-                              </span>
-                              <div className="flex-1 min-w-0 w-full">
-                                <p className="text-[10px] sm:text-xs font-medium text-gray-800 line-clamp-1">
-                                  {question.question_text}
+                            {/* Assessment Stats */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5 mb-2 sm:mb-3">
+                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                                <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Type</p>
+                                <p className="text-[10px] sm:text-xs font-semibold text-gray-800 capitalize">
+                                  {isPdfTask ? 'PDF Task' : 'MCQ'}
                                 </p>
-                                <div className="flex flex-wrap gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
-                                  {['A', 'B', 'C', 'D'].map(letter => {
-                                    const option = question[`option_${letter.toLowerCase()}`];
-                                    if (!option) return null;
-                                    const isCorrect = question.correct_option === letter;
-                                    return (
-                                      <span
-                                        key={letter}
-                                        className={`inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.5 rounded text-[7px] sm:text-[9px] font-medium ${
-                                          isCorrect
-                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                            : 'bg-gray-50 text-gray-600 border border-gray-200'
-                                        }`}
-                                      >
-                                        {letter}: <span className="truncate max-w-[30px] sm:max-w-[60px]">{option}</span>
-                                        {isCorrect && <CheckCircle className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-emerald-500 flex-shrink-0" />}
-                                      </span>
-                                    );
-                                  })}
-                                  <span className="px-1 sm:px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[7px] sm:text-[9px] font-medium border border-blue-200 whitespace-nowrap">
-                                    {question.marks || 1}m
-                                  </span>
-                                </div>
                               </div>
-                              <div className="flex gap-0.5 opacity-100 xs:opacity-0 group-hover/question:opacity-100 transition-opacity ml-auto xs:ml-0">
-                                <button
-                                  onClick={() => {
-                                    setEditingQuestion(question);
-                                    setQuestionFormData({
-                                      question_text: question.question_text || "",
-                                      option_a: question.option_a || "",
-                                      option_b: question.option_b || "",
-                                      option_c: question.option_c || "",
-                                      option_d: question.option_d || "",
-                                      correct_option: question.correct_option || "A",
-                                      marks: question.marks || 1,
-                                      order_number: question.order_number || idx + 1,
-                                      status: question.status || "draft",
-                                    });
-                                    setSelectedAssessmentId(program.id);
-                                    setShowAddQuestion(true);
-                                  }}
-                                  className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                >
-                                  <Edit className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteQuestion(program.id, question.id)}
-                                  className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                >
-                                  <Trash2Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                </button>
+                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                                <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Passing</p>
+                                <p className="text-[10px] sm:text-xs font-bold text-emerald-600">{assessment.passing_score || 60}%</p>
+                              </div>
+                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                                <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Duration</p>
+                                <p className="text-[10px] sm:text-xs font-bold text-blue-600">{assessment.duration_minutes || 30}m</p>
+                              </div>
+                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                                <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Created</p>
+                                <p className="text-[10px] sm:text-xs font-medium text-gray-700">
+                                  {assessment.created_at 
+                                    ? new Date(assessment.created_at).toLocaleDateString('en-IN', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })
+                                    : 'N/A'}
+                                </p>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Question Form */}
-                  <AnimatePresence>
-                    {showAddQuestion && selectedAssessmentId === program.id && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-200/50"
-                      >
-                        {QuestionForm && (
-                          <div className="scale-90 sm:scale-100 origin-top">
-                            <QuestionForm
-                              editingQuestion={editingQuestion}
-                              questionFormData={questionFormData}
-                              questionErrors={questionErrors}
-                              questionSaving={questionSaving}
-                              handleQuestionFormChange={handleQuestionFormChange}
-                              handleQuestionSubmit={() =>
-                                handleQuestionSubmit(program.id, assessment.id)
-                              }
-                              setShowAddQuestion={setShowAddQuestion}
-                              setEditingQuestion={setEditingQuestion}
-                              resetQuestionForm={resetQuestionForm}
-                              courseId={program.id}
-                              assessmentId={assessment.id}
-                            />
-                          </div>
+                            {/* PDF Task Specific Details */}
+                            {isPdfTask && (
+                              <div className="mb-3 p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="space-y-1.5 sm:space-y-2">
+                                  {assessment.instructions && (
+                                    <div>
+                                      <p className="text-[8px] sm:text-[10px] text-gray-400 font-medium uppercase tracking-wider">Instructions</p>
+                                      <p className="text-[10px] sm:text-xs text-gray-700 mt-0.5">{assessment.instructions}</p>
+                                    </div>
+                                  )}
+                                  {assessment.pdf_template_url && (
+                                    <div>
+                                      <p className="text-[8px] sm:text-[10px] text-gray-400 font-medium uppercase tracking-wider">PDF Template</p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 flex-shrink-0" />
+                                        <a
+                                          href={assessment.pdf_template_url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-800 hover:underline truncate"
+                                        >
+                                          {assessment.pdf_template_url.split('/').pop() || 'View PDF'}
+                                        </a>
+                                        <a
+                                          href={assessment.pdf_template_url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                                        >
+                                          Download
+                                        </a>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* MCQ Questions Section */}
+                            {isMcq && (
+                              <>
+                                <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                  <div className="flex items-center gap-1 sm:gap-1.5">
+                                    <ListChecks className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500 shrink-0" />
+                                    <span className="text-[10px] sm:text-xs font-semibold text-gray-700 whitespace-nowrap">
+                                      Questions ({assessment.questions?.length || 0})
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedAssessmentId(program.id);
+                                      setShowAddQuestion(true);
+                                      setEditingQuestion(null);
+                                      resetQuestionForm();
+                                    }}
+                                    className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors whitespace-nowrap"
+                                  >
+                                    <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                    <span className="hidden xs:inline">Add Question</span>
+                                  </button>
+                                </div>
+
+                                {/* Questions List */}
+                                {assessment.questions && assessment.questions.length > 0 ? (
+                                  <div className="space-y-1 sm:space-y-1.5 max-h-32 sm:max-h-48 overflow-y-auto pr-0.5 sm:pr-1 custom-scrollbar">
+                                    {assessment.questions.map((question, idx) => (
+                                      <div
+                                        key={question.id || idx}
+                                        className="group/question bg-white rounded-lg p-1.5 sm:p-2.5 border border-gray-200/60 hover:border-red-200 transition-colors"
+                                      >
+                                        <div className="flex flex-col xs:flex-row items-start gap-1.5 sm:gap-2.5">
+                                          <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-full text-white text-[8px] sm:text-[10px] font-bold flex-shrink-0">
+                                            {idx + 1}
+                                          </span>
+                                          <div className="flex-1 min-w-0 w-full">
+                                            <p className="text-[10px] sm:text-xs font-medium text-gray-800 line-clamp-1">
+                                              {question.question_text}
+                                            </p>
+                                            <div className="flex flex-wrap gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
+                                              {['A', 'B', 'C', 'D'].map(letter => {
+                                                const option = question[`option_${letter.toLowerCase()}`];
+                                                if (!option) return null;
+                                                const isCorrect = question.correct_option === letter;
+                                                return (
+                                                  <span
+                                                    key={letter}
+                                                    className={`inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.5 rounded text-[7px] sm:text-[9px] font-medium ${
+                                                      isCorrect
+                                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                        : 'bg-gray-50 text-gray-600 border border-gray-200'
+                                                    }`}
+                                                  >
+                                                    {letter}: <span className="truncate max-w-[30px] sm:max-w-[60px]">{option}</span>
+                                                    {isCorrect && <CheckCircle className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-emerald-500 shrink-0" />}
+                                                  </span>
+                                                );
+                                              })}
+                                              <span className="px-1 sm:px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[7px] sm:text-[9px] font-medium border border-blue-200 whitespace-nowrap">
+                                                {question.marks || 1}m
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="flex gap-0.5 opacity-100 xs:opacity-0 group-hover/question:opacity-100 transition-opacity ml-auto xs:ml-0">
+                                            <button
+                                              onClick={() => {
+                                                setEditingQuestion(question);
+                                                setQuestionFormData({
+                                                  question_text: question.question_text || "",
+                                                  option_a: question.option_a || "",
+                                                  option_b: question.option_b || "",
+                                                  option_c: question.option_c || "",
+                                                  option_d: question.option_d || "",
+                                                  correct_option: question.correct_option || "A",
+                                                  marks: question.marks || 1,
+                                                  order_number: question.order_number || idx + 1,
+                                                  status: question.status || "draft",
+                                                });
+                                                setSelectedAssessmentId(program.id);
+                                                setShowAddQuestion(true);
+                                              }}
+                                              className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                            >
+                                              <Edit className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                            </button>
+                                            <button
+                                              onClick={() => handleDeleteQuestion(program.id, question.id)}
+                                              className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                            >
+                                              <Trash2Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-2 sm:py-3 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                    <p className="text-[9px] sm:text-xs text-gray-400">No questions added yet</p>
+                                    <p className="text-[8px] sm:text-[10px] text-gray-300 mt-0.5">Click "Add Question" to get started</p>
+                                  </div>
+                                )}
+                              </>
+                            )}
+
+                            {/* PDF Task Message */}
+                            {isPdfTask && (
+                              <div className="mt-2 pt-2 border-t border-gray-200/50">
+                                <div className="bg-gray-50 p-2 sm:p-3 rounded-lg border border-gray-200 text-center">
+                                  <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mx-auto mb-1 sm:mb-2" />
+                                  <p className="text-[10px] sm:text-sm text-gray-600">
+                                    This is a PDF task assessment
+                                  </p>
+                                  {assessment.pdf_template_url && (
+                                    <a
+                                      href={assessment.pdf_template_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 sm:gap-2 mt-1.5 sm:mt-2 px-3 sm:px-4 py-1 sm:py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-[10px] sm:text-sm"
+                                    >
+                                      <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+                                      View PDF Template
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Question Form */}
+                            <AnimatePresence>
+                              {showAddQuestion && selectedAssessmentId === program.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
+                                  className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-200/50"
+                                >
+                                  {QuestionForm && (
+                                    <div className="scale-90 sm:scale-100 origin-top">
+                                      <QuestionForm
+                                        editingQuestion={editingQuestion}
+                                        questionFormData={questionFormData}
+                                        questionErrors={questionErrors}
+                                        questionSaving={questionSaving}
+                                        handleQuestionFormChange={handleQuestionFormChange}
+                                        handleQuestionSubmit={() =>
+                                          handleQuestionSubmit(program?.id, assessment?.id)
+                                        }
+                                        setShowAddQuestion={setShowAddQuestion}
+                                        setEditingQuestion={setEditingQuestion}
+                                        resetQuestionForm={resetQuestionForm}
+                                        courseId={program.id}
+                                        assessmentId={assessment.id}
+                                      />
+                                    </div>
+                                  )}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
                         )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-4 sm:py-6 px-3">
+                <FileCheck className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300 mx-auto mb-1 sm:mb-2" />
+                <p className="text-xs sm:text-sm text-gray-400">No assessments created yet</p>
+                <p className="text-[10px] sm:text-xs text-gray-300 mt-0.5">Click "Add Assessment" to create one</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       <style jsx>{`
-        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
           width: 2px;
           height: 2px;
@@ -806,7 +940,6 @@ const ProgramCard = ({
           }
         }
         
-        /* Extra small devices (phones) */
         @media (max-width: 480px) {
           .xs\\:inline {
             display: inline !important;
@@ -835,27 +968,6 @@ const ProgramCard = ({
           }
         }
         
-        /* Dropdown animations and styles */
-        .dropdown-enter {
-          opacity: 0;
-          transform: scale(0.95) translateY(-10px);
-        }
-        .dropdown-enter-active {
-          opacity: 1;
-          transform: scale(1) translateY(0);
-          transition: all 0.15s ease-out;
-        }
-        .dropdown-exit {
-          opacity: 1;
-          transform: scale(1) translateY(0);
-        }
-        .dropdown-exit-active {
-          opacity: 0;
-          transform: scale(0.95) translateY(-10px);
-          transition: all 0.1s ease-in;
-        }
-        
-        /* Touch-friendly button areas for mobile */
         @media (max-width: 640px) {
           .p-1\\.5 {
             padding: 0.5rem !important;

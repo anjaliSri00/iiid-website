@@ -66,6 +66,7 @@ import { adminService } from "@/helper/services/adminService";
 import { paymentService } from "@/helper/services/paymentService";
 import FAQManagement from "../components/ui/FAQManagement";
 import useCSVExport from "@/helper/hooks/useCSVExport";
+import { uploadService } from "@/helper/services/uploadService";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -692,6 +693,7 @@ export default function DashboardPage() {
     resetAssessmentForm,
     () => setIsAssessmentModalOpen(false),
     setEditingAssessment,
+    setEditingProgram 
   );
 
   const {
@@ -705,6 +707,7 @@ export default function DashboardPage() {
   const questionOps = useQuestionOperations(
     session,
     assessmentOps.fetchAssessment,
+    setEditingProgram 
   );
 
   const {
@@ -847,6 +850,43 @@ export default function DashboardPage() {
       return null;
     }
   };
+
+  // In dashboard/page.js - Add this function
+
+const refreshEditingProgram = async () => {
+  if (editingProgram && editingProgram.id) {
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${editingProgram.id}`;
+      const response = await fetchApiResponse(url, {
+        method: "GET",
+        headers: {
+          "Access-Token": session?.accessToken,
+          "Refresh-Token": session?.refreshToken,
+        },
+      });
+      
+      if (response.meta?.status === 200 && response.data) {
+        const courseData = response.data;
+        setEditingProgram({
+          ...courseData,
+          id: courseData.id,
+          lessons: courseData.lessons || [],
+          assessment: courseData.assessment || [],
+        });
+        
+        // Also update assessments state
+        if (courseData.assessment) {
+          setAssessments(prev => ({
+            ...prev,
+            [editingProgram.id]: courseData.assessment
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing editing program:", error);
+    }
+  }
+};
 
   const refreshAssessmentData = async (courseId) => {
     try {
@@ -1020,203 +1060,90 @@ export default function DashboardPage() {
     }
   };
 
-  // Thumbnail upload handler
-  const handleThumbnailUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-    if (!validTypes.includes(file.type)) {
-      toast.error("Please upload a JPEG or PNG image");
-      e.target.value = "";
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("File size should be less than 2MB");
-      e.target.value = "";
-      return;
-    }
+const handleThumbnailUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    setUploadingThumbnail(true);
-    setThumbnailUploadProgress(0);
-    setThumbnailFile(file);
+  setUploadingThumbnail(true);
+  setThumbnailUploadProgress(0);
+  setThumbnailFile(file);
 
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("type", "course_thumbnail");
+  try {
+    const result = await uploadService.uploadImage(file, session, {
+      progressCallback: (progress) => {
+        setThumbnailUploadProgress(progress);
+      },
+    });
 
-    try {
-      setThumbnailUploadProgress(30);
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
-        {
-          method: "POST",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
-          body: formData,
-        },
-      );
-      setThumbnailUploadProgress(80);
+    setProgramFormData((prev) => ({ ...prev, thumbnail: result.url }));
+    toast.success("Thumbnail uploaded successfully!");
+  } catch (error) {
+    console.error("Error uploading thumbnail:", error);
+    toast.error(error.message || "Failed to upload thumbnail");
+    setProgramFormData((prev) => ({ ...prev, thumbnail: "" }));
+    setThumbnailFile(null);
+  } finally {
+    setTimeout(() => {
+      setUploadingThumbnail(false);
+      setThumbnailUploadProgress(0);
+    }, 1000);
+  }
+};
 
-      if (response.meta?.status === 200) {
-        const imageUrl =
-          response.data?.image_url?.url ||
-          response.data?.url ||
-          response.data?.imageUrl ||
-          response.data?.fileUrl;
-        if (imageUrl) {
-          const encodedUrl = encodeURI(imageUrl);
-          setProgramFormData((prev) => ({ ...prev, thumbnail: encodedUrl }));
-          setThumbnailUploadProgress(100);
-          toast.success("Thumbnail uploaded successfully!");
-        } else {
-          toast.error("No URL returned from server");
-        }
-      }
-    } catch (error) {
-      console.error("Error uploading thumbnail:", error);
-      toast.error("Failed to upload thumbnail");
-      setProgramFormData((prev) => ({ ...prev, thumbnail: "" }));
-      setThumbnailFile(null);
-    } finally {
-      setTimeout(() => {
-        setUploadingThumbnail(false);
-        setThumbnailUploadProgress(0);
-      }, 1000);
-    }
-  };
+// Video upload handler - Using uploadService
+const handleVideoUpload = async (e, lessonIndex) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-  // Video upload handler
-  const handleVideoUpload = async (e, lessonIndex) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const validTypes = [
-      "video/mp4",
-      "video/webm",
-      "video/ogg",
-      "video/quicktime",
-    ];
-    if (!validTypes.includes(file.type)) {
-      toast.error("Please upload a valid video file (MP4, WebM, OGG, MOV)");
-      e.target.value = "";
-      return;
-    }
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error("File size should be less than 50MB");
-      e.target.value = "";
-      return;
-    }
+  setUploadingVideo(true);
+  setVideoUploadProgress(0);
 
-    setUploadingVideo(true);
-    setVideoUploadProgress(0);
-    const formData = new FormData();
-    formData.append("video", file);
-    formData.append("type", "course_video");
+  try {
+    const result = await uploadService.uploadVideo(file, session, {
+      progressCallback: (progress) => {
+        setVideoUploadProgress(progress);
+      },
+    });
 
-    try {
-      setVideoUploadProgress(30);
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-video`,
-        {
-          method: "POST",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
-          body: formData,
-        },
-      );
-      setVideoUploadProgress(80);
+    handleLessonInputChange(lessonIndex, "video_url", result.url);
+    toast.success("Video uploaded successfully!");
+    e.target.value = "";
+  } catch (error) {
+    console.error("Error uploading video:", error);
+    toast.error(error.message || "Failed to upload video");
+    e.target.value = "";
+  } finally {
+    setTimeout(() => {
+      setUploadingVideo(false);
+      setVideoUploadProgress(0);
+    }, 1000);
+  }
+};
 
-      if (response.meta?.status === 200) {
-        const videoUrl =
-          response.data?.video_url ||
-          response.data?.url ||
-          response.data?.fileUrl;
-        if (videoUrl) {
-          const encodedUrl = encodeURI(videoUrl);
-          handleLessonInputChange(lessonIndex, "video_url", encodedUrl);
-          setVideoUploadProgress(100);
-          toast.success("Video uploaded successfully!");
-          e.target.value = "";
-        } else {
-          throw new Error("No URL returned from server");
-        }
-      } else {
-        throw new Error(response.meta?.message || "Upload failed");
-      }
-    } catch (error) {
-      console.error("Error uploading video:", error);
-      toast.error("Failed to upload video");
-    } finally {
-      setTimeout(() => {
-        setUploadingVideo(false);
-        setVideoUploadProgress(0);
-      }, 1000);
-    }
-  };
+// PDF upload handler - Using uploadService
+const handlePdfUpload = async (e, lessonIndex) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-  // PDF upload handler
-  const handlePdfUpload = async (e, lessonIndex) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.type !== "application/pdf") {
-      toast.error("Please upload a valid PDF file");
-      e.target.value = "";
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size should be less than 10MB");
-      e.target.value = "";
-      return;
-    }
+  setUploadingPdf(true);
+  setUploadingPdfIndex(lessonIndex);
 
-    setUploadingPdf(true);
-    setUploadingPdfIndex(lessonIndex);
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("type", "lesson_pdf");
+  try {
+    const result = await uploadService.uploadPDF(file, session);
 
-    try {
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/common/upload-image`,
-        {
-          method: "POST",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
-          body: formData,
-        },
-      );
-
-      if (response.meta?.status === 200) {
-        const pdfUrl =
-          response.data?.image_url?.url ||
-          response.data?.url ||
-          response.data?.fileUrl ||
-          response.data?.file_url;
-        if (pdfUrl) {
-          const encodedUrl = encodeURI(pdfUrl);
-          handleLessonInputChange(lessonIndex, "pdf_url", encodedUrl);
-          handleLessonInputChange(lessonIndex, "content_type", "pdf");
-          toast.success("PDF uploaded successfully!");
-          e.target.value = "";
-        } else {
-          throw new Error("No URL returned from server");
-        }
-      } else {
-        throw new Error(response.meta?.message || "Upload failed");
-      }
-    } catch (error) {
-      console.error("Error uploading PDF:", error);
-      toast.error("Failed to upload PDF: " + error.message);
-    } finally {
-      setUploadingPdf(false);
-      setUploadingPdfIndex(null);
-    }
-  };
+    handleLessonInputChange(lessonIndex, "pdf_url", result.url);
+    handleLessonInputChange(lessonIndex, "content_type", "pdf");
+    toast.success("PDF uploaded successfully!");
+    e.target.value = "";
+  } catch (error) {
+    console.error("Error uploading PDF:", error);
+    toast.error(error.message || "Failed to upload PDF");
+    e.target.value = "";
+  } finally {
+    setUploadingPdf(false);
+    setUploadingPdfIndex(null);
+  }
+};
 
   // Lesson handlers
   const addLesson = () => {
@@ -1481,6 +1408,8 @@ export default function DashboardPage() {
         }
 
         const changedFields = getChangedFields();
+         
+      
         if (Object.keys(changedFields).length > 0) {
           try {
             await updateCourse(changedFields);
@@ -2017,9 +1946,12 @@ export default function DashboardPage() {
     setAssessmentFormData({
       title: assessment.title || "",
       description: assessment.description || "",
+       type: assessment.type || "mcq", 
       passing_score: assessment.passing_score || 60,
       duration_minutes: assessment.duration_minutes || 30,
       status: assessment.status || "draft",
+          pdf_template_url: assessment.pdf_template_url || "",
+instructions: assessment.instructions || "",
     });
     setAssessmentSuccess(false);
     setIsAssessmentModalOpen(true);
@@ -3741,402 +3673,415 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Assessment Section - Added inside the form */}
-                        {editingProgram && (
-                          <div className="border-b border-gray-200 pb-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                <FileCheck className="w-4 h-4 text-red-500" />
-                                Assessments (
-                                {Array.isArray(assessments[editingProgram.id])
-                                  ? assessments[editingProgram.id].length
-                                  : 0}
-                                )
-                              </h5>
-                              {editingProgram && (
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleOpenCreateAssessment(
-                                        editingProgram.id,
-                                      )
-                                    }
-                                    className="flex items-center gap-1.5 text-sm bg-red-50 px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
-                                  >
-                                    <Plus className="w-4 h-4" />
-                                    Add Assessment
-                                  </button>
-                                </div>
-                              )}
-                            </div>
+                       
+{editingProgram && (
+  <div className="border-b border-gray-200 pb-4">
+    <div className="flex items-center justify-between mb-3">
+      <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <FileCheck className="w-4 h-4 text-red-500" />
+        Assessments (
+        {editingProgram.assessment && Array.isArray(editingProgram.assessment)
+          ? editingProgram.assessment.length
+          : 0}
+        )
+      </h5>
+      {editingProgram && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const courseId = editingProgram?.id || editingProgram?.courseId;
+              if (!courseId) {
+                toast.error("Course ID is missing. Please refresh the page.");
+                return;
+              }
+              handleOpenCreateAssessment(courseId);
+            }}
+            className="flex items-center gap-1.5 text-sm bg-red-50 px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Assessment
+          </button>
+        </div>
+      )}
+    </div>
 
-                            {assessments[editingProgram.id] &&
-                            Array.isArray(assessments[editingProgram.id]) &&
-                            assessments[editingProgram.id].length > 0 ? (
-                              <div className="space-y-4">
-                                {assessments[editingProgram.id].map(
-                                  (assessment, index) => (
-                                    <div
-                                      key={assessment.id || index}
-                                      className="p-4 bg-white rounded-lg border border-gray-200"
-                                    >
-                                      {/* Assessment Header with Actions */}
-                                      <div className="flex items-start justify-between mb-3">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="inline-flex items-center justify-center w-6 h-6 bg-red-50 text-red-600 text-xs font-bold rounded-full">
-                                            {index + 1}
-                                          </span>
-                                          <h6 className="text-sm font-semibold text-gray-700">
-                                            {assessment.title ||
-                                              `Assessment ${index + 1}`}
-                                          </h6>
-                                          <span
-                                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessment.status)}`}
-                                          >
-                                            {assessment.status || "draft"}
-                                          </span>
-                                        </div>
-                                        <div className="flex gap-1">
-                                          <button
-                                            type="button"
-                                            onClick={() =>
-                                              handleOpenEditAssessment(
-                                                editingProgram.id,
-                                                assessment,
-                                                index,
-                                              )
-                                            }
-                                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                            title="Edit Assessment"
-                                          >
-                                            <Edit className="w-4 h-4" />
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => {
-                                              if (
-                                                confirm(
-                                                  `Are you sure you want to delete "${assessment.title}"?`,
-                                                )
-                                              ) {
-                                                handleDeleteAssessment(
-                                                  editingProgram.id,
-                                                  assessment.id,
-                                                );
-                                              }
-                                            }}
-                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Delete Assessment"
-                                          >
-                                            <Trash2Icon className="w-4 h-4" />
-                                          </button>
-                                        </div>
-                                      </div>
+    {editingProgram.assessment && 
+    Array.isArray(editingProgram.assessment) &&
+    editingProgram.assessment.length > 0 ? (
+      <div className="space-y-4">
+        {editingProgram.assessment.map((assessment, index) => {
+          const courseId = editingProgram?.id || editingProgram?.courseId || editingProgram?.course_id;
+          const isPdfTask = assessment.type === 'pdf_task';
+          const isMcq = assessment.type === 'mcq' || !assessment.type;
+          
+          return (
+            <div
+              key={assessment.id || `assessment-${index}`}
+              className="p-4 bg-white rounded-lg border border-gray-200"
+            >
+              {/* Assessment Header with Actions */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center justify-center w-6 h-6 bg-red-50 text-red-600 text-xs font-bold rounded-full">
+                    {index + 1}
+                  </span>
+                  <h6 className="text-sm font-semibold text-gray-700">
+                    {assessment.title || `Assessment ${index + 1}`}
+                  </h6>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessment.status)}`}
+                  >
+                    {assessment.status || "draft"}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    isPdfTask ? 'bg-orange-50 text-orange-600' : 'bg-purple-50 text-purple-600'
+                  }`}>
+                    {isPdfTask ? 'PDF Task' : 'MCQ'}
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!courseId) {
+                        toast.error("Course ID is missing.");
+                        return;
+                      }
+                      handleOpenEditAssessment(
+                        courseId,
+                        assessment,
+                        index,
+                      );
+                    }}
+                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Edit Assessment"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const deleteCourseId = editingProgram?.id || editingProgram?.courseId || editingProgram?.course_id;
+                      
+                      if (!deleteCourseId) {
+                        toast.error("Course ID is missing. Please refresh the page.");
+                        console.error("Course ID missing:", editingProgram);
+                        return;
+                      }
+                      
+                      if (!assessment.id) {
+                        toast.error("Assessment ID is missing. Please refresh the page.");
+                        console.error("Assessment ID missing:", assessment);
+                        return;
+                      }
+                      
+                      if (
+                        confirm(
+                          `Are you sure you want to delete "${assessment.title || 'this assessment'}"?`,
+                        )
+                      ) {
+                        handleDeleteAssessment(deleteCourseId, assessment.id);
+                      }
+                    }}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete Assessment"
+                  >
+                    <Trash2Icon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
 
-                                      {/* Assessment Details */}
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                                        <div>
-                                          <p className="text-xs text-gray-400">
-                                            Passing Score
-                                          </p>
-                                          <p className="text-sm font-medium text-emerald-600">
-                                            {assessment.passing_score || 60}%
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-xs text-gray-400">
-                                            Duration
-                                          </p>
-                                          <p className="text-sm font-medium text-blue-600">
-                                            {assessment.duration_minutes || 30}{" "}
-                                            min
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-xs text-gray-400">
-                                            Questions
-                                          </p>
-                                          <p className="text-sm font-medium text-gray-700">
-                                            {assessment.questions?.length || 0}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-xs text-gray-400">
-                                            Created
-                                          </p>
-                                          <p className="text-sm font-medium text-gray-700">
-                                            {assessment.created_at
-                                              ? new Date(
-                                                  assessment.created_at,
-                                                ).toLocaleDateString()
-                                              : "N/A"}
-                                          </p>
-                                        </div>
-                                      </div>
+              {/* Assessment Details - Shows different fields based on type */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                <div>
+                  <p className="text-xs text-gray-400">Type</p>
+                  <p className="text-sm font-medium text-gray-700 capitalize">
+                    {isPdfTask ? 'PDF Task' : 'MCQ'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Passing Score</p>
+                  <p className="text-sm font-medium text-emerald-600">
+                    {assessment.passing_score || 60}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Duration</p>
+                  <p className="text-sm font-medium text-blue-600">
+                    {assessment.duration_minutes || 30} min
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Status </p>
+                  <p className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessment.status)}`}>
+                    {assessment.status || 'draft'}
+                  </p>
+                </div>
+              </div>
 
-                                      {/* Questions Section for this Assessment */}
-                                      <div className="mt-3 pt-3 border-t border-gray-100">
-                                        <div className="flex items-center justify-between mb-2">
-                                          <p className="text-sm font-medium text-gray-700">
-                                            Questions (
-                                            {assessment.questions?.length || 0})
-                                          </p>
-                                          <button
-                                            type="button"
-                                            onClick={() => {
-                                              setSelectedAssessmentId(
-                                                editingProgram.id,
-                                              );
-                                              setSelectedAssessmentIndex(index);
-                                              setShowAddQuestion(true);
-                                              setEditingQuestion(null);
-                                              resetQuestionForm();
-                                            }}
-                                            className="text-xs text-emerald-600 hover:text-emerald-700 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
-                                          >
-                                            <Plus className="w-3 h-3" />
-                                            Add Question
-                                          </button>
-                                        </div>
+              {/* PDF Task Specific Details */}
+              {isPdfTask && (
+                <div className="mb-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="grid grid-cols-1 gap-2">
+                    {assessment.instructions && (
+                      <div>
+                        <p className="text-xs text-gray-400">Instructions</p>
+                        <p className="text-sm text-gray-700 mt-0.5">{assessment.instructions}</p>
+                      </div>
+                    )}
+                    {assessment.pdf_template_url && (
+                      <div>
+                        <p className="text-xs text-gray-400">PDF Template</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <FileText className="w-4 h-4 text-red-500" />
+                          <a
+                            href={assessment.pdf_template_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate"
+                          >
+                            {assessment.pdf_template_url.split('/').pop() || 'View PDF'}
+                          </a>
+                          <a
+                            href={assessment.pdf_template_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2 py-0.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                          >
+                            Download
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
-                                        {/* Questions List */}
-                                        {assessment.questions &&
-                                        assessment.questions.length > 0 ? (
-                                          <div className="space-y-2 max-h-48 overflow-y-auto">
-                                            {assessment.questions.map(
-                                              (question, qIdx) => (
-                                                <div
-                                                  key={question.id || qIdx}
-                                                  className="bg-gray-50 p-2 rounded-lg border border-gray-200"
-                                                >
-                                                  <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex-1 min-w-0">
-                                                      <div className="flex items-center gap-2">
-                                                        <span className="inline-flex items-center justify-center w-5 h-5 bg-red-50 text-red-600 text-xs font-bold rounded-full flex-shrink-0">
-                                                          {qIdx + 1}
-                                                        </span>
-                                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                                          {
-                                                            question.question_text
-                                                          }
-                                                        </p>
-                                                      </div>
-                                                      <div className="mt-1 flex flex-wrap gap-1 text-xs">
-                                                        <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                          A: {question.option_a}
-                                                        </span>
-                                                        <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                          B: {question.option_b}
-                                                        </span>
-                                                        {question.option_c && (
-                                                          <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                            C:{" "}
-                                                            {question.option_c}
-                                                          </span>
-                                                        )}
-                                                        {question.option_d && (
-                                                          <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                                                            D:{" "}
-                                                            {question.option_d}
-                                                          </span>
-                                                        )}
-                                                        <span className="px-1.5 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
-                                                          ✓{" "}
-                                                          {
-                                                            question.correct_option
-                                                          }
-                                                        </span>
-                                                        <span className="px-1.5 py-0.5 bg-blue-50 rounded text-blue-600">
-                                                          {question.marks || 1}{" "}
-                                                          mark
-                                                          {question.marks > 1
-                                                            ? "s"
-                                                            : ""}
-                                                        </span>
-                                                      </div>
-                                                    </div>
-                                                    <div className="flex gap-1 shrink-0">
-                                                      <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                          setEditingQuestion(
-                                                            question,
-                                                          );
-                                                          setQuestionFormData({
-                                                            question_text:
-                                                              question.question_text ||
-                                                              "",
-                                                            option_a:
-                                                              question.option_a ||
-                                                              "",
-                                                            option_b:
-                                                              question.option_b ||
-                                                              "",
-                                                            option_c:
-                                                              question.option_c ||
-                                                              "",
-                                                            option_d:
-                                                              question.option_d ||
-                                                              "",
-                                                            correct_option:
-                                                              question.correct_option ||
-                                                              "A",
-                                                            marks:
-                                                              question.marks ||
-                                                              1,
-                                                            order_number:
-                                                              question.order_number ||
-                                                              qIdx + 1,
-                                                            status:
-                                                              question.status ||
-                                                              "draft",
-                                                          });
-                                                          setSelectedAssessmentId(
-                                                            editingProgram.id,
-                                                          );
-                                                          setSelectedAssessmentIndex(
-                                                            index,
-                                                          );
-                                                          setShowAddQuestion(
-                                                            true,
-                                                          );
-                                                        }}
-                                                        className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                                        title="Edit Question"
-                                                      >
-                                                        <Edit className="w-3.5 h-3.5" />
-                                                      </button>
-                                                      <button
-                                                        type="button"
-                                                        onClick={async () => {
-                                                          if (
-                                                            confirm(
-                                                              "Delete this question?",
-                                                            )
-                                                          ) {
-                                                            await handleDeleteQuestion(
-                                                              editingProgram.id,
-                                                              question.id,
-                                                              assessment.id,
-                                                            );
-                                                            await refreshAssessmentData(
-                                                              editingProgram.id,
-                                                            );
-                                                          }
-                                                        }}
-                                                        className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                        title="Delete Question"
-                                                      >
-                                                        <Trash2Icon className="w-3.5 h-3.5" />
-                                                      </button>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              ),
-                                            )}
-                                          </div>
-                                        ) : (
-                                          <div className="text-center py-3 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                            <p className="text-sm text-gray-400">
-                                              No questions added yet
-                                            </p>
-                                            <p className="text-xs text-gray-300">
-                                              Click "Add Question" to get
-                                              started
-                                            </p>
-                                          </div>
-                                        )}
+              {/* MCQ Specific Details */}
+              {isMcq && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-700">
+                      Questions ({assessment.questions?.length || 0})
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!courseId) {
+                          toast.error("Course ID is missing.");
+                          return;
+                        }
+                        setSelectedAssessmentId(courseId);
+                        setSelectedAssessmentIndex(index);
+                        setShowAddQuestion(true);
+                        setEditingQuestion(null);
+                        resetQuestionForm();
+                      }}
+                      className="text-xs text-emerald-600 hover:text-emerald-700 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Add Question
+                    </button>
+                  </div>
 
-                                        {/* Question Form - Show when "Add Question" is clicked */}
-                                        {showAddQuestion &&
-                                          selectedAssessmentId ===
-                                            editingProgram.id &&
-                                          selectedAssessmentIndex === index &&
-                                          assessments[editingProgram.id] &&
-                                          assessments[editingProgram.id][
-                                            index
-                                          ] && (
-                                            <div className="mt-3 pt-3 border-t border-gray-100">
-                                              <QuestionForm
-                                                editingQuestion={
-                                                  editingQuestion
-                                                }
-                                                questionFormData={
-                                                  questionFormData
-                                                }
-                                                questionErrors={questionErrors}
-                                                questionSaving={questionSaving}
-                                                handleQuestionFormChange={(e) =>
-                                                  handleQuestionFormChange(
-                                                    e,
-                                                    setQuestionFormData,
-                                                    setQuestionErrors,
-                                                  )
-                                                }
-                                                handleQuestionSubmit={async () => {
-                                                  const assessment =
-                                                    assessments[
-                                                      editingProgram.id
-                                                    ]?.[index];
-                                                  if (assessment) {
-                                                    await handleQuestionSubmit(
-                                                      editingProgram.id,
-                                                      assessment.id,
-                                                      questionFormData,
-                                                      editingQuestion,
-                                                      setQuestionSaving,
-                                                      resetQuestionForm,
-                                                      async () => {
-                                                        setShowAddQuestion(
-                                                          false,
-                                                        );
-                                                        await refreshAssessmentData(
-                                                          editingProgram.id,
-                                                        );
-                                                        await refreshPrograms();
-                                                      },
-                                                      setEditingQuestion,
-                                                      setQuestionErrors,
-                                                    );
-                                                  }
-                                                }}
-                                                setShowAddQuestion={
-                                                  setShowAddQuestion
-                                                }
-                                                setEditingQuestion={
-                                                  setEditingQuestion
-                                                }
-                                                resetQuestionForm={
-                                                  resetQuestionForm
-                                                }
-                                                courseId={editingProgram.id}
-                                                assessmentId={
-                                                  assessments[
-                                                    editingProgram.id
-                                                  ]?.[index]?.id
-                                                }
-                                              />
-                                            </div>
-                                          )}
-                                      </div>
-                                    </div>
-                                  ),
+                  {/* Questions List - Only for MCQ */}
+                  {assessment.questions && assessment.questions.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {assessment.questions.map((question, qIdx) => (
+                        <div key={question.id || qIdx} className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center justify-center w-5 h-5 bg-red-50 text-red-600 text-xs font-bold rounded-full flex-shrink-0">
+                                  {qIdx + 1}
+                                </span>
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {question.question_text}
+                                </p>
+                              </div>
+                              <div className="mt-1 flex flex-wrap gap-1 text-xs">
+                                <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                  A: {question.option_a}
+                                </span>
+                                <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                  B: {question.option_b}
+                                </span>
+                                {question.option_c && (
+                                  <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                    C: {question.option_c}
+                                  </span>
                                 )}
+                                {question.option_d && (
+                                  <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                    D: {question.option_d}
+                                  </span>
+                                )}
+                                <span className="px-1.5 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
+                                  ✓ {question.correct_option}
+                                </span>
+                                <span className="px-1.5 py-0.5 bg-blue-50 rounded text-blue-600">
+                                  {question.marks || 1} mark{question.marks > 1 ? "s" : ""}
+                                </span>
                               </div>
-                            ) : (
-                              <div className="text-center py-6 bg-white rounded-lg border border-dashed border-gray-200">
-                                <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                                <p className="text-sm text-gray-400">
-                                  No assessments created yet
-                                </p>
-                                <p className="text-xs text-gray-300 mt-0.5">
-                                  Click "Add Assessment" to create one
-                                </p>
-                              </div>
-                            )}
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingQuestion(question);
+                                  setQuestionFormData({
+                                    question_text: question.question_text || "",
+                                    option_a: question.option_a || "",
+                                    option_b: question.option_b || "",
+                                    option_c: question.option_c || "",
+                                    option_d: question.option_d || "",
+                                    correct_option: question.correct_option || "A",
+                                    marks: question.marks || 1,
+                                    order_number: question.order_number || qIdx + 1,
+                                    status: question.status || "draft",
+                                  });
+                                  setSelectedAssessmentId(courseId);
+                                  setSelectedAssessmentIndex(index);
+                                  setShowAddQuestion(true);
+                                }}
+                                className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Edit Question"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!question?.id) {
+                                    toast.error("Question ID is missing.");
+                                    return;
+                                  }
+                                  if (!courseId) {
+                                    toast.error("Course ID is missing.");
+                                    return;
+                                  }
+                                  if (confirm("Delete this question?")) {
+                                    await handleDeleteQuestion(
+                                      courseId,
+                                      question?.id,
+                                      assessment?.id,
+                                    );
+                                     await refreshEditingProgram();
+                                    await refreshAssessmentData(courseId);
+                                  }
+                                }}
+                                className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title="Delete Question"
+                              >
+                                <Trash2Icon className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
-                        )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-3 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                      <p className="text-sm text-gray-400">No questions added yet</p>
+                      <p className="text-xs text-gray-300">Click "Add Question" to get started</p>
+                    </div>
+                  )}
+
+                  {/* Question Form - Only for MCQ */}
+                  {showAddQuestion &&
+                    selectedAssessmentId === courseId &&
+                    selectedAssessmentIndex === index &&
+                    editingProgram.assessment &&
+                    editingProgram.assessment[index] && (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <QuestionForm
+                          editingQuestion={editingQuestion}
+                          questionFormData={questionFormData}
+                          questionErrors={questionErrors}
+                          questionSaving={questionSaving}
+                          handleQuestionFormChange={(e) =>
+                            handleQuestionFormChange(
+                              e,
+                              setQuestionFormData,
+                              setQuestionErrors,
+                            )
+                          }
+                          handleQuestionSubmit={async () => {
+                            const assessment = editingProgram.assessment?.[index];
+                            if (assessment && courseId) {
+                              await handleQuestionSubmit(
+                                courseId,
+                                assessment.id,
+                                questionFormData,
+                                editingQuestion,
+                                setQuestionSaving,
+                                resetQuestionForm,
+                                async () => {
+                                  setShowAddQuestion(false);
+                                   await refreshEditingProgram();
+                                  await refreshAssessmentData(courseId);
+                                  await refreshPrograms();
+                                },
+                                setEditingQuestion,
+                                setQuestionErrors,
+                              );
+                            }
+                          }}
+                          setShowAddQuestion={setShowAddQuestion}
+                          setEditingQuestion={setEditingQuestion}
+                          resetQuestionForm={resetQuestionForm}
+                          courseId={courseId}
+                          assessmentId={editingProgram.assessment?.[index]?.id}
+                        />
+                      </div>
+                    )}
+                </div>
+              )}
+
+              {/* For PDF Task - Show a message instead of questions */}
+              {isPdfTask && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-gray-700">
+                      Task Details
+                    </p>
+                    <span className="text-xs text-gray-400">
+                      PDF-based assessment
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 text-center">
+                    <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">
+                      This is a PDF task assessment
+                    </p>
+                    {assessment.pdf_template_url && (
+                      <a
+                        href={assessment.pdf_template_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm"
+                      >
+                        <FileText className="w-4 h-4" />
+                        View PDF Template
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    ) : (
+      <div className="text-center py-6 bg-white rounded-lg border border-dashed border-gray-200">
+        <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+        <p className="text-sm text-gray-400">No assessments created yet</p>
+        <p className="text-xs text-gray-300 mt-0.5">Click "Add Assessment" to create one</p>
+      </div>
+    )}
+  </div>
+)}
                         {/* Lessons Section */}
                         <div className="border-b border-gray-200 pb-4">
                           <div className="flex items-center justify-between mb-3">
@@ -4631,12 +4576,14 @@ export default function DashboardPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredPrograms.map((program) => {
+                          const assessmentsList = program?.assessment || [];
+
                         return (
                           <ProgramCard
                             key={program.id}
                             program={program}
                             onSelectCourse={handleSelectCourse}
-                            assessment={program?.assessment}
+                            assessment={assessmentsList}
                             getStatusBadge={getStatusBadge}
                             onEditProgram={handleEditProgram}
                             onDeleteProgram={handleDeleteProgram}
@@ -5024,6 +4971,7 @@ export default function DashboardPage() {
             selectedAssessmentIndex,
           )
         }
+        
         setAssessmentSuccess={setAssessmentSuccess}
         resetAssessmentForm={resetAssessmentForm}
         setEditingAssessment={setEditingAssessment}
