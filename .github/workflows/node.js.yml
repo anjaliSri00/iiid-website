@@ -1,4 +1,5 @@
 name: Next.js CI/CD
+
 on:
   push:
     branches:
@@ -6,54 +7,74 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted  # using your self-hosted GitHub runner
+    runs-on: self-hosted
 
     strategy:
       matrix:
-        node-version: [20.x] # recommended for Next.js 14+
+        node-version: [20.x]
         
     steps:
-      #  Checkout your repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      #  Setup Node.js
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-         # cache: 'npm'
-         # cache-dependency-path: package-lock.json
+          cache: 'npm'  # ✅ Enable npm caching
+          cache-dependency-path: package-lock.json
 
-      # Create .env file dynamically from GitHub Secrets
       - name: Create environment file
         run: |
           echo "Creating .env file..."
           cat <<EOF > .env
           NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_RAZORPAY_KEY_ID=${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
-          #PORT=${{ secrets.PORT }}
           GITHUB_ID=${{ secrets.GITHUB_ID }}
           GITHUB_SECRET=${{ secrets.GITHUB_SECRET }}
           NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
           NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
           EOF
           echo "✅ .env file created successfully"
-          echo "----------------------------------"
 
-      # Install dependencies
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
+      - name: Cache Next.js build
+        uses: actions/cache@v3
+        with:
+          path: |
+            .next/cache
+            node_modules/.cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
-      #  Build Next.js app
+      - name: Install dependencies with caching
+        run: |
+          npm ci --prefer-offline --no-audit --no-fund
+          echo "✅ Dependencies installed"
+
       - name: Build Next.js app
         run: |
           export NEXT_TELEMETRY_DISABLED=1
-          npm run build
+          NODE_OPTIONS="--max-old-space-size=4096" npm run build
+          echo "✅ Build completed"
 
-      # Restart Next.js app using PM2
       - name: Restart Next.js with PM2
         run: |
-          pm2 restart iiid-website
+          # Stop if running
+          pm2 stop iiid-website || true
+          
+          # Delete old process
+          pm2 delete iiid-website || true
+          
+          # Start with proper port
+          pm2 start npm --name "iiid-website" -- start -- -p 3000
+          
+          # Save PM2 configuration
           pm2 save
+          
           echo "✅ Next.js app restarted successfully"
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost:3000
