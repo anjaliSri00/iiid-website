@@ -1371,8 +1371,7 @@ const ProgramDetailPage = () => {
                                 onPause={handleVideoPause}
                                 controls={false}
                                 src={
-                                  selectedLesson.video_url ||
-                                  selectedLesson.external_video_url
+                                  selectedLesson.video_url
                                 }
                                 poster={program.thumbnail_url}
                                 onClick={togglePlay}
@@ -1834,104 +1833,205 @@ const ProgramDetailPage = () => {
                   )}
 
                   {/* Assessment Tab */}
-                  {activeTab === "assessment" && (
-                    <div className="p-4 sm:p-6">
-                      {allLessonsCompleted ? (
-                        assessmentData ? (
-                          <div className="space-y-4 sm:space-y-6">
-                            <div className="flex items-center gap-3">
-                              <ClipboardCheck className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
-                              <div>
-                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                                  Assessment
-                                </h3>
-                                <p className="text-sm text-gray-500">
-                                  Complete the assessment to earn your
-                                  certificate
-                                </p>
-                              </div>
-                            </div>
 
-                            <div className="bg-[#FDF8F0] rounded-lg p-4 sm:p-6 border border-[#D4A574]/30">
-                              <div className="flex items-start gap-3">
-                                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                    {assessmentData.title ||
-                                      "Course Assessment"}
-                                  </h4>
-                                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                                    {assessmentData.description ||
-                                      "Complete this assessment to test your knowledge and earn your certificate."}
-                                  </p>
-                                  {assessmentData.total_questions && (
-                                    <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                                      📝 {assessmentData.total_questions}{" "}
-                                      questions
-                                    </p>
-                                  )}
-                                  {assessmentData.time_limit && (
-                                    <p className="text-xs sm:text-sm text-gray-500">
-                                      ⏱️ {assessmentData.time_limit} minutes
-                                    </p>
-                                  )}
-                                  {assessmentData.passing_score && (
-                                    <p className="text-xs sm:text-sm text-gray-500">
-                                      🎯 Passing score:{" "}
-                                      {assessmentData.passing_score}%
-                                    </p>
-                                  )}
-                                  <button
-                                    onClick={() => {
-                                      safeNavigate(
-                                        `/programs/${program.id}/assessment`,
-                                      );
-                                    }}
-                                    className="mt-3 sm:mt-4 px-4 sm:px-6 py-2 sm:py-2.5 bg-[#CC0000] text-white text-sm sm:text-base rounded-lg hover:bg-[#B30000] transition-colors font-semibold inline-flex items-center gap-2"
-                                  >
-                                    <Play className="w-4 h-4" />
-                                    Start Assessment
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="text-center py-8 sm:py-12">
-                            <ClipboardCheck className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-4" />
-                            <p className="text-base sm:text-lg text-gray-600">
-                              No assessment available for this program
-                            </p>
-                            <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                              Check back later for assessment content
-                            </p>
-                          </div>
-                        )
-                      ) : (
-                        <div className="text-center py-8 sm:py-12">
-                          <Lock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-300 mb-3" />
-                          <p className="text-base sm:text-lg text-gray-600">
-                            Complete all lessons first
-                          </p>
-                          <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                            You need to complete all{" "}
-                            {program.lessons?.length || 0} lessons to access the
-                            assessment
-                          </p>
-                          <div className="mt-4 flex items-center justify-center gap-2 text-sm">
-                            <span className="text-gray-500">Progress:</span>
-                            <span className="font-semibold text-[#CC0000]">
-                              {completedLessons.length}/
-                              {program.lessons?.length || 0}
-                            </span>
-                            <span className="text-gray-400">
-                              ({getOverallProgress()}%)
-                            </span>
-                          </div>
-                        </div>
+{activeTab === "assessment" && (
+  <div className="p-4 sm:p-6">
+    {allLessonsCompleted ? (
+      assessmentData && assessmentData.length > 0 ? (
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex items-center gap-3">
+            <ClipboardCheck className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+            <div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                Course Assessments
+              </h3>
+              <p className="text-sm text-gray-500">
+                Complete all assessments to earn your certificate
+              </p>
+            </div>
+          </div>
+
+          {/* Assessment List */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {assessmentData.map((assessment) => (
+              <div
+                key={assessment.id}
+                className="bg-[#FDF8F0] rounded-lg p-4 sm:p-6 border border-[#D4A574]/30 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start gap-3">
+                  {assessment.type === 'mcq' ? (
+                    <CheckSquare className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
+                  ) : (
+                    <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+                        {assessment.title}
+                      </h4>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                        assessment.type === 'mcq' 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-purple-100 text-purple-700'
+                      }`}>
+                        {assessment.type === 'mcq' ? 'MCQ' : 'PDF Task'}
+                      </span>
+                      {assessment.is_completed && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">
+                          ✓ Completed
+                        </span>
                       )}
                     </div>
-                  )}
+                    
+                    <div className="mt-2 space-y-1 text-xs sm:text-sm text-gray-600">
+                      {assessment.type === 'mcq' && (
+                        <>
+                          <p>📝 {assessment.question_count || 0} questions</p>
+                          <p>⏱️ {assessment.duration_minutes} minutes</p>
+                          <p>🎯 Passing score: {assessment.passing_score}%</p>
+                        </>
+                      )}
+                      {assessment.type === 'pdf_task' && (
+                        <>
+                          <p>📄 PDF template available</p>
+                          <p>⏱️ {assessment.duration_minutes} minutes</p>
+                          <p>🎯 Passing score: {assessment.passing_score}%</p>
+                        </>
+                      )}
+                      {assessment.instructions && (
+                        <p className="text-gray-500 text-xs mt-1">
+                          📋 {assessment.instructions}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {assessment.type === 'pdf_task' && assessment.pdf_template_url && (
+                        <a
+                          href={assessment.pdf_template_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-[#FDF8F0] border border-[#D4A574]/30 text-gray-700 text-xs sm:text-sm rounded-lg hover:bg-[#F5E6D3] transition-colors flex items-center gap-1.5"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Download Template
+                        </a>
+                      )}
+                      
+                      <button
+                        onClick={() => {
+                          // Navigate to assessment page
+                              router.push(
+      `/programs/${programId}/assessment?type=${assessment.type}&id=${assessment.id}`
+    );
+
+                        }}
+                        className={`px-4 py-1.5 text-sm rounded-lg font-medium transition-colors inline-flex items-center gap-2 ${
+                          assessment.is_completed
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-[#CC0000] text-white hover:bg-[#B30000]'
+                        }`}
+                      >
+                        {assessment.is_completed ? (
+                          <>
+                            <CheckCircle className="w-4 h-4" />
+                            Review Results
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-4 h-4" />
+                            Start {assessment.type === 'mcq' ? 'Quiz' : 'Task'}
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Completion Status */}
+                    {assessment.is_completed && assessment.score !== undefined && (
+                      <div className="mt-2 flex items-center gap-3 text-xs">
+                        <span className={`font-medium ${
+                          assessment.score >= assessment.passing_score 
+                            ? 'text-green-600' 
+                            : 'text-[#CC0000]'
+                        }`}>
+                          Score: {assessment.score}%
+                        </span>
+                        {assessment.score >= assessment.passing_score ? (
+                          <span className="text-green-600 flex items-center gap-1">
+                            <Award className="w-3.5 h-3.5" />
+                            Passed
+                          </span>
+                        ) : (
+                          <span className="text-[#CC0000] flex items-center gap-1">
+                            <XCircle className="w-3.5 h-3.5" />
+                            Failed
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8 sm:py-12">
+          <ClipboardCheck className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-4" />
+          <p className="text-base sm:text-lg text-gray-600">
+            No assessments available for this program
+          </p>
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">
+            Check back later for assessment content
+          </p>
+        </div>
+      )
+    ) : (
+      <div className="text-center py-8 sm:py-12">
+        <Lock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-300 mb-3" />
+        <p className="text-base sm:text-lg text-gray-600">
+          Complete all lessons first
+        </p>
+        <p className="text-xs sm:text-sm text-gray-400 mt-1">
+          You need to complete all {program.lessons?.length || 0} lessons to access the assessments
+        </p>
+        <div className="mt-4 flex items-center justify-center gap-2 text-sm">
+          <span className="text-gray-500">Progress:</span>
+          <span className="font-semibold text-[#CC0000]">
+            {completedLessons.length}/{program.lessons?.length || 0}
+          </span>
+          <span className="text-gray-400">
+            ({getOverallProgress()}%)
+          </span>
+        </div>
+        {!allLessonsCompleted && program.lessons?.length > 0 && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left max-w-md mx-auto">
+            <p className="text-sm text-blue-700 font-medium">Remaining Lessons:</p>
+            <ul className="mt-2 space-y-1">
+              {program.lessons
+                .filter(lesson => !completedLessons.includes(lesson.id))
+                .slice(0, 3)
+                .map(lesson => (
+                  <li key={lesson.id} className="text-sm text-blue-600 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                    {lesson.title}
+                  </li>
+                ))}
+              {program.lessons.filter(lesson => !completedLessons.includes(lesson.id)).length > 3 && (
+                <li className="text-sm text-blue-400">
+                  +{program.lessons.filter(lesson => !completedLessons.includes(lesson.id)).length - 3} more
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+)}
+
+
                 </div>
               ) : (
                 // Not Enrolled or Not Authenticated - Show Program Details

@@ -130,6 +130,7 @@ export const assessmentApi = {
 
   // Get assessment details by ID (admin view - includes all questions with correct answers)
   getAssessmentById: async (courseId, assessmentId, session) => {
+    // console.log(assessmentId ,"-----------------------ssemenet id")
     try {
       const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/${assessmentId}`,

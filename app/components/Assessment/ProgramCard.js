@@ -504,7 +504,7 @@ const ProgramCard = ({
                         {program.original_price && program.discount > 0 && (
                           <>
                             <span className="text-[8px] sm:text-xs text-gray-400 line-through">₹{program.original_price}</span>
-                            <span className="text-[8px] sm:text-xs font-bold text-red-500 bg-white/60 px-0.5 sm:px-1 rounded-full">-{program.discount}%</span>
+                            {/* <span className="text-[8px] sm:text-xs font-bold text-red-500 bg-white/60 px-0.5 sm:px-1 rounded-full">-{program.discount}%</span> */}
                           </>
                         )}
                       </div>
@@ -575,12 +575,12 @@ const ProgramCard = ({
                           <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium border ${typeInfo.className} whitespace-nowrap`}>
                             {typeInfo.label}
                           </span>
-                          {assessment.is_active && (
+                          {/* {assessment.is_active && (
                             <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                               <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-emerald-500" />
                               Live
                             </span>
-                          )}
+                          )} */}
                         </div>
 
                         <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
