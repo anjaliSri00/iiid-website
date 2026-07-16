@@ -1370,9 +1370,7 @@ const ProgramDetailPage = () => {
                                 onEnded={handleVideoEnded}
                                 onPause={handleVideoPause}
                                 controls={false}
-                                src={
-                                  selectedLesson.video_url
-                                }
+                                src={selectedLesson.video_url}
                                 poster={program.thumbnail_url}
                                 onClick={togglePlay}
                                 playsInline
@@ -1831,9 +1829,6 @@ const ProgramDetailPage = () => {
                       )}
                     </>
                   )}
-
-                  {/* Assessment Tab */}
-
 {activeTab === "assessment" && (
   <div className="p-4 sm:p-6">
     {allLessonsCompleted ? (
@@ -1851,129 +1846,179 @@ const ProgramDetailPage = () => {
             </div>
           </div>
 
-          {/* Assessment List */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {assessmentData.map((assessment) => (
-              <div
-                key={assessment.id}
-                className="bg-[#FDF8F0] rounded-lg p-4 sm:p-6 border border-[#D4A574]/30 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start gap-3">
-                  {assessment.type === 'mcq' ? (
-                    <CheckSquare className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
-                  ) : (
-                    <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
-                        {assessment.title}
-                      </h4>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                        assessment.type === 'mcq' 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'bg-purple-100 text-purple-700'
-                      }`}>
-                        {assessment.type === 'mcq' ? 'MCQ' : 'PDF Task'}
-                      </span>
-                      {assessment.is_completed && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">
-                          ✓ Completed
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="mt-2 space-y-1 text-xs sm:text-sm text-gray-600">
-                      {assessment.type === 'mcq' && (
-                        <>
-                          <p>📝 {assessment.question_count || 0} questions</p>
-                          <p>⏱️ {assessment.duration_minutes} minutes</p>
-                          <p>🎯 Passing score: {assessment.passing_score}%</p>
-                        </>
-                      )}
-                      {assessment.type === 'pdf_task' && (
-                        <>
-                          <p>📄 PDF template available</p>
-                          <p>⏱️ {assessment.duration_minutes} minutes</p>
-                          <p>🎯 Passing score: {assessment.passing_score}%</p>
-                        </>
-                      )}
-                      {assessment.instructions && (
-                        <p className="text-gray-500 text-xs mt-1">
-                          📋 {assessment.instructions}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {assessment.type === 'pdf_task' && assessment.pdf_template_url && (
-                        <a
-                          href={assessment.pdf_template_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 bg-[#FDF8F0] border border-[#D4A574]/30 text-gray-700 text-xs sm:text-sm rounded-lg hover:bg-[#F5E6D3] transition-colors flex items-center gap-1.5"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          Download Template
-                        </a>
-                      )}
-                      
-                      <button
-                        onClick={() => {
-                          // Navigate to assessment page
-                              router.push(
-      `/programs/${programId}/assessment?type=${assessment.type}&id=${assessment.id}`
-    );
-
-                        }}
-                        className={`px-4 py-1.5 text-sm rounded-lg font-medium transition-colors inline-flex items-center gap-2 ${
-                          assessment.is_completed
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : 'bg-[#CC0000] text-white hover:bg-[#B30000]'
-                        }`}
-                      >
-                        {assessment.is_completed ? (
-                          <>
-                            <CheckCircle className="w-4 h-4" />
-                            Review Results
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4" />
-                            Start {assessment.type === 'mcq' ? 'Quiz' : 'Task'}
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Completion Status */}
-                    {assessment.is_completed && assessment.score !== undefined && (
-                      <div className="mt-2 flex items-center gap-3 text-xs">
-                        <span className={`font-medium ${
-                          assessment.score >= assessment.passing_score 
-                            ? 'text-green-600' 
-                            : 'text-[#CC0000]'
+            {assessmentData.map((assessment) => {
+              const hasAttempt = assessment.attempt !== null && assessment.attempt !== undefined;
+              const attempt = assessment.attempt || {};
+              const isCompleted = hasAttempt && attempt.submitted_at !== null && attempt.submitted_at !== undefined;
+              const isPending = isCompleted && attempt.review_status === 'pending';
+              const isGraded = isCompleted && (attempt.review_status === 'graded' || (attempt.score !== null && attempt.score !== undefined));
+              const score = attempt.score !== null && attempt.score !== undefined ? attempt.score : null;
+              const passed = attempt.passed !== null && attempt.passed !== undefined ? attempt.passed : null;
+              
+              return (
+                <div
+                  key={assessment.id}
+                  className="bg-[#FDF8F0] rounded-lg p-4 sm:p-6 border border-[#D4A574]/30 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start gap-3">
+                    {assessment.type === 'mcq' ? (
+                      <CheckSquare className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
+                    ) : (
+                      <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#CC0000] flex-shrink-0 mt-1" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+                          {assessment.title}
+                        </h4>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                          assessment.type === 'mcq' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'bg-purple-100 text-purple-700'
                         }`}>
-                          Score: {assessment.score}%
+                          {assessment.type === 'mcq' ? 'MCQ' : 'PDF Task'}
                         </span>
-                        {assessment.score >= assessment.passing_score ? (
-                          <span className="text-green-600 flex items-center gap-1">
-                            <Award className="w-3.5 h-3.5" />
-                            Passed
-                          </span>
-                        ) : (
-                          <span className="text-[#CC0000] flex items-center gap-1">
-                            <XCircle className="w-3.5 h-3.5" />
-                            Failed
-                          </span>
+                        
+                        {isCompleted && (
+                          isGraded ? (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                              {passed ? '✓ Passed' : '✗ Failed'}
+                            </span>
+                          ) : isPending ? (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-700">
+                              ⏳ Pending Review
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
+                              Submitted
+                            </span>
+                          )
                         )}
                       </div>
-                    )}
+                      
+                      <div className="mt-2 space-y-1 text-xs sm:text-sm text-gray-600">
+                        {assessment.type === 'mcq' && (
+                          <>
+                            <p>📝 {assessment.question_count || 0} questions</p>
+                            <p>⏱️ {assessment.duration_minutes} minutes</p>
+                            <p>🎯 Passing score: {assessment.passing_score}%</p>
+                          </>
+                        )}
+                        {assessment.type === 'pdf_task' && (
+                          <>
+                            <p>📄 PDF template available</p>
+                            <p>⏱️ {assessment.duration_minutes} minutes</p>
+                            <p>🎯 Passing score: {assessment.passing_score}%</p>
+                          </>
+                        )}
+                        {assessment.instructions && (
+                          <p className="text-gray-500 text-xs mt-1">
+                            📋 {assessment.instructions}
+                          </p>
+                        )}
+                      </div>
+
+                      {isCompleted && (
+                        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                          {score !== null && score !== undefined && (
+                            <span className={`font-medium ${
+                              score >= assessment.passing_score 
+                                ? 'text-green-600' 
+                                : 'text-[#CC0000]'
+                            }`}>
+                              Score: {score}%
+                            </span>
+                          )}
+                          {attempt.submitted_at && (
+                            <span className="text-gray-400">
+                              Submitted: {new Date(attempt.submitted_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                              <span className="text-gray-300 ml-1">
+                                at {new Date(attempt.submitted_at).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </span>
+                          )}
+                          {isPending && (
+                            <span className="text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full text-[10px]">
+                              Awaiting instructor review
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {assessment.type === 'pdf_task' && assessment.pdf_template_url && (
+                          <a
+                            href={assessment.pdf_template_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-[#FDF8F0] border border-[#D4A574]/30 text-gray-700 text-xs sm:text-sm rounded-lg hover:bg-[#F5E6D3] transition-colors flex items-center gap-1.5"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            Download Template
+                          </a>
+                        )}
+                        
+                       <button
+  onClick={() => {
+    // Pass the attempt data as query params
+    const attemptData = assessment.attempt || {};
+    const isCompleted = attemptData.submitted_at !== null && attemptData.submitted_at !== undefined;
+    const isGraded = isCompleted && (attemptData.review_status === 'graded' || attemptData.score !== null);
+    
+    // Build URL with attempt data
+    let url = `/programs/${programId}/assessment?type=${assessment.type}&id=${assessment.id}`;
+    
+    // If completed, pass attempt data to show results directly
+    if (isCompleted && isGraded) {
+      url += `&view=results&score=${attemptData.score || 0}&passed=${attemptData.passed || false}&submitted_at=${attemptData.submitted_at || ''}`;
+    }else if (isCompleted && isPending) {
+      // For pending, pass status so PDF component shows pending state
+      url += `&status=pending&submitted_at=${attemptData.submitted_at || ''}`;
+    }
+    
+    router.push(url);
+  }}
+  className={`px-4 py-1.5 text-sm rounded-lg font-medium transition-colors inline-flex items-center gap-2 ${
+    isCompleted && isGraded
+      ? 'bg-green-600 text-white hover:bg-green-700'
+      : isCompleted && isPending
+      ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+      : 'bg-[#CC0000] text-white hover:bg-[#B30000]'
+  }`}
+>
+  {isCompleted && isGraded ? (
+    <>
+      <Eye className="w-4 h-4" />
+      Review Results
+    </>
+  ) : isCompleted && isPending ? (
+    <>
+      <Clock className="w-4 h-4" />
+      Check Status
+    </>
+  ) : (
+    <>
+      <Play className="w-4 h-4" />
+      Start {assessment.type === 'mcq' ? 'Quiz' : 'Task'}
+    </>
+  )}
+</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (
@@ -2005,33 +2050,10 @@ const ProgramDetailPage = () => {
             ({getOverallProgress()}%)
           </span>
         </div>
-        {!allLessonsCompleted && program.lessons?.length > 0 && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left max-w-md mx-auto">
-            <p className="text-sm text-blue-700 font-medium">Remaining Lessons:</p>
-            <ul className="mt-2 space-y-1">
-              {program.lessons
-                .filter(lesson => !completedLessons.includes(lesson.id))
-                .slice(0, 3)
-                .map(lesson => (
-                  <li key={lesson.id} className="text-sm text-blue-600 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
-                    {lesson.title}
-                  </li>
-                ))}
-              {program.lessons.filter(lesson => !completedLessons.includes(lesson.id)).length > 3 && (
-                <li className="text-sm text-blue-400">
-                  +{program.lessons.filter(lesson => !completedLessons.includes(lesson.id)).length - 3} more
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
       </div>
     )}
   </div>
 )}
-
-
                 </div>
               ) : (
                 // Not Enrolled or Not Authenticated - Show Program Details

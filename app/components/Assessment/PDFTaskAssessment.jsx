@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -17,15 +17,21 @@ import {
   XCircle,
   Info,
   AlertCircle,
+  Eye,
 } from 'lucide-react';
 import { useAssessment } from '@/helper/hooks/useAssessment';
 import { useFileUpload } from '@/helper/hooks/useFileUpload';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 
 const PDFTaskAssessment = ({ assessment, programId }) => {
   const { submitPDFTask } = useAssessment();
   const { data: session } = useSession();
   const { uploadPDF, isUploading, uploadProgress, error: uploadError } = useFileUpload(session);
+
+  const searchParams = useSearchParams();
+  const statusParam = searchParams?.get('status');
+  const submittedAtParam = searchParams?.get('submitted_at');
   
   const [selectedFile, setSelectedFile] = useState(null);
   const [taskSubmitted, setTaskSubmitted] = useState(false);
@@ -34,6 +40,67 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [attemptData, setAttemptData] = useState(null);
+
+  // Check for existing attempt from assessment prop (no API call needed)
+  useEffect(() => {
+    if (!assessment?.id || !programId) {
+      return;
+    }
+    
+    try {
+      // First check if URL has status param (from navigation)
+      if (statusParam === 'pending' && submittedAtParam) {
+        // Use the data from URL params
+        const attempt = {
+          submitted_at: submittedAtParam,
+          review_status: 'pending',
+          score: null,
+          passed: null,
+        };
+        setAttemptData(attempt);
+        setTaskSubmitted(true);
+        setTaskStatus('pending');
+        setIsSuccess(true);
+        return;
+      }
+      
+      // Otherwise get attempt data from assessment prop
+      const attempt = assessment?.attempt || null;
+      
+      if (attempt && Object.keys(attempt).length > 0) {
+        setAttemptData(attempt);
+        
+        if (attempt.submitted_at) {
+          setTaskSubmitted(true);
+          
+          if (attempt.review_status === 'graded' || (attempt.score !== null && attempt.score !== undefined)) {
+            setTaskStatus('graded');
+            setTaskFeedback({
+              score: attempt.score || 0,
+              passed: attempt.passed || false,
+              feedback: attempt.feedback || "",
+              reviewed_at: attempt.reviewed_at,
+              reviewed_by: attempt.reviewed_by,
+            });
+          } else if (attempt.review_status === 'pending') {
+            setTaskStatus('pending');
+          } else {
+            setTaskStatus('submitted');
+          }
+          
+          setIsSuccess(true);
+        } else {
+          setTaskStatus(null);
+        }
+      } else {
+        setTaskStatus(null);
+      }
+    } catch (error) {
+      console.error('Error checking existing attempt:', error);
+      setTaskStatus(null);
+    }
+  }, [assessment, statusParam, submittedAtParam]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
@@ -41,13 +108,11 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
     setIsSuccess(false);
     
     if (file) {
-      // Validate file type
       if (file.type !== 'application/pdf') {
         setSubmitError('Please select a PDF file');
         return;
       }
       
-      // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         setSubmitError('File size should be less than 10MB');
         return;
@@ -74,8 +139,6 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
     setIsSuccess(false);
 
     try {
-      // Step 1: Upload the PDF file
-      console.log('Uploading PDF...');
       const uploadResult = await uploadPDF(selectedFile, {
         onSuccess: (result) => {
           console.log('Upload successful:', result);
@@ -94,36 +157,37 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
       }
 
       const fileUrl = uploadResult.url;
-      console.log('File uploaded successfully:', fileUrl);
 
-      // Step 2: Submit the PDF task with the file URL
-      console.log('Submitting PDF task...');
       const response = await submitPDFTask(programId, assessment.id, fileUrl);
 
-      console.log('Submit PDF task response:', response);
-
-      // Check for successful submission (200 or 201)
       if (response?.meta?.status === 200 || response?.meta?.status === 201) {
+        const attempt = response.data?.attempt;
+        setAttemptData(attempt);
         setTaskSubmitted(true);
-        setTaskStatus('submitted');
         setSelectedFile(null);
         setIsSuccess(true);
         setSubmitError(null);
         
-        // Check if task was graded immediately
-        if (response.data?.score !== undefined) {
-          setTaskFeedback({
-            score: response.data.score,
-            passed: response.data.passed || false,
-            feedback: response.data.feedback || "",
-          });
+        if (attempt?.score !== null && attempt?.score !== undefined) {
           setTaskStatus('graded');
+          setTaskFeedback({
+            score: attempt.score,
+            passed: attempt.passed || false,
+            feedback: attempt.feedback || "",
+            reviewed_at: attempt.reviewed_at,
+            reviewed_by: attempt.reviewed_by,
+          });
+        } else if (attempt?.review_status === 'pending') {
+          setTaskStatus('pending');
+        } else {
+          setTaskStatus('submitted');
         }
         
-        // Show success message
-        alert('Your PDF task has been submitted successfully!');
+        const statusMessage = attempt?.review_status === 'pending' 
+          ? 'Your PDF task has been submitted successfully and is pending review!'
+          : 'Your PDF task has been submitted successfully!';
+        alert(statusMessage);
       } else {
-        // Handle other status codes
         const errorMsg = response?.meta?.message || 'Failed to submit task';
         setSubmitError(errorMsg);
         setIsSuccess(false);
@@ -138,19 +202,136 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
   };
 
   const isGraded = taskStatus === 'graded';
-  const isSubmitted = taskStatus === 'submitted' || isGraded;
+  const isPending = taskStatus === 'pending';
+  const isSubmitted = taskStatus === 'submitted' || isGraded || isPending;
   const isUploadingOrSubmitting = isUploading || isSubmitting;
+
+  // Render status badge
+  const renderStatusBadge = () => {
+    if (isGraded) {
+      return (
+        <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+          taskFeedback?.passed 
+            ? 'bg-green-100 text-green-700'
+            : 'bg-red-100 text-red-700'
+        }`}>
+          {taskFeedback?.passed ? '✓ Passed' : '✗ Failed'}
+        </span>
+      );
+    }
+    if (isPending) {
+      return (
+        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+          ⏳ Pending Review
+        </span>
+      );
+    }
+    if (isSubmitted) {
+      return (
+        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+          <CheckCircle className="w-3 h-3" />
+          Submitted
+        </span>
+      );
+    }
+    return null;
+  };
+
+  // Render submission status message - NO SPINNERS HERE
+  const renderStatusMessage = () => {
+    if (isPending) {
+      return (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            {/* Removed the spinning loader here */}
+            <div className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-yellow-600" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-yellow-800">Submission Under Review</h4>
+              <p className="text-sm text-yellow-700">
+                Your PDF has been submitted successfully and is currently being reviewed by the instructor.
+                You will be notified once the review is complete.
+              </p>
+              {attemptData?.submitted_at && (
+                <p className="text-xs text-yellow-600 mt-2">
+                  Submitted on: {new Date(attemptData.submitted_at).toLocaleString()}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isGraded && taskFeedback) {
+      return (
+        <div className={`rounded-lg p-4 mb-6 border ${
+          taskFeedback.passed 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-start gap-3">
+            {taskFeedback.passed ? (
+              <CheckCircle className="w-6 h-6 text-green-600 shrink-0 mt-0.5" />
+            ) : (
+              <XCircle className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
+            )}
+            <div>
+              <h4 className={`font-semibold ${
+                taskFeedback.passed ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {taskFeedback.passed ? '✅ Task Passed!' : '❌ Task Needs Improvement'}
+              </h4>
+              <div className="flex flex-wrap items-center gap-4 mt-1">
+                <p className="text-sm">
+                  Score: <span className="font-bold">{taskFeedback.score}%</span>
+                </p>
+                <p className="text-sm">
+                  Passing Score: <span className="font-bold">{assessment.passing_score}%</span>
+                </p>
+                {taskFeedback.reviewed_at && (
+                  <p className="text-xs text-gray-500">
+                    Reviewed: {new Date(taskFeedback.reviewed_at).toLocaleString()}
+                  </p>
+                )}
+              </div>
+              {taskFeedback.feedback && (
+                <div className="mt-2 p-3 bg-white/60 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">Feedback:</span> {taskFeedback.feedback}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isSuccess && !isSubmitted) {
+      return (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-green-800">Success!</h4>
+              <p className="text-sm text-green-700">
+                Your PDF task has been submitted successfully.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-[#FDF8F0] py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <Link
-          href={`/programs/${programId}`}
-          className="inline-flex items-center text-gray-600 hover:text-[#CC0000] transition-colors mb-6"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Program
-        </Link>
+       
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
           {/* Header */}
@@ -159,7 +340,7 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
               <div className="p-3 bg-[#CC0000]/10 rounded-lg">
                 <FileText className="w-8 h-8 text-[#CC0000]" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h1 className="text-2xl font-bold text-gray-900">
                   {assessment.title}
                 </h1>
@@ -173,27 +354,7 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
                     <Award className="w-4 h-4" />
                     Passing Score: {assessment.passing_score}%
                   </span>
-                  {isSubmitted && (
-                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                      isGraded 
-                        ? taskFeedback?.passed 
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {isGraded 
-                        ? taskFeedback?.passed 
-                          ? '✓ Passed' 
-                          : '✗ Failed'
-                        : '⏳ Pending Review'}
-                    </span>
-                  )}
-                  {isSuccess && !isSubmitted && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                      <CheckCircle className="w-3 h-3" />
-                      Submitted Successfully
-                    </span>
-                  )}
+                  {renderStatusBadge()}
                 </div>
               </div>
             </div>
@@ -239,71 +400,8 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
               </div>
             )}
 
-            {/* Success Message */}
-            {isSuccess && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold text-green-800">Success!</h4>
-                    <p className="text-sm text-green-700">
-                      Your PDF task has been submitted successfully. You will be notified once it's reviewed.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Results/Feedback */}
-            {isGraded && taskFeedback && (
-              <div className={`rounded-lg p-4 mb-6 border ${
-                taskFeedback.passed 
-                  ? 'bg-green-50 border-green-200' 
-                  : 'bg-red-50 border-red-200'
-              }`}>
-                <div className="flex items-center gap-3">
-                  {taskFeedback.passed ? (
-                    <CheckCircle className="w-8 h-8 text-green-600" />
-                  ) : (
-                    <XCircle className="w-8 h-8 text-red-600" />
-                  )}
-                  <div>
-                    <h4 className={`font-semibold ${
-                      taskFeedback.passed ? 'text-green-800' : 'text-red-800'
-                    }`}>
-                      {taskFeedback.passed ? 'Task Passed!' : 'Task Needs Improvement'}
-                    </h4>
-                    <div className="flex items-center gap-4 mt-1">
-                      <p className="text-sm">
-                        Score: <span className="font-bold">{taskFeedback.score}%</span>
-                      </p>
-                      <p className="text-sm">
-                        Passing Score: <span className="font-bold">{assessment.passing_score}%</span>
-                      </p>
-                    </div>
-                    {taskFeedback.feedback && (
-                      <p className="text-sm mt-2 text-gray-700">
-                        <span className="font-medium">Feedback:</span> {taskFeedback.feedback}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {isSubmitted && !isGraded && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <Loader2 className="w-6 h-6 text-yellow-600 animate-spin" />
-                  <div>
-                    <h4 className="font-semibold text-yellow-800">Submission Under Review</h4>
-                    <p className="text-sm text-yellow-700">
-                      Your PDF task has been submitted and is pending review.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Status Messages */}
+            {renderStatusMessage()}
 
             {/* Error Display */}
             {submitError && !isSuccess && !isSubmitted && (
@@ -434,9 +532,35 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
               </div>
             )}
 
+            {/* View Submitted File (for submitted/pending/graded states) */}
+            {(isSubmitted || isSuccess) && attemptData?.submitted_file_url && (
+              <div className="mt-6 p-4 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-[#CC0000]" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Submitted File</p>
+                      <p className="text-xs text-gray-500">
+                        {isPending ? 'Awaiting review' : isGraded ? 'Reviewed' : 'Submitted'}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={attemptData.submitted_file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-white border border-[#D4A574]/20 text-gray-700 text-sm rounded-lg hover:bg-[#FDF8F0] transition-colors inline-flex items-center gap-2"
+                  >
+                    <Eye className="w-4 h-4" />
+                    View Submission
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* Back button when submitted or success */}
             {(isSubmitted || isSuccess) && (
-              <div className="text-center py-4">
+              <div className="text-center py-4 mt-4">
                 <Link
                   href={`/programs/${programId}`}
                   className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"

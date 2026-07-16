@@ -31,16 +31,18 @@ import {
   Target,
 } from 'lucide-react';
 import { useAssessment } from '@/helper/hooks/useAssessment';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-const MCQAssessment = ({ assessment, programId }) => {
+const MCQAssessment = ({ assessment, programId  }) => {
   const { submitMCQ } = useAssessment();
+  const router  = useRouter();
   
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState(null);
-  const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults] = useState(false);  
   const [flaggedQuestions, setFlaggedQuestions] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(null);
@@ -48,12 +50,50 @@ const MCQAssessment = ({ assessment, programId }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showQuestionGrid, setShowQuestionGrid] = useState(false);
   const [showTimerWarning, setShowTimerWarning] = useState(false);
-  const [reviewMode, setReviewMode] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   
+    const searchParams = useSearchParams();
+  const viewParam = searchParams?.get('view');
+  const scoreParam = searchParams?.get('score');
+  const passedParam = searchParams?.get('passed');
+  const submittedAtParam = searchParams?.get('submitted_at');
+
   const questionRefs = useRef({});
+
+   useEffect(() => {
+    // If view=results and we have score data, show results directly
+    if (viewParam === 'results' && scoreParam !== null && scoreParam !== undefined) {
+      const score = parseFloat(scoreParam || '0');
+      const passed = passedParam === 'true';
+      
+      // Get total questions from assessment or use default
+      const totalQuestions = assessment?.questions?.length || 4;
+      
+      setResults({
+        score: score,
+        total: totalQuestions,
+        percentage: score,
+        passed: passed,
+        correct_answers: 0,
+        wrong_answers: 0,
+      });
+      
+      // Also set certificate if available (you might want to pass this too)
+      if (assessment?.attempt?.certificate) {
+        setCertificate(assessment.attempt.certificate);
+      }
+      
+      setSubmitted(true);
+      setShowResults(true);
+    }
+  }, [viewParam, scoreParam, passedParam, submittedAtParam, assessment]);
 
   // Initialize questions
   useEffect(() => {
+        if (showResults || submitted) return;
+            if (isRetrying) return;
+
+
     if (assessment?.questions) {
       const transformedQuestions = assessment.questions.map((q) => {
         const options = [
@@ -78,7 +118,7 @@ const MCQAssessment = ({ assessment, programId }) => {
         setTimeRemaining(assessment.duration_minutes * 60);
       }
     }
-  }, [assessment]);
+  }, [assessment, showResults, submitted, isRetrying]);
 
   // Timer with warning
   useEffect(() => {
@@ -101,6 +141,9 @@ const MCQAssessment = ({ assessment, programId }) => {
 
     return () => clearInterval(timer);
   }, [timeRemaining, submitted, showResults]);
+
+
+   
 
   const formatTime = (seconds) => {
     if (!seconds) return "0:00";
@@ -127,6 +170,8 @@ const MCQAssessment = ({ assessment, programId }) => {
     //   setTimeout(() => setCurrentQuestionIndex(prev => prev + 1), 300);
     // }
   };
+
+
 
   const handleSubmit = async (autoSubmit = false) => {
     const unanswered = questions.filter(q => !answers[q.id]);
@@ -182,18 +227,6 @@ const MCQAssessment = ({ assessment, programId }) => {
     }
   };
 
-  const handleRetry = () => {
-    setAnswers({});
-    setResults(null);
-    setShowResults(false);
-    setSubmitted(false);
-    setCurrentQuestionIndex(0);
-    setFlaggedQuestions(new Set());
-    setShowTimerWarning(false);
-    if (assessment?.duration_minutes) {
-      setTimeRemaining(assessment.duration_minutes * 60);
-    }
-  };
 
   const handleDownloadCertificate = () => {
     if (certificate?.certificate_url) {
@@ -236,13 +269,7 @@ const MCQAssessment = ({ assessment, programId }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FDF8F0] via-white to-[#FDF8F0] py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
-          <Link
-            href={`/programs/${programId}`}
-            className="inline-flex items-center text-gray-600 hover:text-[#CC0000] transition-colors mb-6 group"
-          >
-            <ArrowLeft size={18} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-            Back to Program
-          </Link>
+         
 
           {/* Results Card */}
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#D4A574]/10">
@@ -382,103 +409,15 @@ const MCQAssessment = ({ assessment, programId }) => {
 
             {/* Question Review */}
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900 text-lg">Question Review</h3>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                    ✓ {correctCount} correct
-                  </span>
-                  <span className="text-sm text-red-500 bg-red-50 px-3 py-1 rounded-full">
-                    ✗ {wrongCount} wrong
-                  </span>
-                </div>
-              </div>
+             
+              <div className="text-center py-4 mt-4">
 
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                {questions.map((q, index) => {
-                  const userAnswer = answers[q.id];
-                  const isCorrect = results.answers?.find(a => a.question_id === q.id)?.is_correct;
-
-                  return (
-                    <div
-                      key={q.id}
-                      className={`p-5 rounded-2xl border-2 transition-all ${
-                        isCorrect
-                          ? 'border-green-200 bg-green-50/50'
-                          : userAnswer && userAnswer !== ""
-                          ? 'border-red-200 bg-red-50/50'
-                          : 'border-gray-200 bg-gray-50/50'
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="shrink-0">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            isCorrect
-                              ? 'bg-green-100'
-                              : userAnswer && userAnswer !== ""
-                              ? 'bg-red-100'
-                              : 'bg-gray-100'
-                          }`}>
-                            {isCorrect ? (
-                              <Check className="w-4 h-4 text-green-600" />
-                            ) : userAnswer && userAnswer !== "" ? (
-                              <X className="w-4 h-4 text-red-500" />
-                            ) : (
-                              <span className="text-xs font-medium text-gray-400">{index + 1}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">
-                            {index + 1}. {q.question}
-                          </p>
-                          <div className="mt-2 space-y-1.5">
-                            {q.options?.map((option) => {
-                              const isSelected = userAnswer === option.label;
-                              const isCorrectAnswer = q.correct_answer === option.label;
-
-                              let bgColor = 'bg-gray-50 text-gray-600';
-                              if (isSelected && isCorrectAnswer) bgColor = 'bg-green-200 text-green-900 border-green-300';
-                              else if (isSelected && !isCorrectAnswer) bgColor = 'bg-red-100 text-red-700 border-red-200';
-                              else if (isCorrectAnswer) bgColor = 'bg-green-100 text-green-800 border-green-200';
-
-                              return (
-                                <div
-                                  key={option.label}
-                                  className={`text-xs sm:text-sm p-2.5 rounded-xl border ${bgColor}`}
-                                >
-                                  <span className="font-medium">{option.label}.</span> {option.value}
-                                  {isCorrectAnswer && (
-                                    <span className="ml-2 text-green-600 font-medium">✓ Correct</span>
-                                  )}
-                                  {isSelected && !isCorrectAnswer && (
-                                    <span className="ml-2 text-red-500 font-medium">✗ Your answer</span>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                {!passed && (
-                  <button
-                    onClick={handleRetry}
-                    className="flex-1 px-6 py-3 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-                  >
-                    <RefreshCw className="w-5 h-5" />
-                    Retry Assessment
-                  </button>
-                )}
+              
                 <Link
                   href={`/programs/${programId}`}
-                  className="flex-1 px-6 py-3 bg-white text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-semibold text-center border-2 border-[#D4A574]/20"
+                  className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
                 >
+                   <ArrowLeft size={20} className="mr-2" />
                   Back to Program
                 </Link>
               </div>

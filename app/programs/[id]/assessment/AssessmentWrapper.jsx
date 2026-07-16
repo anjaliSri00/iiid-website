@@ -22,12 +22,15 @@ const AssessmentWrapper = () => {
   const router = useRouter();
   const { data: session, status, update } = useSession();
   
-  // Get program ID from params
   const programId = params?.id;
-  
-  // Get assessment details from URL params - safely
   const assessmentType = searchParams?.get('type') || null;
   const assessmentId = searchParams?.get('id') || null;
+  
+  // Check for results view
+  const viewParam = searchParams?.get('view');
+  const scoreParam = searchParams?.get('score');
+  const passedParam = searchParams?.get('passed');
+  const submittedAtParam = searchParams?.get('submitted_at');
 
   const { 
     assessment, 
@@ -40,10 +43,26 @@ const AssessmentWrapper = () => {
   const [isClient, setIsClient] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [showResultsDirectly, setShowResultsDirectly] = useState(false);
+  const [resultsData, setResultsData] = useState(null);
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    
+    // Check if we should show results directly
+    if (viewParam === 'results' && scoreParam !== null) {
+      setShowResultsDirectly(true);
+      setResultsData({
+        score: parseFloat(scoreParam || '0'),
+        passed: passedParam === 'true',
+        submitted_at: submittedAtParam || '',
+        percentage: parseFloat(scoreParam || '0'),
+        total: 4, // You might want to pass this from parent
+        correct_answers: 0,
+        wrong_answers: 0,
+      });
+    }
+  }, [viewParam, scoreParam, passedParam, submittedAtParam]);
 
   // Check session and redirect if not authenticated
   useEffect(() => {
@@ -61,7 +80,6 @@ const AssessmentWrapper = () => {
           return;
         }
 
-        // If authenticated but no access token, try to update
         if (session && !session.accessToken) {
           const updatedSession = await update();
           if (!updatedSession?.accessToken) {
@@ -82,19 +100,11 @@ const AssessmentWrapper = () => {
     checkSession();
   }, [status, session, update, router, programId, assessmentType, assessmentId, isClient]);
 
-  // Fetch assessment data
+  // Fetch assessment data (only if not showing results directly)
   useEffect(() => {
-    if (!isClient || !sessionChecked) return;
+    if (!isClient || !sessionChecked || showResultsDirectly) return;
     
-    // Only fetch if we have a program ID and session
     if (programId && session?.accessToken) {
-    //   console.log('Fetching assessment with:', { 
-    //     programId, 
-    //     assessmentId: assessmentId || 'null',
-    //     assessmentType: assessmentType || 'null'
-    //   });
-      
-      // Pass assessmentId only if it's a valid string (not 'null' or 'undefined')
       const validAssessmentId = assessmentId && 
         assessmentId !== 'null' && 
         assessmentId !== 'undefined' ? 
@@ -102,44 +112,33 @@ const AssessmentWrapper = () => {
       
       fetchAssessment(programId, validAssessmentId);
     }
-  }, [programId, assessmentId, session, fetchAssessment, isClient, sessionChecked]);
+  }, [programId, assessmentId, session, fetchAssessment, isClient, sessionChecked, showResultsDirectly]);
 
-  // Handle session expiry - redirect to login
-  useEffect(() => {
-    if (error) {
-      console.error('Error in assessment:', error);
-      
-      // Check if it's an authentication error
-      if (typeof error === 'string' && 
-          (error.toLowerCase().includes('401') || 
-           error.toLowerCase().includes('unauthorized') ||
-           error.toLowerCase().includes('session'))) {
-        
-        // If we haven't retried too many times, try to refresh session
-        if (retryCount < 2) {
-          setRetryCount(prev => prev + 1);
-          update().then(newSession => {
-            if (newSession?.accessToken) {
-              // Retry fetch with new session
-              const validAssessmentId = assessmentId && 
-                assessmentId !== 'null' && 
-                assessmentId !== 'undefined' ? 
-                assessmentId : null;
-              fetchAssessment(programId, validAssessmentId);
-            } else {
-              // Redirect to login
-              const returnUrl = `/programs/${programId}/assessment?type=${assessmentType || ''}&id=${assessmentId || ''}`;
-              router.push(`/login?callbackUrl=${encodeURIComponent(returnUrl)}`);
-            }
-          });
-        } else {
-          // Redirect to login after max retries
-          const returnUrl = `/programs/${programId}/assessment?type=${assessmentType || ''}&id=${assessmentId || ''}`;
-          router.push(`/login?callbackUrl=${encodeURIComponent(returnUrl)}`);
-        }
+  // If showing results directly, render MCQ component with results data
+  if (showResultsDirectly && resultsData) {
+    // Create a mock assessment object with results
+    const mockAssessment = {
+      ...assessment,
+      id: parseInt(assessmentId || '0'),
+      title: assessment?.title || 'Assessment',
+      type: assessmentType || 'mcq',
+      attempt: {
+        score: resultsData.score,
+        passed: resultsData.passed,
+        submitted_at: resultsData.submitted_at,
+        review_status: 'graded'
       }
-    }
-  }, [error, router, programId, assessmentType, assessmentId, update, fetchAssessment, retryCount]);
+    };
+    
+    // We need to pass results data to MCQ component
+    // Pass a prop to show results directly
+    return <MCQAssessment 
+      assessment={mockAssessment} 
+      programId={programId} 
+      showResults={true}
+      resultsData={resultsData}
+    />;
+  }
 
   // Loading state
   if (!isClient || status === "loading" || !sessionChecked || loading) {
@@ -156,7 +155,7 @@ const AssessmentWrapper = () => {
     );
   }
 
-  // Error state (non-auth errors)
+  // Error state
   if (error && !error.toLowerCase().includes('401') && !error.toLowerCase().includes('unauthorized')) {
     return (
       <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4">
@@ -213,10 +212,8 @@ const AssessmentWrapper = () => {
     );
   }
 
-  // Determine assessment type from URL or from assessment data
+  // Determine assessment type
   const type = assessmentType || assessment?.type || 'mcq';
-
-//   console.log('Rendering assessment type:', type);
 
   // Render based on assessment type
   if (type === 'pdf_task') {
