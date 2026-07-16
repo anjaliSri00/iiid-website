@@ -381,9 +381,9 @@ const ProgramCard = ({
                       className="flex items-center gap-2.5 sm:gap-2 px-3 sm:px-4 w-full py-2.5 sm:py-2 text-xs sm:text-sm text-gray-700 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-50"
                     >
                       {isCourseDeactivating ? (
-                        <Loader2 className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 animate-spin flex-shrink-0" />
+                        <Loader2 className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 animate-spin shrink-0" />
                       ) : (
-                        <EyeOff className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                        <EyeOff className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 shrink-0" />
                       )}
                       <span className="truncate">Deactivate Course</span>
                     </motion.button>
@@ -399,9 +399,9 @@ const ProgramCard = ({
                       className="flex items-center gap-2.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-2 w-full text-xs sm:text-sm text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-50"
                     >
                       {isCourseActivating ? (
-                        <Loader2 className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 animate-spin flex-shrink-0" />
+                        <Loader2 className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 animate-spin shrink-0" />
                       ) : (
-                        <Rocket className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                        <Rocket className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 shrink-0" />
                       )}
                       <span className="truncate">Activate Course</span>
                     </motion.button>
@@ -418,7 +418,7 @@ const ProgramCard = ({
                     }}
                     className="w-full px-3 sm:px-4 py-2.5 sm:py-2 text-left text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5 sm:gap-2 transition-colors"
                   >
-                    <Trash2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <Trash2Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     <span className="truncate">Delete Program</span>
                   </button>
 
@@ -715,7 +715,7 @@ const ProgramCard = ({
                                     <div>
                                       <p className="text-[8px] sm:text-[10px] text-gray-400 font-medium uppercase tracking-wider">PDF Template</p>
                                       <div className="flex items-center gap-2 mt-0.5">
-                                        <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 flex-shrink-0" />
+                                        <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 shrink-0" />
                                         <a
                                           href={assessment.pdf_template_url}
                                           target="_blank"
