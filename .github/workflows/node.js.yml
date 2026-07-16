@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'  # ✅ Enable npm caching
+          cache: 'npm'
           cache-dependency-path: package-lock.json
 
       - name: Create environment file
@@ -37,16 +37,6 @@ jobs:
           EOF
           echo "✅ .env file created successfully"
 
-      - name: Cache Next.js build
-        uses: actions/cache@v3
-        with:
-          path: |
-            .next/cache
-            node_modules/.cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-
       - name: Install dependencies with caching
         run: |
           npm ci --prefer-offline --no-audit --no-fund
@@ -60,18 +50,10 @@ jobs:
 
       - name: Restart Next.js with PM2
         run: |
-          # Stop if running
           pm2 stop iiid-website || true
-          
-          # Delete old process
           pm2 delete iiid-website || true
-          
-          # Start with proper port
           pm2 start npm --name "iiid-website" -- start -- -p 3000
-          
-          # Save PM2 configuration
           pm2 save
-          
           echo "✅ Next.js app restarted successfully"
 
       - name: Verify deployment
