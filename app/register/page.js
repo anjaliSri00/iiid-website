@@ -156,6 +156,9 @@ export default function RegisterPage() {
     current_organization: '',
     years_of_experience: '',
   });
+
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
   
   const [files, setFiles] = useState({
     aadhaar: null,
@@ -486,6 +489,15 @@ export default function RegisterPage() {
     if (fileInput) fileInput.value = '';
   };
 
+  // Add this function after your validateForm function
+const shouldShowError = (fieldName) => {
+  // Show error if there's an error AND (field has value OR form was submitted)
+  return errors[fieldName] && (
+    formData[fieldName] !== '' || 
+    formData[fieldName] !== null || 
+    formData[fieldName] !== undefined
+  );
+};
   // ---------- Form Validation (unchanged) ----------
   const validateForm = () => {
     const newErrors = {};
@@ -557,6 +569,11 @@ export default function RegisterPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+  
+  if (value && value.trim() !== '') {
+    setTouched(prev => ({ ...prev, [name]: true }));
+  }
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -570,7 +587,15 @@ export default function RegisterPage() {
   // ---------- Submit Handler (unchanged) ----------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+      const allFields = ['full_name', 'city', 'state', 'pincode', 'full_address', 
+                     'highest_qualification', 'years_of_experience', 'password', 'confirmPassword'];
+ const touchedState = {};
+   allFields.forEach(field => {
+    touchedState[field] = true;
+  });
+  setTouched(prev => ({ ...prev, ...touchedState }));
+    setFormSubmitted(true);
+
     if (!emailOtpData.isVerified) {
       toast.error('Please verify your email first');
       return;
@@ -584,7 +609,9 @@ export default function RegisterPage() {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       // toast.error('Please fill all required fields before submitting');
-      return;
+      const firstError = Object.values(newErrors)[0];
+    toast.error(firstError);
+    return;
     }
 
     setLoading(true);
@@ -709,11 +736,12 @@ export default function RegisterPage() {
                         placeholder="John Doe"
                       />
                     </div>
-                    {errors.full_name && touched.full_name && (
-                      <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.full_name}
-                      </p>
-                    )}
+                  
+{errors.full_name && (touched.full_name || formData.full_name !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.full_name}
+  </p>
+)}
                   </div>
 
                   {/* Email OTP - Compact */}
@@ -956,11 +984,11 @@ export default function RegisterPage() {
                           placeholder="Mumbai"
                         />
                       </div>
-                      {errors.city && touched.city && (
-                        <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" /> {errors.city}
-                        </p>
-                      )}
+                      {errors.city && (touched.city || formData.city !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.city}
+  </p>
+)}
                     </div>
                     <div>
                       <label htmlFor="state" className="block text-xs font-medium text-gray-700">
@@ -983,11 +1011,11 @@ export default function RegisterPage() {
                           placeholder="Maharashtra"
                         />
                       </div>
-                      {errors.state && touched.state && (
-                        <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" /> {errors.state}
-                        </p>
-                      )}
+                     {errors.state && (touched.state || formData.state !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.state}
+  </p>
+)}
                     </div>
                   </div>
 
@@ -1013,11 +1041,11 @@ export default function RegisterPage() {
                         placeholder="400001"
                       />
                     </div>
-                    {errors.pincode && touched.pincode && (
-                      <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.pincode}
-                      </p>
-                    )}
+                    {errors.pincode && (touched.pincode || formData.pincode !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.pincode}
+  </p>
+)}
                   </div>
 
                   <div>
@@ -1041,11 +1069,11 @@ export default function RegisterPage() {
                         placeholder="Street Address, Area, Landmark"
                       />
                     </div>
-                    {errors.full_address && touched.full_address && (
-                      <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.full_address}
-                      </p>
-                    )}
+                   {errors.full_address && (touched.full_address || formData.full_address !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.full_address}
+  </p>
+)}
                   </div>
                 </div>
               </div>
@@ -1086,11 +1114,11 @@ export default function RegisterPage() {
                         <option value="other">Other</option>
                       </select>
                     </div>
-                    {errors.highest_qualification && touched.highest_qualification && (
-                      <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.highest_qualification}
-                      </p>
-                    )}
+                    {errors.highest_qualification && (touched.highest_qualification || formData.highest_qualification !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.highest_qualification}
+  </p>
+)}
                   </div>
 
                   <div>
@@ -1138,11 +1166,11 @@ export default function RegisterPage() {
                         <option value="10+">10+ Years</option>
                       </select>
                     </div>
-                    {errors.years_of_experience && touched.years_of_experience && (
-                      <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.years_of_experience}
-                      </p>
-                    )}
+                    {errors.years_of_experience && (touched.years_of_experience || formData.years_of_experience !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.years_of_experience}
+  </p>
+)}
                   </div>
                 </div>
               </div>
@@ -1233,11 +1261,11 @@ export default function RegisterPage() {
                         )}
                       </button>
                     </div>
-                    {errors.password && touched.password && (
-                      <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.password}
-                      </p>
-                    )}
+                    {errors.password && (touched.password || formData.password !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.password}
+  </p>
+)}
                     
                     {/* Password strength - compact */}
                     {formData.password && (
@@ -1312,11 +1340,12 @@ export default function RegisterPage() {
                         )}
                       </button>
                     </div>
-                    {errors.confirmPassword && touched.confirmPassword && (
-                      <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.confirmPassword}
-                      </p>
-                    )}
+                 {/* confirm password: */}
+{errors.confirmPassword && (touched.confirmPassword || formData.confirmPassword !== '') && (
+  <p className="mt-0.5 text-xs text-red-600 flex items-center gap-1">
+    <AlertCircle className="w-3 h-3" /> {errors.confirmPassword}
+  </p>
+)}
                   </div>
                 </div>
               </div>
