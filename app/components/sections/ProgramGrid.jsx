@@ -74,7 +74,7 @@ const ProgramGrid = ({ programs = [] }) => {
                   <div className="absolute top-3 left-3">
                        <span className="px-3 py-1 bg-[#CC0000] text-white text-xs font-semibold rounded-full shadow-md flex items-center gap-1">
                           <TrendingDown className="w-3 h-3" />
-                      {program.discount}% OFF
+                      {program.discount} Rs. OFF
                     </span>
                   </div>
                 )}
