@@ -76,7 +76,7 @@ export default function Header() {
                 Apply Online
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="#about" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+              <Link href="/#about" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
                 About
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
@@ -204,14 +204,14 @@ export default function Header() {
                   Apply Online
                 </Link>
                 <Link 
-                  href="#about" 
+                  href="/#about" 
                   className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
                   onClick={() => setIsOpen(false)}
                 >
                   About
                 </Link>
                 <Link 
-                  href="#programs" 
+                  href="/#programs" 
                   className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
                   onClick={() => setIsOpen(false)}
                 >
