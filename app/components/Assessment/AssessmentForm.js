@@ -1,7 +1,7 @@
 // components/Assessment/AssessmentForm.js
 
 import React, { useState } from "react";
-import { Save, Loader2, CheckCircle, AlertCircle, Upload, X, FileText } from "lucide-react";
+import { Save, Loader2, CheckCircle, AlertCircle, Upload, X, FileText, Star, StarOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { uploadService } from "@/helper/services/uploadService";
 
@@ -19,7 +19,7 @@ const AssessmentForm = ({
   setAssessmentSuccess,
   courseId,
   onCancel,
-  session, // Add session prop
+  session,
 }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -30,14 +30,12 @@ const AssessmentForm = ({
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
     if (file.type !== 'application/pdf') {
       toast.error('Please upload a PDF file');
       e.target.value = '';
       return;
     }
 
-    // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error('File size should be less than 10MB');
       e.target.value = '';
@@ -49,14 +47,12 @@ const AssessmentForm = ({
     setIsUploading(true);
 
     try {
-      // Upload file using uploadService
       const result = await uploadService.uploadPDF(file, session, {
         progressCallback: (progress) => {
           setUploadProgress(progress);
         },
       });
 
-      // Update form data with the uploaded URL
       handleAssessmentFormChange({
         target: {
           name: 'pdf_template_url',
@@ -87,9 +83,19 @@ const AssessmentForm = ({
         value: '',
       }
     });
-    // Reset file input
     const fileInput = document.getElementById('pdf-upload');
     if (fileInput) fileInput.value = '';
+  };
+
+  // Handle checkbox change
+  const handleDefaultCheckboxChange = (e) => {
+    const checked = e.target.checked;
+    handleAssessmentFormChange({
+      target: {
+        name: 'is_default',
+        value: checked,
+      }
+    });
   };
 
   return (
@@ -213,6 +219,59 @@ const AssessmentForm = ({
               <p className="mt-1 text-sm text-red-600">{assessmentErrors.duration_minutes}</p>
             )}
           </div>
+
+          {/* Set as Default Checkbox - Only show when editing existing assessment */}
+          {editingAssessment && (
+            <div className="md:col-span-2">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200 hover:border-yellow-300 transition-colors">
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    type="checkbox"
+                    id="is_default_checkbox"
+                    name="is_default"
+                    checked={assessmentFormData.is_default || false}
+                    onChange={handleDefaultCheckboxChange}
+                    className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500 focus:ring-offset-2 cursor-pointer"
+                    disabled={assessmentSaving}
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <label 
+                      htmlFor="is_default_checkbox"
+                      className="text-sm font-medium text-gray-700 flex items-center gap-2 cursor-pointer"
+                    >
+                      {assessmentFormData.is_default ? (
+                        <>
+                          <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                          <span className="text-yellow-700">Set as default {assessmentFormData.type === 'pdf_task' ? 'PDF' : 'MCQ'} assessment for this course</span>
+                        </>
+                      ) : (
+                        <>
+                          <StarOff className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-600">Set as default {assessmentFormData.type === 'pdf_task' ? 'PDF' : 'MCQ'} assessment for this course</span>
+                        </>
+                      )}
+                    </label>
+                    {assessmentFormData.is_default && (
+                      <span className="px-2.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full border border-yellow-200">
+                        Default
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 ml-6">
+                    Only one {assessmentFormData.type === 'pdf_task' ? 'PDF' : 'MCQ'} assessment can be default per course. 
+                    Students will be automatically assigned to the default assessment.
+                    {assessmentFormData.is_default && (
+                      <span className="block text-yellow-600 mt-0.5">
+                        ✓ This assessment will be the default for all new enrollments
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">

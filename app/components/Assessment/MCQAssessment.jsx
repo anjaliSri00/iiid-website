@@ -1,3 +1,5 @@
+// components/Assessment/MCQAssessment.js
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -15,34 +17,38 @@ import {
   AlertCircle,
   Award,
   Download,
-  Printer,
   RefreshCw,
   HelpCircle,
   BarChart3,
   Trophy,
   Grid3x3,
-  List,
   Check,
   X,
   BookOpen,
   TrendingUp,
-  Users,
-  Zap,
   Target,
+  MessageSquare,
 } from 'lucide-react';
 import { useAssessment } from '@/helper/hooks/useAssessment';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const MCQAssessment = ({ assessment, programId  }) => {
+const MCQAssessment = ({ 
+  assessment, 
+  programId, 
+  showResults = false, 
+  resultsData = null,
+  onRequestReattempt,
+  reattemptStatus,
+}) => {
   const { submitMCQ } = useAssessment();
-  const router  = useRouter();
+  const router = useRouter();
   
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState(null);
-  const [showResults, setShowResults] = useState(false);  
+  const [showResultsView, setShowResultsView] = useState(false);  
   const [flaggedQuestions, setFlaggedQuestions] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(null);
@@ -51,8 +57,10 @@ const MCQAssessment = ({ assessment, programId  }) => {
   const [showQuestionGrid, setShowQuestionGrid] = useState(false);
   const [showTimerWarning, setShowTimerWarning] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [showReattemptModal, setShowReattemptModal] = useState(false);
+  const [reattemptReason, setReattemptReason] = useState('');
   
-    const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
   const viewParam = searchParams?.get('view');
   const scoreParam = searchParams?.get('score');
   const passedParam = searchParams?.get('passed');
@@ -60,13 +68,12 @@ const MCQAssessment = ({ assessment, programId  }) => {
 
   const questionRefs = useRef({});
 
-   useEffect(() => {
-    // If view=results and we have score data, show results directly
+  // Handle results from URL params
+  useEffect(() => {
     if (viewParam === 'results' && scoreParam !== null && scoreParam !== undefined) {
       const score = parseFloat(scoreParam || '0');
       const passed = passedParam === 'true';
       
-      // Get total questions from assessment or use default
       const totalQuestions = assessment?.questions?.length || 4;
       
       setResults({
@@ -78,21 +85,23 @@ const MCQAssessment = ({ assessment, programId  }) => {
         wrong_answers: 0,
       });
       
-      // Also set certificate if available (you might want to pass this too)
       if (assessment?.attempt?.certificate) {
         setCertificate(assessment.attempt.certificate);
       }
       
       setSubmitted(true);
-      setShowResults(true);
+      setShowResultsView(true);
+    } else if (showResults && resultsData) {
+      setResults(resultsData);
+      setSubmitted(true);
+      setShowResultsView(true);
     }
-  }, [viewParam, scoreParam, passedParam, submittedAtParam, assessment]);
+  }, [viewParam, scoreParam, passedParam, submittedAtParam, assessment, showResults, resultsData]);
 
   // Initialize questions
   useEffect(() => {
-        if (showResults || submitted) return;
-            if (isRetrying) return;
-
+    if (showResultsView || submitted) return;
+    if (isRetrying) return;
 
     if (assessment?.questions) {
       const transformedQuestions = assessment.questions.map((q) => {
@@ -118,11 +127,11 @@ const MCQAssessment = ({ assessment, programId  }) => {
         setTimeRemaining(assessment.duration_minutes * 60);
       }
     }
-  }, [assessment, showResults, submitted, isRetrying]);
+  }, [assessment, showResultsView, submitted, isRetrying]);
 
-  // Timer with warning
+  // Timer
   useEffect(() => {
-    if (!timeRemaining || submitted || showResults) return;
+    if (!timeRemaining || submitted || showResultsView) return;
 
     if (timeRemaining <= 60) {
       setShowTimerWarning(true);
@@ -140,10 +149,7 @@ const MCQAssessment = ({ assessment, programId  }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining, submitted, showResults]);
-
-
-   
+  }, [timeRemaining, submitted, showResultsView]);
 
   const formatTime = (seconds) => {
     if (!seconds) return "0:00";
@@ -160,18 +166,12 @@ const MCQAssessment = ({ assessment, programId  }) => {
   };
 
   const handleAnswerSelect = (questionId, optionLabel) => {
-    if (submitted || showResults) return;
+    if (submitted || showResultsView) return;
     setAnswers((prev) => ({
       ...prev,
       [questionId]: optionLabel,
     }));
-    // Auto advance after selection (optional)
-    // if (currentQuestionIndex < questions.length - 1) {
-    //   setTimeout(() => setCurrentQuestionIndex(prev => prev + 1), 300);
-    // }
   };
-
-
 
   const handleSubmit = async (autoSubmit = false) => {
     const unanswered = questions.filter(q => !answers[q.id]);
@@ -213,7 +213,7 @@ const MCQAssessment = ({ assessment, programId  }) => {
           setCertificate(resultData.certificate);
         }
         
-        setShowResults(true);
+        setShowResultsView(true);
       } else {
         setSubmitted(false);
         alert(response?.meta?.message || 'Failed to submit assessment');
@@ -227,13 +227,19 @@ const MCQAssessment = ({ assessment, programId  }) => {
     }
   };
 
+  const handleReattemptRequest = () => {
+    setShowReattemptModal(true);
+  };
 
-  const handleDownloadCertificate = () => {
-    if (certificate?.certificate_url) {
-      window.open(certificate.certificate_url, '_blank');
-    } else {
-      alert('Certificate download will be available soon.');
+  const handleSubmitReattempt = () => {
+    if (!reattemptReason.trim()) {
+      alert('Please provide a reason for requesting a reattempt.');
+      return;
     }
+    if (onRequestReattempt) {
+      onRequestReattempt();
+    }
+    setShowReattemptModal(false);
   };
 
   const getProgressPercentage = () => {
@@ -260,8 +266,8 @@ const MCQAssessment = ({ assessment, programId  }) => {
   const stats = getStats();
 
   // Results View
-  if (showResults && results) {
-    const passed = results.passed || results.score >= (assessment.passing_score || 60);
+  if (showResultsView && results) {
+    const passed = results.passed || results.score >= (assessment?.passing_score || 60);
     const correctCount = results.correct_answers || 0;
     const wrongCount = results.wrong_answers || 0;
     const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
@@ -269,7 +275,14 @@ const MCQAssessment = ({ assessment, programId  }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FDF8F0] via-white to-[#FDF8F0] py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
-         
+          {/* Back Button */}
+          <Link
+            href={`/programs/${programId}`}
+            className="inline-flex items-center px-4 py-2 mb-6 text-sm text-gray-600 hover:text-[#CC0000] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Program
+          </Link>
 
           {/* Results Card */}
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#D4A574]/10">
@@ -277,9 +290,6 @@ const MCQAssessment = ({ assessment, programId  }) => {
             <div className={`p-8 text-center relative overflow-hidden ${
               passed ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-orange-50'
             }`}>
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/20 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-              
               <div className="relative">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                   <div className={`inline-flex items-center justify-center w-28 h-28 rounded-full ${
@@ -339,42 +349,58 @@ const MCQAssessment = ({ assessment, programId  }) => {
               </div>
             </div>
 
-            {/* Performance Insights */}
-            <div className="p-6 border-b border-[#D4A574]/10 bg-[#FDF8F0]/30">
-              <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-[#CC0000]" />
-                Performance Summary
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#D4A574]/10">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-gray-900">{correctCount}</p>
-                    <p className="text-xs text-gray-500">Correct Answers</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#D4A574]/10">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <XCircle className="w-5 h-5 text-red-500" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-gray-900">{wrongCount}</p>
-                    <p className="text-xs text-gray-500">Wrong Answers</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-[#D4A574]/10">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Target className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-gray-900">{accuracy}%</p>
-                    <p className="text-xs text-gray-500">Accuracy Rate</p>
+            {/* Reattempt Section - Show if failed */}
+            {!passed && !reattemptStatus && (
+              <div className="p-6 border-b border-[#D4A574]/10">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-amber-100 rounded-lg">
+                        <RefreshCw className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-amber-800">Need a Reattempt?</h4>
+                        <p className="text-sm text-amber-700">
+                          You didn't pass this assessment. Request a reattempt with a different assessment.
+                        </p>
+                        <p className="text-xs text-amber-600 mt-1">
+                          An admin will review your request and assign a new assessment.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleReattemptRequest}
+                      className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Request Reattempt
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Reattempt Status */}
+            {reattemptStatus === 'pending' && (
+              <div className="p-6 border-b border-[#D4A574]/10">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Clock className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">Reattempt Request Pending</h4>
+                      <p className="text-sm text-blue-700">
+                        Your reattempt request has been submitted. An admin will review it and assign a new assessment.
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        You will be notified once the request is approved or rejected.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Certificate */}
             {passed && certificate && (
@@ -397,7 +423,13 @@ const MCQAssessment = ({ assessment, programId  }) => {
                     </div>
                   </div>
                   <button
-                    onClick={handleDownloadCertificate}
+                    onClick={() => {
+                      if (certificate.certificate_url) {
+                        window.open(certificate.certificate_url, '_blank');
+                      } else {
+                        alert('Certificate download will be available soon.');
+                      }
+                    }}
                     className="flex items-center gap-2 px-6 py-3 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
                     <Download className="w-4 h-4" />
@@ -407,23 +439,64 @@ const MCQAssessment = ({ assessment, programId  }) => {
               </div>
             )}
 
-            {/* Question Review */}
-            <div className="p-6">
-             
-              <div className="text-center py-4 mt-4">
-
-              
-                <Link
-                  href={`/programs/${programId}`}
-                  className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
-                >
-                   <ArrowLeft size={20} className="mr-2" />
-                  Back to Program
-                </Link>
-              </div>
+            {/* Back Button */}
+            <div className="p-6 text-center">
+              <Link
+                href={`/programs/${programId}`}
+                className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+              >
+                <ArrowLeft size={20} className="mr-2" />
+                Back to Program
+              </Link>
             </div>
           </div>
         </div>
+
+        {/* Reattempt Modal */}
+        {showReattemptModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
+              <div className="text-center mb-4">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <RefreshCw className="w-8 h-8 text-amber-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Request Reattempt</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Please provide a reason for requesting a reattempt. An admin will review your request.
+                </p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Reattempt *
+                </label>
+                <textarea
+                  value={reattemptReason}
+                  onChange={(e) => setReattemptReason(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm"
+                  placeholder="Explain why you need a reattempt..."
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowReattemptModal(false)}
+                  className="flex-1 px-4 py-2.5 border-2 border-[#D4A574]/20 text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitReattempt}
+                  disabled={!reattemptReason.trim()}
+                  className="flex-1 px-4 py-2.5 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  Submit Request
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -455,7 +528,7 @@ const MCQAssessment = ({ assessment, programId  }) => {
               </Link>
               <div>
                 <h1 className="text-sm font-semibold text-gray-900 truncate">
-                  {assessment.title}
+                  {assessment?.title}
                 </h1>
                 <p className="text-xs text-gray-500 flex items-center gap-1">
                   <BookOpen className="w-3 h-3" />
@@ -464,13 +537,11 @@ const MCQAssessment = ({ assessment, programId  }) => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {/* Stats Badge */}
               <div className="hidden md:flex items-center gap-3 px-3 py-1.5 bg-[#FDF8F0] rounded-xl">
                 <span className="text-xs text-gray-500">Progress:</span>
                 <span className="text-sm font-semibold text-[#CC0000]">{getProgressPercentage()}%</span>
               </div>
 
-              {/* Timer */}
               {timeRemaining !== null && (
                 <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border ${
                   getTimeColor()
@@ -480,7 +551,6 @@ const MCQAssessment = ({ assessment, programId  }) => {
                 </div>
               )}
 
-              {/* Question Grid Toggle */}
               <button
                 onClick={() => setShowQuestionGrid(!showQuestionGrid)}
                 className="p-2 hover:bg-[#FDF8F0] rounded-xl transition-colors border border-[#D4A574]/20"
@@ -520,7 +590,6 @@ const MCQAssessment = ({ assessment, programId  }) => {
                   <span className="text-xs text-gray-500">{answeredCount}/{totalQuestions}</span>
                 </div>
                 
-                {/* Stats Summary */}
                 <div className="grid grid-cols-3 gap-2 mb-4">
                   <div className="text-center p-2 bg-green-50 rounded-lg">
                     <Check className="w-4 h-4 text-green-600 mx-auto" />
@@ -619,7 +688,6 @@ const MCQAssessment = ({ assessment, programId  }) => {
                   </button>
                 </div>
 
-                {/* Progress within question */}
                 <div className="mt-3 flex items-center gap-2">
                   <div className="flex-1 h-1 bg-[#D4A574]/20 rounded-full overflow-hidden">
                     <div
@@ -738,7 +806,6 @@ const MCQAssessment = ({ assessment, programId  }) => {
                   </div>
                 </div>
 
-                {/* Unanswered warning */}
                 {stats.unanswered > 0 && currentQuestionIndex === totalQuestions - 1 && (
                   <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3 animate-pulse">
                     <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />

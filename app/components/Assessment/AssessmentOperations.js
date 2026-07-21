@@ -203,8 +203,8 @@ export const useAssessmentOperations = (
       } else {
         // Handle non-200/201 responses
         const errorMessage = response.meta?.message || "Failed to save assessment";
-        console.error('API returned error:', response.meta);
-        toast.error(errorMessage);
+        // console.error('API returned error:', response.meta);
+        // toast.error(errorMessage);
         setAssessmentErrors({ general: errorMessage });
       }
     } catch (error) {
@@ -266,7 +266,8 @@ export const useAssessmentOperations = (
         });
       }
         if (fetchPrograms) await fetchPrograms();
-      } else {
+      }
+       else {
         toast.error(response.meta?.message || "Failed to delete assessment");
       }
     } catch (error) {

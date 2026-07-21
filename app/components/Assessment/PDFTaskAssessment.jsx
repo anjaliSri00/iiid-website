@@ -1,3 +1,5 @@
+// components/Assessment/PDFTaskAssessment.js
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -18,13 +20,20 @@ import {
   Info,
   AlertCircle,
   Eye,
+  RefreshCw,
+  MessageSquare,
 } from 'lucide-react';
 import { useAssessment } from '@/helper/hooks/useAssessment';
 import { useFileUpload } from '@/helper/hooks/useFileUpload';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 
-const PDFTaskAssessment = ({ assessment, programId }) => {
+const PDFTaskAssessment = ({ 
+  assessment, 
+  programId,
+  onRequestReattempt,
+  reattemptStatus,
+}) => {
   const { submitPDFTask } = useAssessment();
   const { data: session } = useSession();
   const { uploadPDF, isUploading, uploadProgress, error: uploadError } = useFileUpload(session);
@@ -41,17 +50,18 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
   const [submitError, setSubmitError] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [attemptData, setAttemptData] = useState(null);
+  const [showReattemptModal, setShowReattemptModal] = useState(false);
+  const [reattemptReason, setReattemptReason] = useState('');
 
-  // Check for existing attempt from assessment prop (no API call needed)
+  // Check for existing attempt from assessment prop
   useEffect(() => {
     if (!assessment?.id || !programId) {
       return;
     }
     
     try {
-      // First check if URL has status param (from navigation)
+      // First check if URL has status param
       if (statusParam === 'pending' && submittedAtParam) {
-        // Use the data from URL params
         const attempt = {
           submitted_at: submittedAtParam,
           review_status: 'pending',
@@ -65,7 +75,6 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
         return;
       }
       
-      // Otherwise get attempt data from assessment prop
       const attempt = assessment?.attempt || null;
       
       if (attempt && Object.keys(attempt).length > 0) {
@@ -201,6 +210,21 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
     }
   };
 
+  const handleReattemptRequest = () => {
+    setShowReattemptModal(true);
+  };
+
+  const handleSubmitReattempt = () => {
+    if (!reattemptReason.trim()) {
+      alert('Please provide a reason for requesting a reattempt.');
+      return;
+    }
+    if (onRequestReattempt) {
+      onRequestReattempt();
+    }
+    setShowReattemptModal(false);
+  };
+
   const isGraded = taskStatus === 'graded';
   const isPending = taskStatus === 'pending';
   const isSubmitted = taskStatus === 'submitted' || isGraded || isPending;
@@ -237,16 +261,13 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
     return null;
   };
 
-  // Render submission status message - NO SPINNERS HERE
+  // Render status message
   const renderStatusMessage = () => {
     if (isPending) {
       return (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
           <div className="flex items-start gap-3">
-            {/* Removed the spinning loader here */}
-            <div className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-yellow-600" />
-            </div>
+            <Clock className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
             <div>
               <h4 className="font-semibold text-yellow-800">Submission Under Review</h4>
               <p className="text-sm text-yellow-700">
@@ -288,7 +309,7 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
                   Score: <span className="font-bold">{taskFeedback.score}%</span>
                 </p>
                 <p className="text-sm">
-                  Passing Score: <span className="font-bold">{assessment.passing_score}%</span>
+                  Passing Score: <span className="font-bold">{assessment?.passing_score || 60}%</span>
                 </p>
                 {taskFeedback.reviewed_at && (
                   <p className="text-xs text-gray-500">
@@ -305,6 +326,54 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
               )}
             </div>
           </div>
+
+          {/* Reattempt Section - Show if failed */}
+          {!taskFeedback.passed && !reattemptStatus && (
+            <div className="mt-4 pt-4 border-t border-red-200">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <RefreshCw className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-amber-800">Request Reattempt</h4>
+                    <p className="text-sm text-amber-700">
+                      You didn't pass this task. Request a reattempt with a different task.
+                    </p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      An admin will review your request and assign a new task.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleReattemptRequest}
+                  className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Request Reattempt
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Reattempt Status */}
+          {reattemptStatus === 'pending' && (
+            <div className="mt-4 pt-4 border-t border-red-200">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-blue-800">Reattempt Request Pending</h4>
+                    <p className="text-sm text-blue-700">
+                      Your reattempt request has been submitted. An admin will review it.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -331,7 +400,14 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
   return (
     <div className="min-h-screen bg-[#FDF8F0] py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-       
+        {/* Back Button */}
+        <Link
+          href={`/programs/${programId}`}
+          className="inline-flex items-center px-4 py-2 mb-6 text-sm text-gray-600 hover:text-[#CC0000] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Program
+        </Link>
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
           {/* Header */}
@@ -342,17 +418,17 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
               </div>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {assessment.title}
+                  {assessment?.title}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">PDF Task Assessment</p>
                 <div className="flex flex-wrap items-center gap-3 mt-2 text-sm">
                   <span className="flex items-center gap-1 text-gray-600">
                     <Clock className="w-4 h-4" />
-                    {assessment.duration_minutes} minutes
+                    {assessment?.duration_minutes} minutes
                   </span>
                   <span className="flex items-center gap-1 text-gray-600">
                     <Award className="w-4 h-4" />
-                    Passing Score: {assessment.passing_score}%
+                    Passing Score: {assessment?.passing_score || 60}%
                   </span>
                   {renderStatusBadge()}
                 </div>
@@ -368,12 +444,12 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
                 Instructions
               </h3>
               <p className="text-sm text-blue-700 whitespace-pre-wrap">
-                {assessment.instructions || "Complete the task using the provided PDF template. Download the template, fill it out, and upload your completed PDF."}
+                {assessment?.instructions || "Complete the task using the provided PDF template. Download the template, fill it out, and upload your completed PDF."}
               </p>
             </div>
 
             {/* PDF Template Download */}
-            {assessment.pdf_template_url && (
+            {assessment?.pdf_template_url && (
               <div className="bg-[#FDF8F0] rounded-lg p-4 border border-[#D4A574]/20 mb-6">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
@@ -532,7 +608,7 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
               </div>
             )}
 
-            {/* View Submitted File (for submitted/pending/graded states) */}
+            {/* View Submitted File */}
             {(isSubmitted || isSuccess) && attemptData?.submitted_file_url && (
               <div className="mt-6 p-4 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
                 <div className="flex items-center justify-between flex-wrap gap-3">
@@ -573,6 +649,52 @@ const PDFTaskAssessment = ({ assessment, programId }) => {
           </div>
         </div>
       </div>
+
+      {/* Reattempt Modal */}
+      {showReattemptModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <RefreshCw className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Request Reattempt</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Provide a reason for requesting a reattempt. An admin will review your request.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Reason for Reattempt *
+              </label>
+              <textarea
+                value={reattemptReason}
+                onChange={(e) => setReattemptReason(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm"
+                placeholder="Explain why you need a reattempt..."
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowReattemptModal(false)}
+                className="flex-1 px-4 py-2.5 border-2 border-[#D4A574]/20 text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReattempt}
+                disabled={!reattemptReason.trim()}
+                className="flex-1 px-4 py-2.5 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

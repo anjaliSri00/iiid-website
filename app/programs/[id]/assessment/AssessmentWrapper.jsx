@@ -1,3 +1,5 @@
+// app/programs/[id]/assessment/page.js (AssessmentWrapper)
+
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
@@ -10,11 +12,15 @@ import {
   AlertCircle,
   BookOpen,
   Loader2,
+  RefreshCw,
+  Clock,
+  CheckCircle,
 } from "lucide-react";
 
 import { useAssessment } from "@/helper/hooks/useAssessment";
 import PDFTaskAssessment from "@/app/components/Assessment/PDFTaskAssessment";
 import MCQAssessment from "@/app/components/Assessment/MCQAssessment";
+import { assessmentApi } from "@/helper/services/assessmentApi";
 
 const AssessmentWrapper = () => {
   const params = useParams();
@@ -45,6 +51,10 @@ const AssessmentWrapper = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [showResultsDirectly, setShowResultsDirectly] = useState(false);
   const [resultsData, setResultsData] = useState(null);
+  const [isRequestingReattempt, setIsRequestingReattempt] = useState(false);
+  const [reattemptStatus, setReattemptStatus] = useState(null);
+  const [showReattemptModal, setShowReattemptModal] = useState(false);
+  const [reattemptReason, setReattemptReason] = useState('');
 
   useEffect(() => {
     setIsClient(true);
@@ -57,7 +67,7 @@ const AssessmentWrapper = () => {
         passed: passedParam === 'true',
         submitted_at: submittedAtParam || '',
         percentage: parseFloat(scoreParam || '0'),
-        total: 4, // You might want to pass this from parent
+        total: 4,
         correct_answers: 0,
         wrong_answers: 0,
       });
@@ -114,9 +124,42 @@ const AssessmentWrapper = () => {
     }
   }, [programId, assessmentId, session, fetchAssessment, isClient, sessionChecked, showResultsDirectly]);
 
+  // Handle reattempt request
+  const handleRequestReattempt = async () => {
+    if (!reattemptReason.trim()) {
+      alert('Please provide a reason for requesting a reattempt.');
+      return;
+    }
+
+    setIsRequestingReattempt(true);
+    try {
+      const response = await assessmentApi.requestReattempt(
+        programId,
+        {
+          course_id: parseInt(programId),
+          old_assessment_id: parseInt(assessmentId || assessment?.id || 0),
+          reason: reattemptReason.trim(),
+        },
+        session
+      );
+
+      if (response?.meta?.status === 200) {
+        setReattemptStatus('pending');
+        setShowReattemptModal(false);
+        alert('Reattempt request submitted successfully! An admin will review your request.');
+      } else {
+        alert(response?.meta?.message || 'Failed to request reattempt');
+      }
+    } catch (error) {
+      console.error('Error requesting reattempt:', error);
+      alert('Failed to request reattempt. Please try again.');
+    } finally {
+      setIsRequestingReattempt(false);
+    }
+  };
+
   // If showing results directly, render MCQ component with results data
   if (showResultsDirectly && resultsData) {
-    // Create a mock assessment object with results
     const mockAssessment = {
       ...assessment,
       id: parseInt(assessmentId || '0'),
@@ -130,14 +173,16 @@ const AssessmentWrapper = () => {
       }
     };
     
-    // We need to pass results data to MCQ component
-    // Pass a prop to show results directly
-    return <MCQAssessment 
-      assessment={mockAssessment} 
-      programId={programId} 
-      showResults={true}
-      resultsData={resultsData}
-    />;
+    return (
+      <MCQAssessment 
+        assessment={mockAssessment} 
+        programId={programId} 
+        showResults={true}
+        resultsData={resultsData}
+        onRequestReattempt={handleRequestReattempt}
+        reattemptStatus={reattemptStatus}
+      />
+    );
   }
 
   // Loading state
@@ -217,10 +262,24 @@ const AssessmentWrapper = () => {
 
   // Render based on assessment type
   if (type === 'pdf_task') {
-    return <PDFTaskAssessment assessment={assessment} programId={programId} />;
+    return (
+      <PDFTaskAssessment 
+        assessment={assessment} 
+        programId={programId}
+        onRequestReattempt={handleRequestReattempt}
+        reattemptStatus={reattemptStatus}
+      />
+    );
   }
 
-  return <MCQAssessment assessment={assessment} programId={programId} />;
+  return (
+    <MCQAssessment 
+      assessment={assessment} 
+      programId={programId}
+      onRequestReattempt={handleRequestReattempt}
+      reattemptStatus={reattemptStatus}
+    />
+  );
 };
 
 export default AssessmentWrapper;

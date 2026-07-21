@@ -284,7 +284,6 @@ export default function DashboardPage() {
     return total > 0 ? Math.round((recent.length / total) * 100) : 0;
   };
 
-  // Add this function near other helper functions (around line 200-300)
 
   // Format currency in Indian Rupees
   const formatCurrency = (amount) => {

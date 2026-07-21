@@ -456,7 +456,7 @@ const CheckoutPage = () => {
 
   const hasDiscount = program.discount > 0;
   const gstAmount = (program.final_price || program.original_price) * 0.18;
-  const totalAmount = (program.final_price || program.original_price) + gstAmount;
+  const totalAmount = (program.final_price || program.original_price);
 
   return (
     <div className="min-h-screen bg-[#FDF8F0] py-8 md:py-12">
@@ -865,12 +865,12 @@ const CheckoutPage = () => {
                       <span>- ₹{0}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
+                  {/* <div className="flex justify-between text-sm">
                     <span className="text-gray-600">GST (18%)</span>
                     <span className="font-medium text-gray-900">
                       ₹{gstAmount.toFixed(2)}
                     </span>
-                  </div>
+                  </div> */}
                   <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-gray-200">
                     <span className="text-gray-900">Total</span>
                     <span className="text-[#CC0000]">₹{totalAmount.toFixed(2)}</span>

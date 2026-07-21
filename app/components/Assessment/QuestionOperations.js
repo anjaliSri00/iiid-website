@@ -116,13 +116,38 @@ export const useQuestionOperations = (session, fetchAssessment, setAssessments, 
         
         // 🔥 FIX: Update assessments state
         if (setAssessments && courseId) {
-          setAssessments(prev => {
-            const currentAssessments = prev[courseId] || [];
+         setAssessments(prev => {
+            // ✅ SAFETY CHECK: Ensure prev is an object
+            if (!prev || typeof prev !== 'object') {
+              return { [courseId]: [] };
+            }
+            
+            // ✅ SAFETY CHECK: Ensure the courseId exists in prev
+            let currentAssessments = prev[courseId];
+            if (!currentAssessments || !Array.isArray(currentAssessments)) {
+              currentAssessments = [];
+            }
+            
+            // Find the assessment
             const assessmentIndex = currentAssessments.findIndex(a => a.id === assessmentId);
             
-            if (assessmentIndex === -1) return prev;
+            // ✅ SAFETY CHECK: If assessment not found, return prev without changes
+            if (assessmentIndex === -1) {
+              // If we're adding a new question to a non-existent assessment, fetch fresh data
+              if (!editingQuestion) {
+                // Fetch fresh data instead of trying to update
+                setTimeout(() => {
+                  if (fetchAssessment) {
+                    fetchAssessment(courseId);
+                  }
+                }, 500);
+              }
+              return prev;
+            }
+             const updatedAssessment = currentAssessments[assessmentIndex] 
+              ? { ...currentAssessments[assessmentIndex] } 
+              : { id: assessmentId, questions: [] };
             
-            const updatedAssessment = { ...currentAssessments[assessmentIndex] };
             const currentQuestions = updatedAssessment.questions || [];
             
             if (editingQuestion) {
@@ -146,15 +171,22 @@ export const useQuestionOperations = (session, fetchAssessment, setAssessments, 
         // 🔥 FIX: Also update editingProgram if available
         if (typeof setEditingProgram === 'function') {
           setEditingProgram(prev => {
-            if (!prev) return prev;
+            if (!prev || typeof prev !== 'object') return prev;
             
-            const currentAssessments = prev.assessment || [];
+              let currentAssessments = prev.assessment || [];
+            if (!Array.isArray(currentAssessments)) {
+              currentAssessments = [];
+            }
             const assessmentIndex = currentAssessments.findIndex(a => a.id === assessmentId);
-            
+ 
             if (assessmentIndex === -1) return prev;
             
-            const updatedAssessment = { ...currentAssessments[assessmentIndex] };
+            const updatedAssessment = currentAssessments[assessmentIndex] 
+              ? { ...currentAssessments[assessmentIndex] } 
+              : { id: assessmentId, questions: [] };
+            
             const currentQuestions = updatedAssessment.questions || [];
+            
             
             if (editingQuestion) {
               updatedAssessment.questions = currentQuestions.map(q => 
@@ -212,24 +244,33 @@ export const useQuestionOperations = (session, fetchAssessment, setAssessments, 
             });
             
             if (freshResponse.meta?.status === 200 && freshResponse.data) {
-              const courseData = freshResponse.data;
-                freshAssessmentData = freshResponse.data.assessment || [];
+               const courseData = freshResponse.data;
+              const assessmentData = courseData.assessment || [];
               
-              // Update assessments state with fresh data
-              if (setAssessments) {
-                setAssessments(prev => ({
-                  ...prev,
-                  [courseId]: courseData.assessment || []
-                }));
+              // ✅ SAFETY CHECK: Ensure assessmentData is an array
+              const freshAssessmentData = Array.isArray(assessmentData) ? assessmentData : [];
+              
+              
+             if (setAssessments) {
+                setAssessments(prev => {
+                  // ✅ SAFETY CHECK: Ensure prev is an object
+                  if (!prev || typeof prev !== 'object') {
+                    return { [courseId]: freshAssessmentData };
+                  }
+                  return {
+                    ...prev,
+                    [courseId]: freshAssessmentData
+                  };
+                });
               }
               
               // 🔥 Update editingProgram with fresh data
               if (typeof setEditingProgram === 'function') {
                 setEditingProgram(prev => {
-                  if (!prev) return prev;
+                  if (!prev || typeof prev !== 'object') return prev;
                   return {
                     ...prev,
-                    assessment: courseData.assessment || []
+                    assessment: freshAssessmentData
                   };
                 });
               }
