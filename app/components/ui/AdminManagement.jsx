@@ -169,6 +169,10 @@ const AdminManagement = () => {
     totalPages: 0,
   });
 
+  let coursesCache = null;
+  let assessmentsCache = {};
+  let lastFetchTime = {};
+
   // Fetch users
   const fetchUsers = async (page = userPagination.page) => {
     setLoading(true);
@@ -262,11 +266,11 @@ const AdminManagement = () => {
     }
   };
 
-  // Fetch assessments - Updated to handle cases where assessments might not exist
-  const fetchAssessments = async (page = assessmentPagination.page) => {
-    setLoading(true);
+  const getCachedCourses = async (session) => {
+    if (coursesCache) return coursesCache;
+
     try {
-      const coursesResult = await fetchApiResponse(
+      const response = await fetchApiResponse(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`,
         {
           method: "GET",
@@ -277,134 +281,141 @@ const AdminManagement = () => {
         },
       );
 
-      if (coursesResult.meta?.status === 200 && coursesResult.data) {
-        const courses = Array.isArray(coursesResult.data)
-          ? coursesResult.data
-          : [];
+      if (response.meta?.status === 200 && response.data) {
+        coursesCache = Array.isArray(response.data) ? response.data : [];
+        return coursesCache;
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+    return [];
+  };
 
-        let allAssessments = [];
+  const getCachedAssessments = async (courseId, session) => {
+    if (assessmentsCache[courseId]) return assessmentsCache[courseId];
 
-        for (const course of courses) {
-          // Apply course filter if set
-          if (
-            assessmentFilters.course_id &&
-            course.id !== parseInt(assessmentFilters.course_id)
-          ) {
-            continue;
-          }
+    try {
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${courseId}`,
+        {
+          method: "GET",
+          headers: {
+            "Access-Token": session?.accessToken,
+            "Refresh-Token": session?.refreshToken,
+          },
+        },
+      );
 
-          try {
-            // First check if the course has a default assessment
-            const courseDetailsResponse = await fetchApiResponse(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${course.id}`,
-              {
-                method: "GET",
-                headers: {
-                  "Access-Token": session?.accessToken,
-                  "Refresh-Token": session?.refreshToken,
-                },
-              },
-            );
+      if (response.meta?.status === 200 && response.data) {
+        let assessmentData = response.data.assessment || [];
+        if (!Array.isArray(assessmentData)) {
+          assessmentData = assessmentData ? [assessmentData] : [];
+        }
+        assessmentsCache[courseId] = assessmentData;
+        return assessmentData;
+      }
+    } catch (error) {
+      console.error(
+        `Error fetching assessments for course ${courseId}:`,
+        error,
+      );
+    }
+    return [];
+  };
 
-            if (
-              courseDetailsResponse.meta?.status === 200 &&
-              courseDetailsResponse.data
-            ) {
-              const courseData = courseDetailsResponse.data;
+  // Clear caches when needed (you can call this on logout or when data changes)
+  const clearCaches = () => {
+    coursesCache = null;
+    assessmentsCache = {};
+    lastFetchTime = {};
+  };
 
-              // Check if there are assessments in the course data
-              let assessmentData = courseData.assessment || [];
+  // Fetch assessments - Updated to handle cases where assessments might not exist
 
-              // If assessment is an object (single assessment), convert to array
-              if (!Array.isArray(assessmentData)) {
-                assessmentData = assessmentData ? [assessmentData] : [];
-              }
+  const fetchAssessments = async (page = assessmentPagination.page) => {
+    setLoading(true);
+    try {
+      const courses = await getCachedCourses(session);
+      let allAssessments = [];
 
-              // If there are assessments, add them to the list
-              if (assessmentData.length > 0) {
-                assessmentData.forEach((assessment) => {
-                  // Check if assessment has an id (valid assessment)
-                  if (assessment && assessment.id) {
-                    allAssessments.push({
-                      ...assessment,
-                      course_id: course.id,
-                      course_title: course.title,
-                      course_code: course.course_code,
-                      // Check if this is the default assessment
-                      is_default:
-                        assessment.is_default ||
-                        course.default_assessment_id === assessment.id ||
-                        course.default_mcq_id === assessment.id ||
-                        course.default_pdf_id === assessment.id,
-                    });
-                  }
-                });
-              } else {
-                // If no assessment found, we can still show a placeholder or skip
-                console.log(
-                  `No assessments found for course: ${course.id} - ${course.title}`,
-                );
-              }
+      // Filter courses if course_id is provided
+      const filteredCourses = assessmentFilters.course_id
+        ? courses.filter((c) => c.id === parseInt(assessmentFilters.course_id))
+        : courses;
+
+      for (const course of filteredCourses) {
+        const assessmentData = await getCachedAssessments(course.id, session);
+
+        if (assessmentData.length > 0) {
+          assessmentData.forEach((assessment) => {
+            if (assessment && assessment.id) {
+              allAssessments.push({
+                ...assessment,
+                course_id: course.id,
+                course_title: course.title,
+                course_code: course.course_code,
+                is_default:
+                  assessment.is_default ||
+                  course.default_assessment_id === assessment.id ||
+                  course.default_mcq_id === assessment.id ||
+                  course.default_pdf_id === assessment.id,
+              });
             }
-          } catch (error) {
-            console.error(
-              `Error fetching assessment for course ${course.id}:`,
-              error,
-            );
-          }
+          });
         }
+      }
 
-        // Apply filters
-        let filtered = allAssessments;
+      // Apply filters
+      let filtered = allAssessments;
 
-        if (assessmentFilters.search) {
-          const search = assessmentFilters.search.toLowerCase();
-          filtered = filtered.filter(
-            (a) =>
-              a.title?.toLowerCase().includes(search) ||
-              a.course_title?.toLowerCase().includes(search) ||
-              a.description?.toLowerCase().includes(search),
-          );
-        }
+      if (assessmentFilters.search) {
+        const search = assessmentFilters.search.toLowerCase();
+        filtered = filtered.filter(
+          (a) =>
+            a.title?.toLowerCase().includes(search) ||
+            a.course_title?.toLowerCase().includes(search) ||
+            a.description?.toLowerCase().includes(search),
+        );
+      }
 
-        if (assessmentFilters.type) {
-          filtered = filtered.filter((a) => a.type === assessmentFilters.type);
-        }
+      if (assessmentFilters.type) {
+        filtered = filtered.filter((a) => a.type === assessmentFilters.type);
+      }
 
-        if (assessmentFilters.status) {
-          filtered = filtered.filter(
-            (a) => a.status === assessmentFilters.status,
-          );
-        }
+      if (assessmentFilters.status) {
+        filtered = filtered.filter(
+          (a) => a.status === assessmentFilters.status,
+        );
+      }
 
-        // Calculate pagination
-        const total = filtered.length;
-        const totalPages = Math.ceil(total / assessmentPagination.limit);
-        const start = (page - 1) * assessmentPagination.limit;
-        const end = start + assessmentPagination.limit;
-        const paginatedData = filtered.slice(start, end);
+      // Calculate pagination
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / assessmentPagination.limit);
+      const start = (page - 1) * assessmentPagination.limit;
+      const end = start + assessmentPagination.limit;
+      const paginatedData = filtered.slice(start, end);
 
-        setAssessments(paginatedData);
-        setAssessmentPagination({
-          ...assessmentPagination,
-          page,
-          total,
-          totalPages,
-        });
+      setAssessments(paginatedData);
+      setAssessmentPagination({
+        ...assessmentPagination,
+        page,
+        total,
+        totalPages,
+      });
 
-        // If no assessments found, show appropriate message
-        if (
-          total === 0 &&
-          !assessmentFilters.search &&
-          !assessmentFilters.type &&
-          !assessmentFilters.status &&
-          !assessmentFilters.course_id
-        ) {
-          toast.info(
-            "No assessments found. Create an assessment for a course to see it here.",
-            { autoClose: 5000 },
-          );
-        }
+      if (
+        total === 0 &&
+        !assessmentFilters.search &&
+        !assessmentFilters.type &&
+        !assessmentFilters.status &&
+        !assessmentFilters.course_id
+      ) {
+        toast.info(
+          "No assessments found. Create an assessment for a course to see it here.",
+          {
+            autoClose: 5000,
+          },
+        );
       }
     } catch (error) {
       console.error("Error fetching assessments:", error);
@@ -420,231 +431,235 @@ const AdminManagement = () => {
     }
   };
 
-
-
-  // Fetch attempts - Get attempts from all courses with proper error handling
+  // Optimized fetchAttempts - Single API call with caching
   const fetchAttempts = async (page = attemptPagination.page) => {
     setLoading(true);
     try {
-      // First, get all courses
-      const coursesResult = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`,
-        {
-          method: "GET",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
-        }
-      );
+      // If assessment_id is provided, find the course and make a single API call
+      if (attemptFilters.assessment_id) {
+        // Get courses from cache
+        const courses = await getCachedCourses(session);
+        let targetCourseId = null;
 
-      if (coursesResult.meta?.status === 200 && coursesResult.data) {
-        const courses = Array.isArray(coursesResult.data) 
-          ? coursesResult.data 
-          : [];
-        
-        let allAttempts = [];
-        let errorCount = 0;
-        let skippedNoAssessments = 0;
-        
-        // Fetch attempts for each course
+        // Find which course has this assessment
         for (const course of courses) {
-          // Apply course filter if set
-          if (attemptFilters.course_id && course.id !== parseInt(attemptFilters.course_id)) {
-            continue;
+          const assessments = await getCachedAssessments(course.id, session);
+          const found = assessments.some(
+            (a) => a.id === parseInt(attemptFilters.assessment_id),
+          );
+          if (found) {
+            targetCourseId = course.id;
+            break;
           }
-          
+        }
+
+        if (targetCourseId) {
+          // Build params without assessment_id and course_id
+          const params = {
+            page: page,
+            limit: attemptPagination.limit,
+          };
+
+          // Add other filters (except assessment_id and course_id)
+          if (
+            attemptFilters.passed !== "" &&
+            attemptFilters.passed !== undefined
+          ) {
+            params.passed = attemptFilters.passed;
+          }
+          if (attemptFilters.review_status) {
+            params.review_status = attemptFilters.review_status;
+          }
+          if (attemptFilters.search) {
+            params.search = attemptFilters.search;
+          }
+
+          // Make single API call with assessment_id in query
+          const response = await assessmentApi.listAllAttempts(
+            targetCourseId,
+            { ...params, assessment_id: attemptFilters.assessment_id },
+            session,
+          );
+
+          if (response?.meta?.status === 200) {
+            let data =
+              response.data?.attempts ||
+              response.data?.data ||
+              response.data ||
+              [];
+            if (!Array.isArray(data)) {
+              data = [];
+            }
+
+            // Data already has course and assessment info from API
+            setAttempts(data);
+            const pagination = response.data?.pagination || {
+              page: page,
+              limit: attemptPagination.limit,
+              total: data.length,
+              totalPages: Math.ceil(data.length / attemptPagination.limit),
+            };
+            setAttemptPagination({
+              ...attemptPagination,
+              page: pagination.page || page,
+              total: pagination.total || data.length,
+              totalPages:
+                pagination.totalPages ||
+                Math.ceil(
+                  (pagination.total || data.length) / attemptPagination.limit,
+                ),
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // If no assessment_id or course not found, use the optimized multi-course approach
+      // This is the fallback when no assessment_id is provided
+      const courses = await getCachedCourses(session);
+      let allAttempts = [];
+      let errorCount = 0;
+      let skippedNoAssessments = 0;
+
+      // Filter courses if course_id is provided
+      const filteredCourses = attemptFilters.course_id
+        ? courses.filter((c) => c.id === parseInt(attemptFilters.course_id))
+        : courses;
+
+      // Process each course
+      for (const course of filteredCourses) {
+        const assessments = await getCachedAssessments(course.id, session);
+
+        if (assessments.length === 0) {
+          skippedNoAssessments++;
+          continue;
+        }
+
+        // Prepare params (without filters that will be applied client-side)
+        const params = {
+          page: 1,
+          limit: 100, // Get all attempts per course
+        };
+
+        // Fetch attempts for each assessment
+        for (const assessment of assessments) {
           try {
-            // First, get course details to check if it has assessments
-            const courseDetailsResponse = await fetchApiResponse(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${course.id}`,
-              {
-                method: "GET",
-                headers: {
-                  "Access-Token": session?.accessToken,
-                  "Refresh-Token": session?.refreshToken,
-                },
-              }
+            const response = await assessmentApi.listAllAttempts(
+              course.id,
+              { ...params, assessment_id: assessment.id },
+              session,
             );
-            
-            if (courseDetailsResponse.meta?.status === 200 && courseDetailsResponse.data) {
-              const courseData = courseDetailsResponse.data;
-              
-              // Check if course has assessments
-              let assessmentData = courseData.assessment || [];
-              if (!Array.isArray(assessmentData)) {
-                assessmentData = assessmentData ? [assessmentData] : [];
+
+            if (response?.meta?.status === 200) {
+              let data =
+                response.data?.attempts ||
+                response.data?.data ||
+                response.data ||
+                [];
+              if (!Array.isArray(data)) {
+                data = [];
               }
-              
-              // If no assessments, skip this course
-              if (assessmentData.length === 0) {
-                skippedNoAssessments++;
-                continue;
-              }
-              
-              // Prepare params for attempts API
-              const params = {
-                ...attemptFilters,
-                page: 1,
-                limit: 100, // Get all attempts per course
-              };
-              
-              // Remove empty values
-              Object.keys(params).forEach((key) => {
-                if (
-                  params[key] === "" ||
-                  params[key] === null ||
-                  params[key] === undefined
-                ) {
-                  delete params[key];
-                }
+
+              data.forEach((attempt) => {
+                allAttempts.push({
+                  ...attempt,
+                  // API already returns these, but just in case
+                  course_id: course.id,
+                  course_title: course.title,
+                  course_code: course.course_code,
+                });
               });
-              
-              // Remove course_id from params
-              delete params.course_id;
-              
-              // If assessment_id is provided in filters, use it
-              // Otherwise, fetch for all assessments in this course
-              if (attemptFilters.assessment_id) {
-                // Try to fetch attempts for specific assessment
-                params.assessment_id = attemptFilters.assessment_id;
-                const response = await assessmentApi.listAllAttempts(
-                  course.id,
-                  params,
-                  session
-                );
-                
-                if (response?.meta?.status === 200) {
-                  let data = response.data?.data || response.data || [];
-                  if (!Array.isArray(data)) {
-                    data = [];
-                  }
-                  
-                  data.forEach(attempt => {
-                    allAttempts.push({
-                      ...attempt,
-                      course_id: course.id,
-                      course_title: course.title,
-                      course_code: course.course_code,
-                    });
-                  });
-                } else if (response?.meta?.status !== 404) {
-                  // Only log non-404 errors
-                  console.warn(`Error fetching attempts for course ${course.id}:`, response?.meta?.status);
-                  errorCount++;
-                }
-              } else {
-                // Fetch attempts for each assessment in the course
-                for (const assessment of assessmentData) {
-                  try {
-                    const assessmentParams = {
-                      ...params,
-                      assessment_id: assessment.id,
-                    };
-                    delete assessmentParams.assessment_id; // We'll set it explicitly
-                    
-                    const response = await assessmentApi.listAllAttempts(
-                      course.id,
-                      { ...assessmentParams, assessment_id: assessment.id },
-                      session
-                    );
-                    
-                    if (response?.meta?.status === 200) {
-                      let data = response.data?.data || response.data || [];
-                      if (!Array.isArray(data)) {
-                        data = [];
-                      }
-                      
-                      data.forEach(attempt => {
-                        allAttempts.push({
-                          ...attempt,
-                          course_id: course.id,
-                          course_title: course.title,
-                          course_code: course.course_code,
-                          assessment_id: assessment.id,
-                          assessment_title: assessment.title,
-                        });
-                      });
-                    } else if (response?.meta?.status !== 404) {
-                      console.warn(`Error fetching attempts for assessment ${assessment.id}:`, response?.meta?.status);
-                    }
-                  } catch (assessError) {
-                    console.error(`Error fetching attempts for assessment ${assessment.id}:`, assessError);
-                  }
-                }
-              }
+            } else if (response?.meta?.status !== 404) {
+              errorCount++;
             }
           } catch (error) {
-            console.error(`Error processing course ${course.id}:`, error);
+            console.error(
+              `Error fetching attempts for assessment ${assessment.id}:`,
+              error,
+            );
             errorCount++;
           }
         }
-        
-        // Apply search filter if present
-        if (attemptFilters.search) {
-          const search = attemptFilters.search.toLowerCase();
-          allAttempts = allAttempts.filter(a => 
+      }
+
+      // Apply filters client-side
+      if (attemptFilters.search) {
+        const search = attemptFilters.search.toLowerCase();
+        allAttempts = allAttempts.filter(
+          (a) =>
             a.user_name?.toLowerCase().includes(search) ||
             a.assessment_title?.toLowerCase().includes(search) ||
             a.course_title?.toLowerCase().includes(search) ||
-            a.user_email?.toLowerCase().includes(search)
-          );
-        }
-        
-        // Apply passed filter if present
-        if (attemptFilters.passed !== "" && attemptFilters.passed !== undefined) {
-          const passed = attemptFilters.passed === 'true';
-          allAttempts = allAttempts.filter(a => a.passed === passed);
-        }
-        
-        // Apply review_status filter if present
-        if (attemptFilters.review_status) {
-          allAttempts = allAttempts.filter(a => a.review_status === attemptFilters.review_status);
-        }
-        
-        // Sort by submitted_at (most recent first)
-        allAttempts.sort((a, b) => {
-          const dateA = new Date(a.submitted_at || a.created_at || 0);
-          const dateB = new Date(b.submitted_at || b.created_at || 0);
-          return dateB - dateA;
-        });
-        
-        // Paginate
-        const total = allAttempts.length;
-        const totalPages = Math.ceil(total / attemptPagination.limit);
-        const start = (page - 1) * attemptPagination.limit;
-        const end = start + attemptPagination.limit;
-        const paginatedData = allAttempts.slice(start, end);
-        
-        setAttempts(paginatedData);
-        setAttemptPagination({
-          ...attemptPagination,
-          page,
-          total,
-          totalPages,
-        });
-        
-        // Show warnings
-        if (skippedNoAssessments > 0) {
-          toast.info(`${skippedNoAssessments} course(s) have no assessments yet.`, {
-            autoClose: 3000
-          });
-        }
-        
-        if (errorCount > 0) {
-          toast.warning(`Some courses (${errorCount}) could not be loaded. Please try again later.`, {
-            autoClose: 5000
-          });
-        }
-        
-        if (total === 0 && !attemptFilters.search && !attemptFilters.passed && !attemptFilters.review_status) {
-          toast.info("No attempts found. Students need to submit assessments to see data here.", {
-            autoClose: 4000
-          });
-        }
-      } else {
-        toast.error("Failed to fetch courses");
-        setAttempts([]);
+            a.user_email?.toLowerCase().includes(search),
+        );
+      }
+
+      if (attemptFilters.passed !== "" && attemptFilters.passed !== undefined) {
+        const passed = attemptFilters.passed === "true";
+        allAttempts = allAttempts.filter((a) => a.passed === passed);
+      }
+
+      if (attemptFilters.review_status) {
+        allAttempts = allAttempts.filter(
+          (a) => a.review_status === attemptFilters.review_status,
+        );
+      }
+
+      // Sort by submitted_at (most recent first)
+      allAttempts.sort((a, b) => {
+        const dateA = new Date(a.submitted_at || a.created_at || 0);
+        const dateB = new Date(b.submitted_at || b.created_at || 0);
+        return dateB - dateA;
+      });
+
+      // Paginate
+      const total = allAttempts.length;
+      const totalPages = Math.ceil(total / attemptPagination.limit);
+      const start = (page - 1) * attemptPagination.limit;
+      const end = start + attemptPagination.limit;
+      const paginatedData = allAttempts.slice(start, end);
+
+      setAttempts(paginatedData);
+      setAttemptPagination({
+        ...attemptPagination,
+        page,
+        total,
+        totalPages,
+      });
+
+      // Show relevant messages
+      if (skippedNoAssessments > 0 && !attemptFilters.assessment_id) {
+        toast.info(
+          `${skippedNoAssessments} course(s) have no assessments yet.`,
+          {
+            autoClose: 3000,
+          },
+        );
+      }
+
+      if (errorCount > 0) {
+        toast.warning(
+          `Some data (${errorCount} assessments) could not be loaded.`,
+          {
+            autoClose: 5000,
+          },
+        );
+      }
+
+      if (
+        total === 0 &&
+        !attemptFilters.search &&
+        !attemptFilters.passed &&
+        !attemptFilters.review_status &&
+        !attemptFilters.assessment_id
+      ) {
+        toast.info(
+          "No attempts found. Students need to submit assessments to see data here.",
+          {
+            autoClose: 4000,
+          },
+        );
       }
     } catch (error) {
       console.error("Error fetching attempts:", error);
@@ -655,123 +670,126 @@ const AdminManagement = () => {
     }
   };
 
-
-  // Fetch reattempt requests - Get from all courses with proper assessment ID handling
+  // Update fetchReattemptRequests with debounce protection
   const fetchReattemptRequests = async (page = reattemptPagination.page) => {
     setLoading(true);
-    try {
-      const coursesResult = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/list`,
-        {
-          method: "GET",
-          headers: {
-            "Access-Token": session?.accessToken,
-            "Refresh-Token": session?.refreshToken,
-          },
-        }
-      );
 
-      if (coursesResult.meta?.status === 200 && coursesResult.data) {
-        const courses = Array.isArray(coursesResult.data) 
-          ? coursesResult.data 
-          : [];
-        
-        let allReattempts = [];
-        let errorCount = 0;
-        
-        for (const course of courses) {
-          if (reattemptFilters.course_id && course.id !== parseInt(reattemptFilters.course_id)) {
-            continue;
+    try {
+      // Get cached courses
+      await fetchAssessments(1);
+
+      const courses = await getCachedCourses(session);
+      const allReattemptsMap = new Map(); // Use Map to deduplicate by ID
+      let errorCount = 0;
+
+      // Filter courses if course_id is provided
+      const filteredCourses = reattemptFilters.course_id
+        ? courses.filter((c) => c.id === parseInt(reattemptFilters.course_id))
+        : courses;
+
+      //  const courseAssessmentsMap = new Map();
+
+      for (const course of filteredCourses) {
+        try {
+          const params = {
+            page: 1,
+            limit: 100,
+          };
+
+          if (reattemptFilters.status) {
+            params.status = reattemptFilters.status;
           }
-          
-          try {
-            const params = {
-              ...reattemptFilters,
-              page: 1,
-              limit: 100,
-            };
-            
-            Object.keys(params).forEach((key) => {
-              if (params[key] === "" || params[key] === null || params[key] === undefined) {
-                delete params[key];
-              }
-            });
-            
-            delete params.course_id;
-            
-            const response = await assessmentApi.listReattemptRequests(
-              course.id,
-              params,
-              session
-            );
-            
-            if (response?.meta?.status === 200) {
-              let data = response.data?.data || response.data || [];
-              if (!Array.isArray(data)) {
-                data = [];
-              }
-              
-              data.forEach(request => {
-                allReattempts.push({
+          if (reattemptFilters.user_id) {
+            params.user_id = reattemptFilters.user_id;
+          }
+
+          const response = await assessmentApi.listReattemptRequests(
+            course.id,
+            params,
+            session,
+          );
+
+          if (response?.meta?.status === 200) {
+            let data = response.data?.data || response.data || [];
+            if (!Array.isArray(data)) {
+              data = [];
+            }
+
+            data.forEach((request) => {
+              if (!allReattemptsMap.has(request.id)) {
+                allReattemptsMap.set(request.id, {
                   ...request,
                   course_id: course.id,
                   course_title: course.title,
                   course_code: course.course_code,
                 });
-              });
-            } else if (response?.meta?.status !== 404) {
-              console.warn(`Error fetching reattempts for course ${course.id}:`, response?.meta?.status);
-              errorCount++;
-            }
-          } catch (error) {
-            console.error(`Error fetching reattempts for course ${course.id}:`, error);
+              }
+            });
+          } else if (response?.meta?.status !== 404) {
             errorCount++;
           }
-        }
-        
-        // Apply status filter
-        if (reattemptFilters.status) {
-          allReattempts = allReattempts.filter(r => r.status === reattemptFilters.status);
-        }
-        
-        // Apply user filter
-        if (reattemptFilters.user_id) {
-          allReattempts = allReattempts.filter(r => 
-            r.user_id === parseInt(reattemptFilters.user_id) ||
-            r.user_id?.toString() === reattemptFilters.user_id
+        } catch (error) {
+          console.error(
+            `Error fetching reattempts for course ${course.id}:`,
+            error,
           );
+          errorCount++;
         }
-        
-        // Sort by created_at
-        allReattempts.sort((a, b) => {
-          const dateA = new Date(a.created_at || 0);
-          const dateB = new Date(b.created_at || 0);
-          return dateB - dateA;
-        });
-        
-        const total = allReattempts.length;
-        const totalPages = Math.ceil(total / reattemptPagination.limit);
-        const start = (page - 1) * reattemptPagination.limit;
-        const end = start + reattemptPagination.limit;
-        const paginatedData = allReattempts.slice(start, end);
-        
-        setReattemptRequests(paginatedData);
-        setReattemptPagination({
-          ...reattemptPagination,
-          page,
-          total,
-          totalPages,
-        });
-        
-        if (errorCount > 0) {
-          toast.warning(`Some courses (${errorCount}) could not be loaded.`, {
-            autoClose: 5000
-          });
-        }
-      } else {
-        toast.error("Failed to fetch courses");
-        setReattemptRequests([]);
       }
+
+      // Convert Map to array
+      let allReattempts = Array.from(allReattemptsMap.values());
+
+      // Apply additional filters client-side (if needed)
+      if (reattemptFilters.status) {
+        allReattempts = allReattempts.filter(
+          (r) => r.status === reattemptFilters.status,
+        );
+      }
+
+      if (reattemptFilters.user_id) {
+        allReattempts = allReattempts.filter(
+          (r) =>
+            r.user_id === parseInt(reattemptFilters.user_id) ||
+            r.user_id?.toString() === reattemptFilters.user_id,
+        );
+      }
+
+      // Sort by requested_at (most recent first)
+      allReattempts.sort((a, b) => {
+        const dateA = new Date(a.requested_at || a.created_at || 0);
+        const dateB = new Date(b.requested_at || b.created_at || 0);
+        return dateB - dateA;
+      });
+
+      // Paginate
+      const total = allReattempts.length;
+      const totalPages = Math.ceil(total / reattemptPagination.limit);
+      const start = (page - 1) * reattemptPagination.limit;
+      const end = start + reattemptPagination.limit;
+      const paginatedData = allReattempts.slice(start, end);
+
+      setReattemptRequests(paginatedData);
+      setReattemptPagination({
+        ...reattemptPagination,
+        page,
+        total,
+        totalPages,
+      });
+
+      // window.__courseAssessments = courseAssessmentsMap;
+
+      // if (errorCount > 0) {
+      //   toast.warning(`Some courses (${errorCount}) could not be loaded.`, {
+      //     autoClose: 5000
+      //   });
+      // }
+
+      // if (total === 0 && !reattemptFilters.status && !reattemptFilters.user_id) {
+      //   toast.info("No reattempt requests found.", {
+      //     autoClose: 3000
+      //   });
+      // }
     } catch (error) {
       console.error("Error fetching reattempt requests:", error);
       toast.error("Failed to fetch reattempt requests");
@@ -781,40 +799,46 @@ const AdminManagement = () => {
     }
   };
 
-
- // In AdminManagement.js - Update this function
-
-const handleApproveReattempt = async (requestId, newAssessmentId) => {
-  if (!newAssessmentId) {
-    toast.error("Please select an assessment to assign");
-    return;
-  }
-  
-  if (!confirm("Are you sure you want to approve this reattempt request?")) return;
-  
-  setLoading(true);
-  try {
-    const response = await assessmentApi.approveReattempt(
-      null,
-      requestId,
-      { new_assessment_id: parseInt(newAssessmentId) },
-      session
-    );
-    
-    if (response?.meta?.status === 200) {
-      toast.success("Reattempt approved successfully! New assessment assigned.");
-      fetchReattemptRequests(reattemptPagination.page);
-      fetchAttempts(attemptPagination.page);
-    } else {
-      toast.error(response?.meta?.message || "Failed to approve reattempt");
+  // In AdminManagement.js - Update this function
+  const handleApproveReattempt = async (requestId, newAssessmentId) => {
+    if (!newAssessmentId) {
+      toast.error("Please select an assessment to assign");
+      return;
     }
-  } catch (error) {
-    console.error("Error approving reattempt:", error);
-    toast.error("Failed to approve reattempt");
-  } finally {
-    setLoading(false);
-  }
-};
+
+    if (!confirm("Are you sure you want to approve this reattempt request?"))
+      return;
+
+    setLoading(true);
+    try {
+      const request = reattemptRequests.find((r) => r.id === requestId);
+      if (!request) {
+        toast.error("Request not found");
+        setLoading(false);
+        return;
+      }
+      const response = await assessmentApi.approveReattempt(
+        request.course_id,
+        requestId,
+        { new_assessment_id: parseInt(newAssessmentId) },
+        session,
+      );
+
+      if (response?.meta?.status === 200) {
+        toast.success(
+          "Reattempt approved successfully! New assessment assigned.",
+        );
+        clearCaches();
+        fetchReattemptRequests(reattemptPagination.page);
+        fetchAttempts(attemptPagination.page);
+      }
+    } catch (error) {
+      console.error("Error approving reattempt:", error);
+      toast.error("Failed to approve reattempt");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle reject reattempt
   const handleRejectReattempt = async (requestId) => {
@@ -843,32 +867,43 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
     }
   };
 
-  // Handle review PDF task
-  const handleReviewPdfTask = async (attemptId, reviewData) => {
+  // Handle review for both PDF tasks and MCQ
+  const handleReviewAttempt = async (attemptId, reviewData) => {
     setLoading(true);
     try {
+      // Find the attempt to get its course_id and type
+      const attempt = attempts.find(
+        (a) => (a.id || a.attempt_id) === attemptId,
+      );
+      if (!attempt) {
+        toast.error("Attempt not found");
+        setLoading(false);
+        return;
+      }
+
       const response = await assessmentApi.reviewPdfTask(
-        null,
+        attempt.course_id,
         attemptId,
         reviewData,
         session,
       );
 
       if (response?.meta?.status === 200) {
-        toast.success("PDF task reviewed successfully!");
+        toast.success(
+          `${attempt.assessment_type === "pdf_task" ? "PDF task" : "MCQ"} reviewed successfully!`,
+        );
         fetchAttempts(attemptPagination.page);
         setShowAttemptDetail(false);
       } else {
-        toast.error(response?.meta?.message || "Failed to review PDF task");
+        toast.error(response?.meta?.message || "Failed to review attempt");
       }
     } catch (error) {
-      console.error("Error reviewing PDF task:", error);
-      toast.error("Failed to review PDF task");
+      console.error("Error reviewing attempt:", error);
+      toast.error("Failed to review attempt");
     } finally {
       setLoading(false);
     }
   };
-
   // Handle set default assessment
   const handleSetDefaultAssessment = async (courseId, assessmentId) => {
     if (
@@ -970,6 +1005,7 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
 
       if (response?.meta?.status === 200) {
         toast.success("Assessment published successfully!");
+        assessmentsCache = {};
         fetchAssessments(assessmentPagination.page);
       } else {
         toast.error(response?.meta?.message || "Failed to publish assessment");
@@ -1020,7 +1056,10 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
     } else if (activeTab === "attempts") {
       fetchAttempts(1);
     } else if (activeTab === "reattempts") {
-      fetchReattemptRequests(1);
+      fetchAssessments(1);
+      setTimeout(() => {
+        fetchReattemptRequests(1);
+      }, 300);
     }
   }, [activeTab]);
 
@@ -1440,7 +1479,10 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
       {/* Tab Navigation */}
       <div className="flex flex-wrap items-center gap-3">
         <button
-          onClick={() => setActiveTab("users")}
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab("users");
+          }}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
             activeTab === "users"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
@@ -1465,7 +1507,10 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
         </button>
 
         <button
-          onClick={() => setActiveTab("enrollments")}
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab("enrollments");
+          }}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
             activeTab === "enrollments"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
@@ -1490,7 +1535,10 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
         </button>
 
         <button
-          onClick={() => setActiveTab("contacts")}
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab("contacts");
+          }}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
             activeTab === "contacts"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
@@ -1520,7 +1568,10 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
         </button>
 
         <button
-          onClick={() => setActiveTab("assessments")}
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab("assessments");
+          }}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
             activeTab === "assessments"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
@@ -1545,7 +1596,10 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
         </button>
 
         <button
-          onClick={() => setActiveTab("attempts")}
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab("attempts");
+          }}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
             activeTab === "attempts"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
@@ -1570,7 +1624,10 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
         </button>
 
         <button
-          onClick={() => setActiveTab("reattempts")}
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab("reattempts");
+          }}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
             activeTab === "reattempts"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
@@ -2853,6 +2910,9 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Submitted
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -2863,7 +2923,7 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                 <tbody className="divide-y divide-gray-200">
                   {attempts.map((attempt) => (
                     <tr
-                      key={attempt.id}
+                      key={attempt.id || attempt.attempt_id}
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-4 py-3">
@@ -2894,13 +2954,19 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                       <td className="px-4 py-3">
                         <div className="text-center">
                           <p className="text-sm font-semibold">
-                            {attempt.score || 0}%
+                            {attempt.score !== null &&
+                            attempt.score !== undefined
+                              ? `${attempt.score}%`
+                              : "N/A"}
                           </p>
-                          <span
-                            className={`px-1.5 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(attempt.passed ? "passed" : "failed")}`}
-                          >
-                            {attempt.passed ? "Passed" : "Failed"}
-                          </span>
+                          {attempt.passed !== null &&
+                            attempt.passed !== undefined && (
+                              <span
+                                className={`px-1.5 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(attempt.passed ? "passed" : "failed")}`}
+                              >
+                                {attempt.passed ? "Passed" : "Failed"}
+                              </span>
+                            )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -2910,13 +2976,26 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                           {attempt.review_status || "Pending"}
                         </span>
                       </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${
+                            attempt.assessment_type === "pdf_task"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-purple-100 text-purple-700"
+                          }`}
+                        >
+                          {attempt.assessment_type === "pdf_task"
+                            ? "PDF Task"
+                            : "MCQ"}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-500">
                         {attempt.submitted_at
                           ? formatDateTime(attempt.submitted_at)
                           : "N/A"}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap">
                           <button
                             onClick={() => {
                               setSelectedAttempt(attempt);
@@ -2927,19 +3006,32 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          {attempt.type === "pdf_task" &&
-                            attempt.review_status === "pending" && (
-                              <button
-                                onClick={() => {
-                                  setSelectedAttempt(attempt);
-                                  setShowAttemptDetail(true);
-                                }}
-                                className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                                title="Review PDF"
-                              >
+
+                          {/* Review button for both PDF and MCQ when pending */}
+                          {attempt.review_status === "pending" && (
+                            <button
+                              onClick={() => {
+                                setSelectedAttempt(attempt);
+                                setShowAttemptDetail(true);
+                              }}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                attempt.assessment_type === "pdf_task"
+                                  ? "text-amber-600 hover:bg-amber-50"
+                                  : "text-emerald-600 hover:bg-emerald-50"
+                              }`}
+                              title={
+                                attempt.assessment_type === "pdf_task"
+                                  ? "Review PDF"
+                                  : "Review MCQ"
+                              }
+                            >
+                              {attempt.assessment_type === "pdf_task" ? (
                                 <FileText className="w-4 h-4" />
-                              </button>
-                            )}
+                              ) : (
+                                <CheckCircle className="w-4 h-4" />
+                              )}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -2957,230 +3049,308 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
           )}
         </div>
       )}
-
-{/* Reattempts Tab */}
-{activeTab === "reattempts" && (
-  <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-    {/* Reattempt Filters */}
-    <div className="p-4 border-b border-gray-200">
-      <div className="flex flex-wrap items-center gap-4">
-        <button
-          onClick={() => setShowReattemptFilters(!showReattemptFilters)}
-          className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
-            showReattemptFilters || reattemptFilters.status || reattemptFilters.user_id || reattemptFilters.course_id
-              ? "bg-red-50 border-red-200 text-red-600"
-              : "border-gray-300 text-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          <Filter className="w-4 h-4" />
-          <span className="text-sm">Filters</span>
-          {(reattemptFilters.status || reattemptFilters.user_id || reattemptFilters.course_id) && (
-            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-          )}
-        </button>
-
-        <button
-          onClick={() => fetchReattemptRequests(1)}
-          className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span className="text-sm">Refresh</span>
-        </button>
-      </div>
-
-      {showReattemptFilters && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-medium text-gray-700">Filter Reattempts</h4>
-            <button onClick={clearReattemptFilters} className="text-sm text-red-600 hover:text-red-700">
-              Clear All
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
-              <select
-                name="status"
-                value={reattemptFilters.status}
-                onChange={handleReattemptFilterChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+      {/* Reattempts Tab */}
+      {activeTab === "reattempts" && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          {/* Reattempt Filters */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => setShowReattemptFilters(!showReattemptFilters)}
+                className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                  showReattemptFilters ||
+                  reattemptFilters.status ||
+                  reattemptFilters.user_id ||
+                  reattemptFilters.course_id
+                    ? "bg-red-50 border-red-200 text-red-600"
+                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                }`}
               >
-                <option value="">All</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">User ID</label>
-              <input
-                type="text"
-                name="user_id"
-                value={reattemptFilters.user_id}
-                onChange={handleReattemptFilterChange}
-                placeholder="Enter user ID"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Course ID</label>
-              <input
-                type="text"
-                name="course_id"
-                value={reattemptFilters.course_id}
-                onChange={handleReattemptFilterChange}
-                placeholder="Enter course ID"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                <Filter className="w-4 h-4" />
+                <span className="text-sm">Filters</span>
+                {(reattemptFilters.status ||
+                  reattemptFilters.user_id ||
+                  reattemptFilters.course_id) && (
+                  <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
+              </button>
 
-    {/* Reattempt Requests Table */}
-    <div className="overflow-x-auto">
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-        </div>
-      ) : reattemptRequests.length === 0 ? (
-        <div className="text-center py-12">
-          <RefreshCw className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No reattempt requests found</p>
-          {(reattemptFilters.status || reattemptFilters.user_id || reattemptFilters.course_id) && (
-            <button onClick={clearReattemptFilters} className="mt-2 text-sm text-red-600 hover:text-red-700">
-              Clear filters
-            </button>
+              <button
+                onClick={() => fetchReattemptRequests(1)}
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="text-sm">Refresh</span>
+              </button>
+            </div>
+
+            {showReattemptFilters && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Filter Reattempts
+                  </h4>
+                  <button
+                    onClick={clearReattemptFilters}
+                    className="text-sm text-red-600 hover:text-red-700"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      value={reattemptFilters.status}
+                      onChange={handleReattemptFilterChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                    >
+                      <option value="">All</option>
+                      <option value="pending">Pending</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      User ID
+                    </label>
+                    <input
+                      type="text"
+                      name="user_id"
+                      value={reattemptFilters.user_id}
+                      onChange={handleReattemptFilterChange}
+                      placeholder="Enter user ID"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Course ID
+                    </label>
+                    <input
+                      type="text"
+                      name="course_id"
+                      value={reattemptFilters.course_id}
+                      onChange={handleReattemptFilterChange}
+                      placeholder="Enter course ID"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Reattempt Requests Table */}
+          <div className="overflow-x-auto">
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+              </div>
+            ) : reattemptRequests.length === 0 ? (
+              <div className="text-center py-12">
+                <RefreshCw className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No reattempt requests found</p>
+                {(reattemptFilters.status ||
+                  reattemptFilters.user_id ||
+                  reattemptFilters.course_id) && (
+                  <button
+                    onClick={clearReattemptFilters}
+                    className="mt-2 text-sm text-red-600 hover:text-red-700"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Course
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Old Assessment
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Reason
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Requested
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {reattemptRequests.map((request, index) => (
+                    <tr
+                      key={`${request.id}-${request.course_id}-${index}`}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {request.user_name || "N/A"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {request.user_email || "N/A"}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            ID: {request.user_id}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="text-sm text-gray-900">
+                            {request.course_title || "N/A"}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            ID: {request.course_id}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="text-sm text-gray-900">
+                            {request.assessment_title || "Assessment"}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            ID: {request.old_assessment_id}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm text-gray-600 max-w-xs truncate">
+                          {request.reason || "Not specified"}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(request.status)}`}
+                        >
+                          {request.status || "pending"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500">
+                        {request.created_at
+                          ? formatDateTime(request.created_at)
+                          : "N/A"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {request.status === "pending" ? (
+                          <div className="flex flex-col gap-2">
+                            {/* Assessment Selection for Approval */}
+                            <div className="flex items-center gap-1">
+                              <select
+                                id={`assessment-select-${request.id}`}
+                                className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white w-full max-w-[150px]"
+                                defaultValue=""
+                              >
+                                <option value="">Select Assessment</option>
+                                {assessments
+                                  .filter((a) => {
+                                    if (a.course_id !== request.course_id)
+                                      return false;
+                                    if (a.status !== "published") return false;
+                                    if (a.id === request.old_assessment_id)
+                                      return false;
+                                    if (a.is_default) return false;
+                                    return true;
+                                  })
+                                  .map((assessment) => (
+                                    <option
+                                      key={assessment.id}
+                                      value={assessment.id}
+                                    >
+                                      {assessment.title} (ID: {assessment.id})
+                                    </option>
+                                  ))}
+                              </select>
+                              <button
+                                onClick={() => {
+                                  const select = document.getElementById(
+                                    `assessment-select-${request.id}`,
+                                  );
+                                  const assessmentId = select?.value;
+                                  if (assessmentId) {
+                                    handleApproveReattempt(
+                                      request.id,
+                                      assessmentId,
+                                    );
+                                  } else {
+                                    toast.error(
+                                      "Please select an assessment to assign",
+                                    );
+                                  }
+                                }}
+                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                title="Approve"
+                              >
+                                <ThumbsUp className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => {
+                                const reason = prompt("Reason for rejection:");
+                                if (reason !== null) {
+                                  handleRejectReattempt(request.id);
+                                }
+                              }}
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <ThumbsDown className="w-3 h-3" />
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">
+                            {request.status === "approved" ? (
+                              <span className="flex items-center gap-1 text-green-600">
+                                <CheckCircle className="w-3 h-3" />
+                                Approved
+                              </span>
+                            ) : request.status === "rejected" ? (
+                              <span className="flex items-center gap-1 text-red-600">
+                                <XCircle className="w-3 h-3" />
+                                Rejected
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-gray-500">
+                                <Clock className="w-3 h-3" />
+                                {request.status || "Pending"}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {!loading && reattemptRequests.length > 0 && (
+            <Pagination
+              pagination={reattemptPagination}
+              onPageChange={fetchReattemptRequests}
+            />
           )}
         </div>
-      ) : (
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Old Assessment</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {reattemptRequests.map((request) => (
-              <tr key={request.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{request.user_name || "N/A"}</p>
-                    <p className="text-xs text-gray-500">{request.user_email || "N/A"}</p>
-                    <p className="text-xs text-gray-400">ID: {request.user_id}</p>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div>
-                    <p className="text-sm text-gray-900">{request.course_title || "N/A"}</p>
-                    <p className="text-xs text-gray-400">ID: {request.course_id}</p>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div>
-                    <p className="text-sm text-gray-900">{request.assessment_title || "Assessment"}</p>
-                    <p className="text-xs text-gray-400">ID: {request.old_assessment_id}</p>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <p className="text-sm text-gray-600 max-w-xs truncate">{request.reason || "Not specified"}</p>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(request.status)}`}>
-                    {request.status || "pending"}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-500">
-                  {request.created_at ? formatDateTime(request.created_at) : "N/A"}
-                </td>
-                <td className="px-4 py-3">
-                  {request.status === "pending" ? (
-                    <div className="flex flex-col gap-2">
-                      {/* Assessment Selection for Approval */}
-                      <div className="flex items-center gap-1">
-                        <select
-                          id={`assessment-select-${request.id}`}
-                          className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white w-full max-w-[150px]"
-                          defaultValue=""
-                        >
-                          <option value="">Select Assessment</option>
-                          {assessments
-                            .filter(a => 
-                              a.course_id === request.course_id && 
-                              a.status === "published" && 
-                              a.id !== request.old_assessment_id && // Don't show the same assessment
-                              !a.is_default // Only show non-default assessments
-                            )
-                            .map((assessment) => (
-                              <option key={assessment.id} value={assessment.id}>
-                                {assessment.title} (ID: {assessment.id})
-                              </option>
-                            ))}
-                        </select>
-                        <button
-                          onClick={() => {
-                            const select = document.getElementById(`assessment-select-${request.id}`);
-                            const assessmentId = select?.value;
-                            if (assessmentId) {
-                              handleApproveReattempt(request.id, assessmentId);
-                            } else {
-                              toast.error("Please select an assessment to assign");
-                            }
-                          }}
-                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                          title="Approve"
-                        >
-                          <ThumbsUp className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => {
-                          const reason = prompt("Reason for rejection:");
-                          if (reason !== null) {
-                            handleRejectReattempt(request.id);
-                          }
-                        }}
-                        className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <ThumbsDown className="w-3 h-3" />
-                        Reject
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-500">
-                      {request.status === "approved" ? (
-                        <span className="flex items-center gap-1 text-green-600">
-                          <CheckCircle className="w-3 h-3" />
-                          Approved
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-red-600">
-                          <XCircle className="w-3 h-3" />
-                          Rejected
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       )}
-    </div>
-
-    {!loading && reattemptRequests.length > 0 && (
-      <Pagination pagination={reattemptPagination} onPageChange={fetchReattemptRequests} />
-    )}
-  </div>
-)}
 
       {/* User Detail Modal */}
       {showUserDetail && (
@@ -3306,20 +3476,35 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
         </div>
       )}
 
-      {/* Attempt Detail Modal for PDF Review */}
       {showAttemptDetail && selectedAttempt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <FileText className="w-5 h-5 text-blue-600" />
+                <div
+                  className={`p-2 rounded-lg ${
+                    selectedAttempt.assessment_type === "pdf_task"
+                      ? "bg-amber-100"
+                      : "bg-emerald-100"
+                  }`}
+                >
+                  {selectedAttempt.assessment_type === "pdf_task" ? (
+                    <FileText
+                      className={`w-5 h-5 ${
+                        selectedAttempt.assessment_type === "pdf_task"
+                          ? "text-amber-600"
+                          : "text-emerald-600"
+                      }`}
+                    />
+                  ) : (
+                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+                  )}
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {selectedAttempt.type === "pdf_task"
+                    {selectedAttempt.assessment_type === "pdf_task"
                       ? "PDF Task Review"
-                      : "Attempt Details"}
+                      : "MCQ Review"}
                   </h3>
                   <p className="text-sm text-gray-500">
                     {selectedAttempt.user_name} -{" "}
@@ -3343,16 +3528,24 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                 <div>
                   <p className="text-xs text-gray-400">Score</p>
                   <p className="text-lg font-semibold">
-                    {selectedAttempt.score || 0}%
+                    {selectedAttempt.score !== null &&
+                    selectedAttempt.score !== undefined
+                      ? `${selectedAttempt.score}%`
+                      : "N/A"}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Status</p>
-                  <span
-                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(selectedAttempt.passed ? "passed" : "failed")}`}
-                  >
-                    {selectedAttempt.passed ? "Passed" : "Failed"}
-                  </span>
+                  {selectedAttempt.passed !== null &&
+                  selectedAttempt.passed !== undefined ? (
+                    <span
+                      className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(selectedAttempt.passed ? "passed" : "failed")}`}
+                    >
+                      {selectedAttempt.passed ? "Passed" : "Failed"}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-500">Not graded</span>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Review Status</p>
@@ -3370,16 +3563,31 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                       : "N/A"}
                   </p>
                 </div>
+                <div>
+                  <p className="text-xs text-gray-400">Assessment Type</p>
+                  <span
+                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${
+                      selectedAttempt.assessment_type === "pdf_task"
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-purple-100 text-purple-700"
+                    }`}
+                  >
+                    {selectedAttempt.assessment_type === "pdf_task"
+                      ? "PDF Task"
+                      : "MCQ"}
+                  </span>
+                </div>
               </div>
 
-              {selectedAttempt.type === "pdf_task" &&
-                selectedAttempt.submission_url && (
+              {/* PDF Submission URL - Only for PDF tasks */}
+              {selectedAttempt.assessment_type === "pdf_task" &&
+                selectedAttempt.submitted_file_url && (
                   <div className="mb-6">
                     <p className="text-sm font-medium text-gray-700 mb-2">
                       Submitted PDF
                     </p>
                     <a
-                      href={selectedAttempt.submission_url}
+                      href={selectedAttempt.submitted_file_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
@@ -3390,68 +3598,79 @@ const handleApproveReattempt = async (requestId, newAssessmentId) => {
                   </div>
                 )}
 
-              {selectedAttempt.type === "pdf_task" &&
-                selectedAttempt.review_status === "pending" && (
-                  <div className="border-t border-gray-200 pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">
-                      Review PDF Task
-                    </h4>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Score (%)
-                        </label>
-                        <input
-                          type="number"
-                          id="review-score"
-                          min="0"
-                          max="100"
-                          defaultValue={selectedAttempt.score || 0}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Passed
-                        </label>
-                        <select
-                          id="review-passed"
-                          defaultValue={
-                            selectedAttempt.passed ? "true" : "false"
+              {/* Review Section - Show for both PDF and MCQ when pending */}
+              {selectedAttempt.review_status === "pending" && (
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Review{" "}
+                    {selectedAttempt.assessment_type === "pdf_task"
+                      ? "PDF Task"
+                      : "MCQ"}
+                  </h4>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Score (%)
+                      </label>
+                      <input
+                        type="number"
+                        id="review-score"
+                        min="0"
+                        max="100"
+                        defaultValue={selectedAttempt.score || 0}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Passed
+                      </label>
+                      <select
+                        id="review-passed"
+                        defaultValue={
+                          selectedAttempt.passed !== null &&
+                          selectedAttempt.passed !== undefined
+                            ? selectedAttempt.passed
+                              ? "true"
+                              : "false"
+                            : "true"
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      >
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        onClick={() => {
+                          const score = parseInt(
+                            document.getElementById("review-score").value,
+                          );
+                          const passed =
+                            document.getElementById("review-passed").value ===
+                            "true";
+                          if (isNaN(score) || score < 0 || score > 100) {
+                            toast.error("Please enter a valid score (0-100)");
+                            return;
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                        >
-                          <option value="true">Yes</option>
-                          <option value="false">No</option>
-                        </select>
-                      </div>
-                      <div className="flex items-end">
-                        <button
-                          onClick={() => {
-                            const score = parseInt(
-                              document.getElementById("review-score").value,
-                            );
-                            const passed =
-                              document.getElementById("review-passed").value ===
-                              "true";
-                            if (isNaN(score) || score < 0 || score > 100) {
-                              toast.error("Please enter a valid score (0-100)");
-                              return;
-                            }
-                            handleReviewPdfTask(selectedAttempt.id, {
+                          handleReviewAttempt(
+                            selectedAttempt.id || selectedAttempt.attempt_id,
+                            {
                               score,
                               passed,
-                            });
-                          }}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                        >
-                          <Send className="w-4 h-4" />
-                          Submit Review
-                        </button>
-                      </div>
+                            },
+                          );
+                        }}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                      >
+                        <Send className="w-4 h-4" />
+                        Submit Review
+                      </button>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end p-6 border-t border-gray-200 bg-gray-50">

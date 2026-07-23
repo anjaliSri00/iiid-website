@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useAssessment } from '@/helper/hooks/useAssessment';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 const MCQAssessment = ({ 
   assessment, 
@@ -81,8 +82,6 @@ const MCQAssessment = ({
         total: totalQuestions,
         percentage: score,
         passed: passed,
-        correct_answers: 0,
-        wrong_answers: 0,
       });
       
       if (assessment?.attempt?.certificate) {
@@ -204,8 +203,8 @@ const MCQAssessment = ({
           total: resultData.total || questions.length,
           percentage: resultData.percentage || 0,
           passed: resultData.passed || false,
-          correct_answers: resultData.correct_answers || 0,
-          wrong_answers: resultData.wrong_answers || 0,
+          correct_answers: resultData.correct_answers,
+          wrong_answers: resultData.wrong_answers,
           answers: resultData.answers || [],
         });
         
@@ -228,19 +227,22 @@ const MCQAssessment = ({
   };
 
   const handleReattemptRequest = () => {
+    setReattemptReason('');
     setShowReattemptModal(true);
   };
 
-  const handleSubmitReattempt = () => {
-    if (!reattemptReason.trim()) {
-      alert('Please provide a reason for requesting a reattempt.');
+  const handleSubmitReattempt = useCallback(() => {
+    if (!reattemptReason || !reattemptReason.trim()) {
+      toast.error('Please provide a reason for requesting a reattempt.');
       return;
     }
+    
     if (onRequestReattempt) {
-      onRequestReattempt();
+      onRequestReattempt(reattemptReason.trim());
+      setShowReattemptModal(false);
+      setReattemptReason('');
     }
-    setShowReattemptModal(false);
-  };
+  }, [reattemptReason, onRequestReattempt]);
 
   const getProgressPercentage = () => {
     if (questions.length === 0) return 0;
@@ -264,243 +266,329 @@ const MCQAssessment = ({
   const totalQuestions = questions.length;
   const answeredCount = Object.keys(answers).filter(key => answers[key]).length;
   const stats = getStats();
+  
+// Results View - Modern Redesign
+if (showResultsView && results) {
+  const passed = results.passed || results.score >= (assessment?.passing_score || 60);
+  const score = results.percentage || results.score || 0;
+  const submittedAt = results.submitted_at || assessment?.attempt?.submitted_at;
+  
+  // Check if we have detailed stats
+  const hasCorrectData = results.correct_answers !== undefined && results.correct_answers !== null;
+  const hasWrongData = results.wrong_answers !== undefined && results.wrong_answers !== null;
+  const hasDetailedStats = hasCorrectData && hasWrongData;
+  
+  const correctCount = hasCorrectData ? results.correct_answers : 0;
+  const wrongCount = hasWrongData ? results.wrong_answers : 0;
+  const totalQuestions = assessment?.questions?.length || results.total || 0;
+  const accuracy = hasDetailedStats && totalQuestions > 0 
+    ? Math.round((correctCount / totalQuestions) * 100) 
+    : 0;
 
-  // Results View
-  if (showResultsView && results) {
-    const passed = results.passed || results.score >= (assessment?.passing_score || 60);
-    const correctCount = results.correct_answers || 0;
-    const wrongCount = results.wrong_answers || 0;
-    const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#FDF8F0] via-white to-[#FDF8F0] py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        {/* Back Button */}
+        <Link
+          href={`/programs/${programId}`}
+          className="inline-flex items-center text-sm text-gray-500 hover:text-[#CC0000] transition-colors mb-4 group"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1.5 group-hover:-translate-x-0.5 transition-transform" />
+          Back to Program
+        </Link>
 
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FDF8F0] via-white to-[#FDF8F0] py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Back Button */}
-          <Link
-            href={`/programs/${programId}`}
-            className="inline-flex items-center px-4 py-2 mb-6 text-sm text-gray-600 hover:text-[#CC0000] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Program
-          </Link>
+        {/* Main Results Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-[#D4A574]/10">
+          {/* Hero Section */}
+          <div className={`relative px-6 py-8 text-center ${
+            passed 
+              ? 'bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100/50' 
+              : 'bg-gradient-to-br from-orange-50 via-red-50 to-rose-100/50'
+          }`}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/20 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            
+            <div className="relative">
+              {/* Status Badge */}
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
+                passed 
+                  ? 'bg-emerald-100 text-emerald-700' 
+                  : 'bg-red-100 text-red-700'
+              }`}>
+                {passed ? (
+                  <CheckCircle className="w-3.5 h-3.5" />
+                ) : (
+                  <XCircle className="w-3.5 h-3.5" />
+                )}
+                {passed ? 'Passed' : 'Failed'}
+              </div>
 
-          {/* Results Card */}
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#D4A574]/10">
-            {/* Header - Score Overview */}
-            <div className={`p-8 text-center relative overflow-hidden ${
-              passed ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-orange-50'
-            }`}>
-              <div className="relative">
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                  <div className={`inline-flex items-center justify-center w-28 h-28 rounded-full ${
-                    passed ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
-                    {passed ? (
-                      <Trophy className="w-14 h-14 text-green-600" />
-                    ) : (
-                      <Target className="w-14 h-14 text-red-600" />
-                    )}
-                  </div>
-                  <div className="text-left">
-                    <h2 className={`text-3xl font-bold ${
-                      passed ? 'text-green-700' : 'text-red-700'
-                    }`}>
-                      {passed ? '🎉 Excellent Work!' : 'Keep Learning!'}
-                    </h2>
-                    <p className="text-gray-600 mt-1">
-                      {passed 
-                        ? 'You have successfully passed the assessment!' 
-                        : 'Review the material and try again to pass.'}
-                    </p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className={`text-2xl font-bold ${passed ? 'text-green-600' : 'text-red-600'}`}>
-                        {results.percentage || results.score || 0}%
-                      </span>
-                      <span className="text-sm text-gray-500">Score</span>
-                      {passed && (
-                        <span className="inline-flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full text-sm font-medium text-green-700">
-                          <Award className="w-4 h-4" />
-                          Certificate Earned
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 border-b border-[#D4A574]/10">
-              <div className="text-center p-4 bg-[#FDF8F0] rounded-2xl hover:shadow-md transition-shadow">
-                <p className="text-3xl font-bold text-[#CC0000]">{results.percentage || results.score || 0}%</p>
-                <p className="text-xs text-gray-500 font-medium mt-1">Final Score</p>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-2xl hover:shadow-md transition-shadow">
-                <p className="text-3xl font-bold text-green-600">{correctCount}</p>
-                <p className="text-xs text-gray-500 font-medium mt-1">Correct</p>
-              </div>
-              <div className="text-center p-4 bg-red-50 rounded-2xl hover:shadow-md transition-shadow">
-                <p className="text-3xl font-bold text-red-500">{wrongCount}</p>
-                <p className="text-xs text-gray-500 font-medium mt-1">Incorrect</p>
-              </div>
-              <div className="text-center p-4 bg-blue-50 rounded-2xl hover:shadow-md transition-shadow">
-                <p className="text-3xl font-bold text-blue-600">{accuracy}%</p>
-                <p className="text-xs text-gray-500 font-medium mt-1">Accuracy</p>
-              </div>
-            </div>
-
-            {/* Reattempt Section - Show if failed */}
-            {!passed && !reattemptStatus && (
-              <div className="p-6 border-b border-[#D4A574]/10">
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-amber-100 rounded-lg">
-                        <RefreshCw className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-amber-800">Need a Reattempt?</h4>
-                        <p className="text-sm text-amber-700">
-                          You didn't pass this assessment. Request a reattempt with a different assessment.
-                        </p>
-                        <p className="text-xs text-amber-600 mt-1">
-                          An admin will review your request and assign a new assessment.
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleReattemptRequest}
-                      className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      Request Reattempt
-                    </button>
+              {/* Score Circle */}
+              <div className="relative inline-block mb-4">
+                <div className="w-32 h-32 mx-auto">
+                  <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                    <circle
+                      className="text-gray-200"
+                      strokeWidth="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="52"
+                      cx="60"
+                      cy="60"
+                    />
+                    <circle
+                      className={passed ? 'text-emerald-500' : 'text-red-500'}
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="52"
+                      cx="60"
+                      cy="60"
+                      strokeDasharray={326.72}
+                      strokeDashoffset={326.72 * (1 - Math.min(score / 100, 1))}
+                      style={{ transition: 'stroke-dashoffset 1.5s ease-in-out' }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className={`text-4xl font-bold ${passed ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {score}%
+                    </span>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Reattempt Status */}
-            {reattemptStatus === 'pending' && (
-              <div className="p-6 border-b border-[#D4A574]/10">
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <h2 className={`text-2xl font-bold ${passed ? 'text-emerald-700' : 'text-red-700'}`}>
+                {passed ? '🎉 Excellent Work!' : 'Keep Learning!'}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {passed 
+                  ? 'You have successfully passed the assessment!' 
+                  : 'Review the material and try again to pass.'}
+              </p>
+              {submittedAt && (
+                <p className="text-xs text-gray-400 mt-2">
+                  Submitted on {new Date(submittedAt).toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Stats Row */}
+          <div className="px-6 py-4 border-b border-[#D4A574]/10">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {/* Score Badge */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-[#FDF8F0] rounded-xl border border-[#D4A574]/10">
+                <BarChart3 className="w-4 h-4 text-[#CC0000]" />
+                <span className="text-sm font-medium text-gray-700">{score}%</span>
+                <span className="text-xs text-gray-400">Score</span>
+              </div>
+
+              {/* Correct - Show only if available */}
+              {hasDetailedStats && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-xl border border-green-100">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-700">{correctCount}</span>
+                  <span className="text-xs text-green-600">Correct</span>
+                </div>
+              )}
+
+              {/* Incorrect - Show only if available */}
+              {hasDetailedStats && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-xl border border-red-100">
+                  <XCircle className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-medium text-red-600">{wrongCount}</span>
+                  <span className="text-xs text-red-500">Incorrect</span>
+                </div>
+              )}
+
+              {/* Accuracy - Show only if available */}
+              {hasDetailedStats && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-xl border border-blue-100">
+                  <TrendingUp className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-700">{accuracy}%</span>
+                  <span className="text-xs text-blue-600">Accuracy</span>
+                </div>
+              )}
+
+              {/* Certificate Badge */}
+              {passed && certificate && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
+                  <Award className="w-4 h-4 text-amber-600" />
+                  <span className="text-xs font-medium text-amber-700">Certificate</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Reattempt Section - Show if failed */}
+          {!passed && !reattemptStatus && (
+            <div className="px-6 py-4 border-b border-[#D4A574]/10">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Clock className="w-5 h-5 text-blue-600" />
+                    <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
+                      <RefreshCw className="w-4 h-4 text-amber-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-800">Reattempt Request Pending</h4>
-                      <p className="text-sm text-blue-700">
-                        Your reattempt request has been submitted. An admin will review it and assign a new assessment.
-                      </p>
-                      <p className="text-xs text-blue-600 mt-1">
-                        You will be notified once the request is approved or rejected.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Certificate */}
-            {passed && certificate && (
-              <div className="p-6 border-b border-[#D4A574]/10 bg-gradient-to-r from-[#FDF8F0] to-white">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-[#CC0000]/10 rounded-xl">
-                      <Award className="w-8 h-8 text-[#CC0000]" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Certificate of Completion</h4>
-                      <p className="text-xs text-gray-500 font-mono">{certificate.certificate_code}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Issued: {new Date(certificate.issued_at).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
+                      <h4 className="font-semibold text-amber-800 text-sm">Request a Reattempt</h4>
+                      <p className="text-xs text-amber-700 max-w-md">
+                        Didn't pass? Request a reattempt with a different assessment. 
+                        An admin will review your request.
                       </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => {
-                      if (certificate.certificate_url) {
-                        window.open(certificate.certificate_url, '_blank');
-                      } else {
-                        alert('Certificate download will be available soon.');
-                      }
-                    }}
-                    className="flex items-center gap-2 px-6 py-3 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    onClick={handleReattemptRequest}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-all text-sm font-medium flex items-center gap-2 shadow-sm hover:shadow-md flex-shrink-0"
                   >
-                    <Download className="w-4 h-4" />
-                    Download Certificate
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Request Reattempt
                   </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Back Button */}
-            <div className="p-6 text-center">
-              <Link
-                href={`/programs/${programId}`}
-                className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+          {/* Reattempt Status */}
+          {reattemptStatus === 'pending' && (
+            <div className="px-6 py-4 border-b border-[#D4A574]/10">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-blue-800 text-sm">Reattempt Request Pending</h4>
+                    <p className="text-xs text-blue-700">
+                      Your request has been submitted. An admin will review it and assign a new assessment.
+                      You will be notified once the request is approved or rejected.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Certificate Section */}
+          {passed && certificate && (
+            <div className="px-6 py-4 border-b border-[#D4A574]/10 bg-gradient-to-r from-[#FDF8F0] to-white">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-[#CC0000]/10 rounded-xl">
+                    <Award className="w-5 h-5 text-[#CC0000]" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 text-sm">Certificate of Completion</h4>
+                    <p className="text-xs text-gray-500 font-mono">{certificate.certificate_code}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (certificate.certificate_url) {
+                      window.open(certificate.certificate_url, '_blank');
+                    } else {
+                      toast.info('Certificate download will be available soon.');
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] hover:bg-[#B30000] text-white rounded-lg transition-all text-sm font-medium shadow-sm hover:shadow-md"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download Certificate
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="px-6 py-4 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href={`/programs/${programId}`}
+              className="inline-flex items-center px-5 py-2.5 bg-[#CC0000] hover:bg-[#B30000] text-white rounded-lg transition-all text-sm font-medium shadow-sm hover:shadow-md"
+            >
+              <ArrowLeft size={16} className="mr-2" />
+              Back to Program
+            </Link>
+            
+            {passed && (
+              <button
+                onClick={() => {
+                  // Share or print results
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Assessment Results',
+                      text: `I scored ${score}% on ${assessment?.title || 'the assessment'}!`,
+                      url: window.location.href,
+                    }).catch(() => {});
+                  }
+                }}
+                className="inline-flex items-center px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all text-sm font-medium"
               >
-                <ArrowLeft size={20} className="mr-2" />
-                Back to Program
-              </Link>
+                <MessageSquare size={16} className="mr-2" />
+                Share Results
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Reattempt Modal */}
+      {showReattemptModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
+            <div className="text-center mb-4">
+              <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <RefreshCw className="w-7 h-7 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Request Reattempt</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Please provide a reason for requesting a reattempt.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Reason for Reattempt *
+              </label>
+              <textarea
+                value={reattemptReason}
+                onChange={(e) => setReattemptReason(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm resize-none"
+                placeholder="Explain why you need a reattempt..."
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowReattemptModal(false);
+                  setReattemptReason('');
+                }}
+                className="flex-1 px-4 py-2 border-2 border-[#D4A574]/20 text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-medium text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReattempt}
+                disabled={!reattemptReason.trim()}
+                className="flex-1 px-4 py-2 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+              >
+                Submit Request
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Reattempt Modal */}
-        {showReattemptModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
-              <div className="text-center mb-4">
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <RefreshCw className="w-8 h-8 text-amber-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Request Reattempt</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Please provide a reason for requesting a reattempt. An admin will review your request.
-                </p>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reason for Reattempt *
-                </label>
-                <textarea
-                  value={reattemptReason}
-                  onChange={(e) => setReattemptReason(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm"
-                  placeholder="Explain why you need a reattempt..."
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowReattemptModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-[#D4A574]/20 text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmitReattempt}
-                  disabled={!reattemptReason.trim()}
-                  className="flex-1 px-4 py-2.5 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  Submit Request
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
+      )}
+    </div>
+  );
+}
   // Assessment taking view
   if (!currentQuestion) {
     return (

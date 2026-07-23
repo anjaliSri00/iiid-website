@@ -411,6 +411,7 @@ export const assessmentApi = {
       let url;
       if (courseId) {
         url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/admin/attempts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        // url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/admin/attempts`;
       } else {
         // If no courseId, fetch from all courses
         url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/attempts/all${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
@@ -468,9 +469,9 @@ export const assessmentApi = {
       
       let url;
       if (courseId) {
-        url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/admin/reattempt-requests${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${courseId}/assessment/admin/reattempt-requests`;
       } else {
-        url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/reattempt-requests/all${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/reattempt-requests/all`;
       }
       
       const response = await fetchApiResponse(url, {

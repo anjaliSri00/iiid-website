@@ -21,6 +21,7 @@ import { useAssessment } from "@/helper/hooks/useAssessment";
 import PDFTaskAssessment from "@/app/components/Assessment/PDFTaskAssessment";
 import MCQAssessment from "@/app/components/Assessment/MCQAssessment";
 import { assessmentApi } from "@/helper/services/assessmentApi";
+import { toast } from "react-toastify";
 
 const AssessmentWrapper = () => {
   const params = useParams();
@@ -146,13 +147,12 @@ const AssessmentWrapper = () => {
       if (response?.meta?.status === 200) {
         setReattemptStatus('pending');
         setShowReattemptModal(false);
-        alert('Reattempt request submitted successfully! An admin will review your request.');
-      } else {
-        alert(response?.meta?.message || 'Failed to request reattempt');
+      toast.success('Reattempt request submitted successfully! An admin will review your request.');
+      setReattemptReason(''); // Clear after submission
       }
     } catch (error) {
       console.error('Error requesting reattempt:', error);
-      alert('Failed to request reattempt. Please try again.');
+      toast.error('Failed to request reattempt. Please try again.');
     } finally {
       setIsRequestingReattempt(false);
     }
@@ -174,14 +174,24 @@ const AssessmentWrapper = () => {
     };
     
     return (
-      <MCQAssessment 
-        assessment={mockAssessment} 
-        programId={programId} 
-        showResults={true}
-        resultsData={resultsData}
-        onRequestReattempt={handleRequestReattempt}
-        reattemptStatus={reattemptStatus}
-      />
+      // <MCQAssessment 
+      //   assessment={mockAssessment} 
+      //   programId={programId} 
+      //   showResults={true}
+      //   resultsData={resultsData}
+      //   onRequestReattempt={handleRequestReattempt}
+      //   reattemptStatus={reattemptStatus}
+      // />
+       <MCQAssessment 
+    assessment={mockAssessment} 
+    programId={programId} 
+    showResults={true}
+    resultsData={resultsData}
+    onRequestReattempt={handleRequestReattempt}
+    reattemptStatus={reattemptStatus}
+    reattemptReason={reattemptReason}
+    setReattemptReason={setReattemptReason}
+  />
     );
   }
 
@@ -277,6 +287,8 @@ const AssessmentWrapper = () => {
       assessment={assessment} 
       programId={programId}
       onRequestReattempt={handleRequestReattempt}
+      reattemptReason={reattemptReason}
+    setReattemptReason={setReattemptReason}
       reattemptStatus={reattemptStatus}
     />
   );
