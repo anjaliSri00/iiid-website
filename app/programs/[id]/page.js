@@ -2720,7 +2720,7 @@ const ProgramDetailPage = () => {
                           <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
                             <span className="px-2 sm:px-4 py-1 sm:py-2 bg-[#CC0000] text-white text-[10px] sm:text-sm font-semibold rounded-full shadow-lg flex items-center gap-1 sm:gap-2">
                               <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
-                              {program.discount}Rs. OFF
+                              {program.discount} Rs. OFF
                             </span>
                           </div>
                         )}

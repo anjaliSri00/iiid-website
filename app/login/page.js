@@ -165,7 +165,7 @@ function LoginPage() {
         toast.error(result.error || 'Invalid OTP. Please try again.');
         setOtpError(result.error || 'Invalid OTP');
       } else if (result?.ok) {
-        toast.success('Login successful! Welcome back.');
+        // toast.success('Login successful! Welcome back.');
         router.push(redirect);
       }
     } catch (error) {

@@ -16,7 +16,7 @@ import Image from 'next/image';
 
 const ProgramGrid = ({ programs = [] }) => {
   const [hoveredId, setHoveredId] = useState(null);
-  console.log(programs)
+  // console.log(programs)
 
   if (!programs || programs.length === 0) {
     return (

@@ -179,7 +179,7 @@ export const assessmentApi = {
       // Map assessment type to backend expected type
       const typeMap = {
         'mcq': 'mcq',
-        'pdf_task': 'pdf'
+        'pdf_task': 'pdf_task'
       };
       const backendType = typeMap[assessmentType] || 'mcq';
       

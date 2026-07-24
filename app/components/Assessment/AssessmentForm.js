@@ -98,6 +98,8 @@ const AssessmentForm = ({
     });
   };
 
+  // console.log(editingAssessment,"--------------------------editing")
+
   return (
     <div>
       {assessmentSuccess && (
@@ -221,7 +223,7 @@ const AssessmentForm = ({
           </div>
 
           {/* Set as Default Checkbox - Only show when editing existing assessment */}
-          {editingAssessment && (
+          {editingAssessment.is_default && (
             <div className="md:col-span-2">
               <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200 hover:border-yellow-300 transition-colors">
                 <div className="flex items-center h-5 mt-0.5">
