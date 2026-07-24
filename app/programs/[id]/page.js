@@ -2709,18 +2709,18 @@ const ProgramDetailPage = () => {
                           loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                        <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
+                        {/* <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
                           <span
                             className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-[10px] sm:text-sm font-semibold shadow-lg ${getStatusBadge(program.status)}`}
                           >
                             {program.status}
                           </span>
-                        </div>
+                        </div> */}
                         {hasDiscount && (
                           <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
                             <span className="px-2 sm:px-4 py-1 sm:py-2 bg-[#CC0000] text-white text-[10px] sm:text-sm font-semibold rounded-full shadow-lg flex items-center gap-1 sm:gap-2">
                               <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
-                              {program.discount}% OFF
+                              {program.discount}Rs. OFF
                             </span>
                           </div>
                         )}
