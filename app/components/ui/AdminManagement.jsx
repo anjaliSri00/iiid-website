@@ -2721,7 +2721,7 @@ const AdminManagement = () => {
                               <XCircle className="w-4 h-4" />
                             </button>
                           )}
-                          <button
+                          {/* <button
                             onClick={() =>
                               handleSyncEnrollmentsToDefault(
                                 assessment.course_id,
@@ -2731,7 +2731,7 @@ const AdminManagement = () => {
                             title="Sync Enrollments to Default"
                           >
                             <RefreshCw className="w-4 h-4" />
-                          </button>
+                          </button> */}
                           <button
                             onClick={() =>
                               handleDeleteAssessment(

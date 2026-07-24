@@ -1213,7 +1213,7 @@ const ProgramDetailPage = () => {
             <div className="flex items-center justify-between h-14 sm:h-16">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => router.back()}
+                  onClick={() => router.push("/")}
                   className="text-gray-600 hover:text-[#CC0000] transition-colors p-1"
                   aria-label="Go back"
                 >
