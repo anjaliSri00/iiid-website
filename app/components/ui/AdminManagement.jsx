@@ -1366,10 +1366,10 @@ const AdminManagement = () => {
           exportFunction = exportEnrollments;
           filters = enrollmentFilters;
           break;
-        case "contacts":
-          exportFunction = exportContacts;
-          filters = contactFilters;
-          break;
+        // case "contacts":
+        //   exportFunction = exportContacts;
+        //   filters = contactFilters;
+        //   break;
         default:
           toast.warning("No export available for this tab");
           return;

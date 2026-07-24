@@ -40,6 +40,8 @@ const MCQAssessment = ({
   resultsData = null,
   onRequestReattempt,
   reattemptStatus,
+ reattemptReason: parentReattemptReason, 
+  setReattemptReason: parentSetReattemptReason,
 }) => {
   const { submitMCQ } = useAssessment();
   const router = useRouter();
@@ -59,7 +61,10 @@ const MCQAssessment = ({
   const [showTimerWarning, setShowTimerWarning] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const [showReattemptModal, setShowReattemptModal] = useState(false);
-  const [reattemptReason, setReattemptReason] = useState('');
+  // const [reattemptReason, setReattemptReason] = useState('');
+  const reattemptReason = parentReattemptReason || '';
+  const setReattemptReason = parentSetReattemptReason || (() => {});
+
   
   const searchParams = useSearchParams();
   const viewParam = searchParams?.get('view');

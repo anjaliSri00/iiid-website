@@ -92,17 +92,18 @@ const ProgramDetailPage = () => {
   const hasMarkedCompleteRef = useRef(false);
 
   // Add these state variables
-const [certificateData, setCertificateData] = useState(null);
-const [isGeneratingCertificate, setIsGeneratingCertificate] = useState(false);
-const [showCertificateModal, setShowCertificateModal] = useState(false);
-const [isEligibleForCertificate, setIsEligibleForCertificate] = useState(false);
-const [certificateCheckDone, setCertificateCheckDone] = useState(false);
+  const [certificateData, setCertificateData] = useState(null);
+  const [isGeneratingCertificate, setIsGeneratingCertificate] = useState(false);
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [isEligibleForCertificate, setIsEligibleForCertificate] =
+    useState(false);
+  const [certificateCheckDone, setCertificateCheckDone] = useState(false);
 
-const certificateCheckDoneRef = useRef(false);
-const isCheckingCertificateRef = useRef(false);
+  const certificateCheckDoneRef = useRef(false);
+  const isCheckingCertificateRef = useRef(false);
 
-// Add state for tracking initial check
-const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
+  // Add state for tracking initial check
+  const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
 
   const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 
@@ -835,268 +836,282 @@ const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
     return Math.min(Math.round((totalWatched / totalDuration) * 100), 100);
   };
 
-
-
   useEffect(() => {
-  if (program?.id) {
-    const checkDone = sessionStorage.getItem(`cert_check_${program.id}`);
-    const certData = sessionStorage.getItem(`cert_data_${program.id}`);
-    
-    if (checkDone === 'true' && certData) {
-      try {
-        const data = JSON.parse(certData);
-        setCertificateData(data);
-        console.log(data, "-----------------certificate data-----------------------")
-        setIsEligibleForCertificate(true);
-        setCertificateCheckDone(true);
-        certificateCheckDoneRef.current = true;
-        setIsInitialCheckDone(true);
-      } catch (e) {
-        console.error('Error restoring certificate data:', e);
-      }
-    }
-  }
-}, [program?.id]);
-
-const checkCertificateEligibility = useCallback(async () => {
-  // Prevent multiple simultaneous checks
-  if (isCheckingCertificateRef.current) {
-    console.log('Certificate check already in progress, skipping...');
-    return false;
-  }
-
-  // Don't check if already done for this session
-  if (certificateCheckDoneRef.current && certificateData) {
-    console.log('Certificate check already done, skipping...');
-    return true;
-  }
-
-  if (!program?.is_purchased || !isAuthenticated || !allLessonsCompleted) {
-    setIsEligibleForCertificate(false);
-    setCertificateCheckDone(true);
-    certificateCheckDoneRef.current = true;
     if (program?.id) {
-      sessionStorage.setItem(`cert_check_${program.id}`, 'false');
-    }
-    return false;
-  }
+      const checkDone = sessionStorage.getItem(`cert_check_${program.id}`);
+      const certData = sessionStorage.getItem(`cert_data_${program.id}`);
 
-  try {
-    isCheckingCertificateRef.current = true;
-    console.log('Checking certificate eligibility...');
-    
-    const result = await certificateApi.checkCertificateEligibility(
-      program.id, 
-      session
-    );
-
-    console.log('Certificate eligibility result:', result);
-
-    if (result.success && result.data) {
-      setCertificateData(result.data);
-      setIsEligibleForCertificate(true);
-      setCertificateCheckDone(true);
-      certificateCheckDoneRef.current = true;
-      if (program?.id) {
-        sessionStorage.setItem(`cert_check_${program.id}`, 'true');
-        sessionStorage.setItem(`cert_data_${program.id}`, JSON.stringify(result.data));
+      if (checkDone === "true" && certData) {
+        try {
+          const data = JSON.parse(certData);
+          setCertificateData(data);
+          console.log(
+            data,
+            "-----------------certificate data-----------------------",
+          );
+          setIsEligibleForCertificate(true);
+          setCertificateCheckDone(true);
+          certificateCheckDoneRef.current = true;
+          setIsInitialCheckDone(true);
+        } catch (e) {
+          console.error("Error restoring certificate data:", e);
+        }
       }
+    }
+  }, [program?.id]);
+
+  const checkCertificateEligibility = useCallback(async () => {
+    // Prevent multiple simultaneous checks
+    if (isCheckingCertificateRef.current) {
+      console.log("Certificate check already in progress, skipping...");
+      return false;
+    }
+
+    // Don't check if already done for this session
+    if (certificateCheckDoneRef.current && certificateData) {
+      console.log("Certificate check already done, skipping...");
       return true;
     }
 
-    if (result.needsAssessment) {
+    if (!program?.is_purchased || !isAuthenticated || !allLessonsCompleted) {
       setIsEligibleForCertificate(false);
       setCertificateCheckDone(true);
       certificateCheckDoneRef.current = true;
       if (program?.id) {
-        sessionStorage.setItem(`cert_check_${program.id}`, 'false');
+        sessionStorage.setItem(`cert_check_${program.id}`, "false");
       }
-      setProgressSaveStatus('assessment_needed');
-      setTimeout(() => setProgressSaveStatus(''), 5000);
       return false;
     }
 
-    if (result.eligible) {
-      setIsEligibleForCertificate(true);
+    try {
+      isCheckingCertificateRef.current = true;
+      console.log("Checking certificate eligibility...");
+
+      const result = await certificateApi.checkCertificateEligibility(
+        program.id,
+        session,
+      );
+
+      console.log("Certificate eligibility result:", result);
+
+      if (result.success && result.data) {
+        setCertificateData(result.data);
+        setIsEligibleForCertificate(true);
+        setCertificateCheckDone(true);
+        certificateCheckDoneRef.current = true;
+        if (program?.id) {
+          sessionStorage.setItem(`cert_check_${program.id}`, "true");
+          sessionStorage.setItem(
+            `cert_data_${program.id}`,
+            JSON.stringify(result.data),
+          );
+        }
+        return true;
+      }
+
+      if (result.needsAssessment) {
+        setIsEligibleForCertificate(false);
+        setCertificateCheckDone(true);
+        certificateCheckDoneRef.current = true;
+        if (program?.id) {
+          sessionStorage.setItem(`cert_check_${program.id}`, "false");
+        }
+        setProgressSaveStatus("assessment_needed");
+        setTimeout(() => setProgressSaveStatus(""), 5000);
+        return false;
+      }
+
+      if (result.eligible) {
+        setIsEligibleForCertificate(true);
+        setCertificateCheckDone(true);
+        certificateCheckDoneRef.current = true;
+        if (program?.id) {
+          sessionStorage.setItem(`cert_check_${program.id}`, "true");
+        }
+        await generateCertificate();
+        return true;
+      }
+
+      setIsEligibleForCertificate(false);
       setCertificateCheckDone(true);
       certificateCheckDoneRef.current = true;
       if (program?.id) {
-        sessionStorage.setItem(`cert_check_${program.id}`, 'true');
+        sessionStorage.setItem(`cert_check_${program.id}`, "false");
       }
-      await generateCertificate();
-      return true;
+      return false;
+    } catch (error) {
+      console.error("Error checking certificate eligibility:", error);
+      setIsEligibleForCertificate(false);
+      setCertificateCheckDone(true);
+      certificateCheckDoneRef.current = true;
+      return false;
+    } finally {
+      isCheckingCertificateRef.current = false;
+    }
+  }, [program, isAuthenticated, allLessonsCompleted, session]);
+
+  useEffect(() => {
+    // Skip if already checked in this session
+    if (certificateCheckDoneRef.current || isInitialCheckDone) {
+      return;
     }
 
-    setIsEligibleForCertificate(false);
-    setCertificateCheckDone(true);
-    certificateCheckDoneRef.current = true;
-    if (program?.id) {
-      sessionStorage.setItem(`cert_check_${program.id}`, 'false');
+    if (
+      allLessonsCompleted &&
+      program?.is_purchased &&
+      isAuthenticated &&
+      !isCheckingCertificateRef.current
+    ) {
+      console.log("Triggering certificate eligibility check from useEffect");
+      checkCertificateEligibility();
+    } else if (
+      !allLessonsCompleted ||
+      !program?.is_purchased ||
+      !isAuthenticated
+    ) {
+      // Clear session storage when conditions are not met
+      if (program?.id) {
+        sessionStorage.removeItem(`cert_check_${program.id}`);
+        sessionStorage.removeItem(`cert_data_${program.id}`);
+      }
+      setCertificateCheckDone(false);
+      setIsEligibleForCertificate(false);
+      setCertificateData(null);
+      certificateCheckDoneRef.current = false;
+      setIsInitialCheckDone(false);
     }
-    return false;
-  } catch (error) {
-    console.error('Error checking certificate eligibility:', error);
-    setIsEligibleForCertificate(false);
-    setCertificateCheckDone(true);
-    certificateCheckDoneRef.current = true;
-    return false;
-  } finally {
-    isCheckingCertificateRef.current = false;
-  }
-}, [program, isAuthenticated, allLessonsCompleted, session]);
+  }, [
+    allLessonsCompleted,
+    program?.is_purchased,
+    isAuthenticated,
+    program?.id,
+  ]);
 
-
-useEffect(() => {
-  // Skip if already checked in this session
-  if (certificateCheckDoneRef.current || isInitialCheckDone) {
-    return;
-  }
-
-  if (
-    allLessonsCompleted && 
-    program?.is_purchased && 
-    isAuthenticated && 
-    !isCheckingCertificateRef.current
-  ) {
-    console.log('Triggering certificate eligibility check from useEffect');
-    checkCertificateEligibility();
-  } else if (!allLessonsCompleted || !program?.is_purchased || !isAuthenticated) {
-    // Clear session storage when conditions are not met
+  // Manual refresh function
+  const refreshCertificateStatus = useCallback(async () => {
+    certificateCheckDoneRef.current = false;
+    setIsInitialCheckDone(false);
+    setCertificateCheckDone(false);
     if (program?.id) {
       sessionStorage.removeItem(`cert_check_${program.id}`);
       sessionStorage.removeItem(`cert_data_${program.id}`);
     }
-    setCertificateCheckDone(false);
-    setIsEligibleForCertificate(false);
-    setCertificateData(null);
-    certificateCheckDoneRef.current = false;
-    setIsInitialCheckDone(false);
-  }
-}, [allLessonsCompleted, program?.is_purchased, isAuthenticated, program?.id]);
+    await checkCertificateEligibility();
+  }, [checkCertificateEligibility, program?.id]);
 
-// Manual refresh function
-const refreshCertificateStatus = useCallback(async () => {
-  certificateCheckDoneRef.current = false;
-  setIsInitialCheckDone(false);
-  setCertificateCheckDone(false);
-  if (program?.id) {
-    sessionStorage.removeItem(`cert_check_${program.id}`);
-    sessionStorage.removeItem(`cert_data_${program.id}`);
-  }
-  await checkCertificateEligibility();
-}, [checkCertificateEligibility, program?.id]);
+  // Generate certificate
+  const generateCertificate = async () => {
+    if (isGeneratingCertificate) return;
 
-// Generate certificate
-const generateCertificate = async () => {
-  if (isGeneratingCertificate) return;
-  
-  setIsGeneratingCertificate(true);
-  try {
-    // Check eligibility first
-    const eligibilityResult = await certificateApi.checkCertificateEligibility(
-      program.id, 
-      session
-    );
-
-    console.log('Generate certificate - eligibility:', eligibilityResult);
-
-    // If certificate already exists
-    if (eligibilityResult.success && eligibilityResult.data) {
-      setCertificateData(eligibilityResult.data);
-      setShowCertificateModal(true);
-      setProgressSaveStatus('certificate_exists');
-      setTimeout(() => setProgressSaveStatus(''), 3000);
-      return;
-    }
-
-    // If user needs to complete assessment
-    if (eligibilityResult.needsAssessment) {
-      setProgressSaveStatus('assessment_needed');
-      setTimeout(() => setProgressSaveStatus(''), 3000);
-      alert('You need to complete and pass the assessment first before you can generate a certificate.');
-      return;
-    }
-
-    // If not eligible
-    if (!eligibilityResult.eligible) {
-      setProgressSaveStatus('certificate_not_eligible');
-      setTimeout(() => setProgressSaveStatus(''), 3000);
-      return;
-    }
-
-    // If eligible but no certificate, try to get it
-    const retryResult = await certificateApi.getMyCertificate(program.id, session);
-    
-    if (retryResult.success && retryResult.data) {
-      setCertificateData(retryResult.data);
-      setShowCertificateModal(true);
-      setProgressSaveStatus('certificate_generated');
-      setTimeout(() => setProgressSaveStatus(''), 3000);
-    } else {
-      // If still no certificate, show message
-      setProgressSaveStatus('certificate_generation_failed');
-      setTimeout(() => setProgressSaveStatus(''), 3000);
-      alert('Certificate generation failed. Please contact support or check if you have passed all assessments.');
-    }
-  } catch (error) {
-    console.error('Error generating certificate:', error);
-    setProgressSaveStatus('certificate_error');
-    setTimeout(() => setProgressSaveStatus(''), 3000);
-  } finally {
-    setIsGeneratingCertificate(false);
-  }
-};
-// Download certificate
-const handleDownloadCertificate = async () => {
-  if (!certificateData) return;
-  
-  try {
-    if (certificateData.pdf_url) {
-      window.open(certificateData.pdf_url, '_blank');
-    } else {
-      // Generate PDF using certificate data
-      // You can use html2canvas + jsPDF or other libraries
-      alert('Download feature coming soon. Please view the certificate online.');
-    }
-  } catch (error) {
-    console.error('Error downloading certificate:', error);
-    alert('Failed to download certificate. Please try again.');
-  }
-};
-
-// Share certificate
-const handleShareCertificate = async () => {
-  if (!certificateData) return;
-  
-  const shareUrl = certificateData.code 
-    ? `${window.location.origin}/certificates/verify/${certificateData.code}`
-    : `${window.location.origin}/certificates/${certificateData.id}`;
-  
-  if (navigator.share) {
+    setIsGeneratingCertificate(true);
     try {
-      await navigator.share({
-        title: 'Certificate of Completion',
-        text: `I earned a certificate for ${program?.title}!`,
-        url: shareUrl,
-      });
+      // Check eligibility first
+      const eligibilityResult =
+        await certificateApi.checkCertificateEligibility(program.id, session);
+
+      console.log("Generate certificate - eligibility:", eligibilityResult);
+
+      // If certificate already exists
+      if (eligibilityResult.success && eligibilityResult.data) {
+        setCertificateData(eligibilityResult.data);
+        setShowCertificateModal(true);
+        setProgressSaveStatus("certificate_exists");
+        setTimeout(() => setProgressSaveStatus(""), 3000);
+        return;
+      }
+
+      // If user needs to complete assessment
+      if (eligibilityResult.needsAssessment) {
+        setProgressSaveStatus("assessment_needed");
+        setTimeout(() => setProgressSaveStatus(""), 3000);
+        alert(
+          "You need to complete and pass the assessment first before you can generate a certificate.",
+        );
+        return;
+      }
+
+      // If not eligible
+      if (!eligibilityResult.eligible) {
+        setProgressSaveStatus("certificate_not_eligible");
+        setTimeout(() => setProgressSaveStatus(""), 3000);
+        return;
+      }
+
+      // If eligible but no certificate, try to get it
+      const retryResult = await certificateApi.getMyCertificate(
+        program.id,
+        session,
+      );
+
+      if (retryResult.success && retryResult.data) {
+        setCertificateData(retryResult.data);
+        setShowCertificateModal(true);
+        setProgressSaveStatus("certificate_generated");
+        setTimeout(() => setProgressSaveStatus(""), 3000);
+      } else {
+        // If still no certificate, show message
+        setProgressSaveStatus("certificate_generation_failed");
+        setTimeout(() => setProgressSaveStatus(""), 3000);
+        alert(
+          "Certificate generation failed. Please contact support or check if you have passed all assessments.",
+        );
+      }
     } catch (error) {
-      console.error('Share error:', error);
+      console.error("Error generating certificate:", error);
+      setProgressSaveStatus("certificate_error");
+      setTimeout(() => setProgressSaveStatus(""), 3000);
+    } finally {
+      setIsGeneratingCertificate(false);
     }
-  } else {
-    // Fallback: copy to clipboard
+  };
+  // Download certificate
+  const handleDownloadCertificate = async () => {
+    if (!certificateData) return;
+
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      alert('Certificate link copied to clipboard!');
+      if (certificateData.pdf_url) {
+        window.open(certificateData.pdf_url, "_blank");
+      } else {
+        // Generate PDF using certificate data
+        // You can use html2canvas + jsPDF or other libraries
+        alert(
+          "Download feature coming soon. Please view the certificate online.",
+        );
+      }
     } catch (error) {
-      console.error('Copy error:', error);
+      console.error("Error downloading certificate:", error);
+      alert("Failed to download certificate. Please try again.");
     }
-  }
-};
+  };
 
+  // Share certificate
+  const handleShareCertificate = async () => {
+    if (!certificateData) return;
 
+    const shareUrl = certificateData.code
+      ? `${window.location.origin}/certificates/verify/${certificateData.code}`
+      : `${window.location.origin}/certificates/${certificateData.id}`;
 
-
-
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Certificate of Completion",
+          text: `I earned a certificate for ${program?.title}!`,
+          url: shareUrl,
+        });
+      } catch (error) {
+        console.error("Share error:", error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Certificate link copied to clipboard!");
+      } catch (error) {
+        console.error("Copy error:", error);
+      }
+    }
+  };
 
   // Loading state
   if (!isClient || status === "loading") {
@@ -1540,71 +1555,80 @@ const handleShareCertificate = async () => {
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
                   {/* Tab Navigation */}
                   <div className="flex border-b border-[#D4A574]/20 bg-[#FDF8F0]/50">
-  <button
-    onClick={() => setActiveTab("content")}
-    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
-      activeTab === "content"
-        ? "text-[#CC0000] border-b-2 border-[#CC0000]"
-        : "text-gray-500 hover:text-gray-700"
-    }`}
-  >
-    <BookOpen className="w-4 h-4" />
-    Content
-  </button>
-  
-  <button
-    onClick={() => setActiveTab("assessment")}
-    disabled={!allLessonsCompleted}
-    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
-      activeTab === "assessment"
-        ? "text-[#CC0000] border-b-2 border-[#CC0000]"
-        : allLessonsCompleted
-          ? "text-gray-500 hover:text-gray-700"
-          : "text-gray-300 cursor-not-allowed"
-    }`}
-  >
-    <ClipboardCheck className="w-4 h-4" />
-    Assessment
-    {!allLessonsCompleted && (
-      <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full ml-1">
-        Locked
-      </span>
-    )}
-    {allLessonsCompleted && assessmentData && assessmentData.length > 0 && (
-      <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full ml-1">
-        {assessmentData.filter(a => a.attempt?.passed === true).length}/{assessmentData.length}
-      </span>
-    )}
-  </button>
+                    <button
+                      onClick={() => setActiveTab("content")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
+                        activeTab === "content"
+                          ? "text-[#CC0000] border-b-2 border-[#CC0000]"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Content
+                    </button>
 
-  {/* Certificate Tab - Show only if user is enrolled and all lessons completed */}
-  {isLessonPurchased && isAuthenticated && allLessonsCompleted && (
-    <button
-      onClick={() => setActiveTab("certificate")}
-      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
-        activeTab === "certificate"
-          ? "text-[#CC0000] border-b-2 border-[#CC0000]"
-          : "text-gray-500 hover:text-gray-700"
-      }`}
-    >
-      <Award className="w-4 h-4" />
-      Certificate
-      {certificateData ? (
-        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full ml-1">
-          ✓ Ready
-        </span>
-      ) : isEligibleForCertificate ? (
-        <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full ml-1">
-          Available
-        </span>
-      ) : (
-        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full ml-1">
-          Locked
-        </span>
-      )}
-    </button>
-  )}
-</div>
+                    <button
+                      onClick={() => setActiveTab("assessment")}
+                      disabled={!allLessonsCompleted}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
+                        activeTab === "assessment"
+                          ? "text-[#CC0000] border-b-2 border-[#CC0000]"
+                          : allLessonsCompleted
+                            ? "text-gray-500 hover:text-gray-700"
+                            : "text-gray-300 cursor-not-allowed"
+                      }`}
+                    >
+                      <ClipboardCheck className="w-4 h-4" />
+                      Assessment
+                      {!allLessonsCompleted && (
+                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full ml-1">
+                          Locked
+                        </span>
+                      )}
+                      {allLessonsCompleted &&
+                        assessmentData &&
+                        assessmentData.length > 0 && (
+                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full ml-1">
+                            {
+                              assessmentData.filter(
+                                (a) => a.attempt?.passed === true,
+                              ).length
+                            }
+                            /{assessmentData.length}
+                          </span>
+                        )}
+                    </button>
+
+                    {/* Certificate Tab - Show only if user is enrolled and all lessons completed */}
+                    {isLessonPurchased &&
+                      isAuthenticated &&
+                      allLessonsCompleted && (
+                        <button
+                          onClick={() => setActiveTab("certificate")}
+                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
+                            activeTab === "certificate"
+                              ? "text-[#CC0000] border-b-2 border-[#CC0000]"
+                              : "text-gray-500 hover:text-gray-700"
+                          }`}
+                        >
+                          <Award className="w-4 h-4" />
+                          Certificate
+                          {certificateData ? (
+                            <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full ml-1">
+                              ✓ Ready
+                            </span>
+                          ) : isEligibleForCertificate ? (
+                            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full ml-1">
+                              Available
+                            </span>
+                          ) : (
+                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full ml-1">
+                              Locked
+                            </span>
+                          )}
+                        </button>
+                      )}
+                  </div>
                   {/* Content Tab */}
                   {activeTab === "content" && (
                     <>
@@ -2156,7 +2180,6 @@ const handleShareCertificate = async () => {
                               </div>
                             </div>
 
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {assessmentData.map((assessment) => {
                                 const hasAttempt =
@@ -2406,8 +2429,6 @@ const handleShareCertificate = async () => {
                                 );
                               })}
                             </div>
-
-               
                           </div>
                         ) : (
                           <div className="text-center py-8 sm:py-12">
@@ -2446,203 +2467,234 @@ const handleShareCertificate = async () => {
                     </div>
                   )}
                   {/* Certificate Tab */}
-{activeTab === "certificate" && isLessonPurchased && isAuthenticated && allLessonsCompleted && (
-  <div className="p-4 sm:p-6">
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex items-center gap-3">
-        <Award className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600" />
-        <div>
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-            Your Certificate
-          </h3>
-          <p className="text-sm text-gray-500">
-            {certificateData 
-              ? 'Your certificate of completion is ready!' 
-              : isEligibleForCertificate 
-                ? 'Generate your certificate of completion' 
-                : 'Complete all requirements to earn your certificate'}
-          </p>
-        </div>
-      </div>
+                  {activeTab === "certificate" &&
+                    isLessonPurchased &&
+                    isAuthenticated &&
+                    allLessonsCompleted && (
+                      <div className="p-4 sm:p-6">
+                        <div className="space-y-4 sm:space-y-6">
+                          <div className="flex items-center gap-3">
+                            <Award className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600" />
+                            <div>
+                              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                                Your Certificate
+                              </h3>
+                              <p className="text-sm text-gray-500">
+                                {certificateData
+                                  ? "Your certificate of completion is ready!"
+                                  : isEligibleForCertificate
+                                    ? "Generate your certificate of completion"
+                                    : "Complete all requirements to earn your certificate"}
+                              </p>
+                            </div>
+                          </div>
 
-      {/* Certificate Status */}
-      {!certificateCheckDone ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-[#CC0000]" />
-          <span className="ml-3 text-gray-600">Checking certificate status...</span>
-        </div>
-      ) : certificateData ? (
-        // Certificate Already Exists
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-500 rounded-full">
-                <CheckCircle className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-green-800 text-lg">Certificate Ready!</h4>
-                <p className="text-sm text-green-600">
-                  Issued on {new Date(certificateData.issued_at || Date.now()).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </p>
-                {certificateData.certificate_id && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    ID: {certificateData.certificate_id}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setShowCertificateModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-                View
-              </button>
-              <button
-                onClick={handleDownloadCertificate}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                Download PDF
-              </button>
-              <button
-                onClick={handleShareCertificate}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                <Share2 className="w-4 h-4" />
-                Share
-              </button>
-            </div>
-          </div>
+                          {/* Certificate Status */}
+                          {!certificateCheckDone ? (
+                            <div className="flex items-center justify-center py-8">
+                              <Loader2 className="w-8 h-8 animate-spin text-[#CC0000]" />
+                              <span className="ml-3 text-gray-600">
+                                Checking certificate status...
+                              </span>
+                            </div>
+                          ) : certificateData ? (
+                            // Certificate Already Exists
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
+                              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="p-3 bg-green-500 rounded-full">
+                                    <CheckCircle className="w-8 h-8 text-white" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-green-800 text-lg">
+                                      Certificate Ready!
+                                    </h4>
+                                    <p className="text-sm text-green-600">
+                                      Issued on{" "}
+                                      {new Date(
+                                        certificateData.issued_at || Date.now(),
+                                      ).toLocaleDateString("en-US", {
+                                        month: "long",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                    </p>
+                                    {certificateData.certificate_id && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        ID: {certificateData.certificate_id}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() =>
+                                      setShowCertificateModal(true)
+                                    }
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                    View
+                                  </button>
+                                  <button
+                                    onClick={handleDownloadCertificate}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    Download PDF
+                                  </button>
+                                  <button
+                                    onClick={handleShareCertificate}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                  >
+                                    <Share2 className="w-4 h-4" />
+                                    Share
+                                  </button>
+                                </div>
+                              </div>
 
-          {/* Shareable Link */}
-          {certificateData.certificate_code && (
-            <div className="mt-4 pt-4 border-t border-green-200">
-              <p className="text-sm text-gray-600 mb-2">Shareable Verification Link:</p>
-              <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-green-200">
-                <code className="flex-1 text-xs text-gray-700 truncate">
-                  {`${window.location.origin}/certificates/verify/${certificateData.certificate_code}`}
-                </code>
-                <button
-                  onClick={() => {
-                    const url = `${window.location.origin}/certificates/verify/${certificateData.certificate_code}`;
-                    navigator.clipboard.writeText(url);
-                    alert('Verification link copied to clipboard!');
-                  }}
-                  className="px-3 py-1 text-sm text-[#CC0000] hover:bg-[#FDF8F0] rounded transition-colors whitespace-nowrap"
-                >
-                  Copy Link
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : isEligibleForCertificate ? (
-        // Eligible but no certificate yet
-        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-6 border-2 border-yellow-200">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-yellow-500 rounded-full">
-                <Sparkles className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-yellow-800 text-lg">You're Eligible!</h4>
-                <p className="text-sm text-yellow-700">
-                  You've completed all requirements. Generate your certificate now.
-                </p>
-                <div className="flex items-center gap-3 mt-1 text-xs text-yellow-600">
-                  <span className="flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    All lessons completed
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    All assessments passed
-                  </span>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={generateCertificate}
-              disabled={isGeneratingCertificate}
-              className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#CC0000] to-[#E60000] text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-            >
-              {isGeneratingCertificate ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Generate Certificate
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      ) : (
-        // Not eligible
-        <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-gray-300 rounded-full">
-              <Lock className="w-8 h-8 text-gray-500" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-gray-700 text-lg">Certificate Not Available</h4>
-              <p className="text-sm text-gray-600 mt-1">
-                Complete all requirements to earn your certificate.
-              </p>
-              <div className="mt-3 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex items-center gap-1 text-green-600">
-                    <CheckCircle className="w-4 h-4" />
-                    All lessons completed
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className={`flex items-center gap-1 ${assessmentData?.some(a => a.attempt?.passed === true) ? 'text-green-600' : 'text-yellow-600'}`}>
-                    {assessmentData?.some(a => a.attempt?.passed === true) ? (
-                      <CheckCircle className="w-4 h-4" />
-                    ) : (
-                      <Clock className="w-4 h-4" />
+                              {/* Shareable Link */}
+                              {certificateData.certificate_code && (
+                                <div className="mt-4 pt-4 border-t border-green-200">
+                                  <p className="text-sm text-gray-600 mb-2">
+                                    Shareable Verification Link:
+                                  </p>
+                                  <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-green-200">
+                                    <code className="flex-1 text-xs text-gray-700 truncate">
+                                      {`${window.location.origin}/certificates/verify/${certificateData.certificate_code}`}
+                                    </code>
+                                    <button
+                                      onClick={() => {
+                                        const url = `${window.location.origin}/certificates/verify/${certificateData.certificate_code}`;
+                                        navigator.clipboard.writeText(url);
+                                        alert(
+                                          "Verification link copied to clipboard!",
+                                        );
+                                      }}
+                                      className="px-3 py-1 text-sm text-[#CC0000] hover:bg-[#FDF8F0] rounded transition-colors whitespace-nowrap"
+                                    >
+                                      Copy Link
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : isEligibleForCertificate ? (
+                            // Eligible but no certificate yet
+                            <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-6 border-2 border-yellow-200">
+                              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="p-3 bg-yellow-500 rounded-full">
+                                    <Sparkles className="w-8 h-8 text-white" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-yellow-800 text-lg">
+                                      You're Eligible!
+                                    </h4>
+                                    <p className="text-sm text-yellow-700">
+                                      You've completed all requirements.
+                                      Generate your certificate now.
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-1 text-xs text-yellow-600">
+                                      <span className="flex items-center gap-1">
+                                        <CheckCircle className="w-3 h-3" />
+                                        All lessons completed
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <CheckCircle className="w-3 h-3" />
+                                        All assessments passed
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={generateCertificate}
+                                  disabled={isGeneratingCertificate}
+                                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#CC0000] to-[#E60000] text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                >
+                                  {isGeneratingCertificate ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Generating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Sparkles className="w-4 h-4" />
+                                      Generate Certificate
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            // Not eligible
+                            <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+                              <div className="flex items-start gap-4">
+                                <div className="p-3 bg-gray-300 rounded-full">
+                                  <Lock className="w-8 h-8 text-gray-500" />
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-gray-700 text-lg">
+                                    Certificate Not Available
+                                  </h4>
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    Complete all requirements to earn your
+                                    certificate.
+                                  </p>
+                                  <div className="mt-3 space-y-2">
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <span className="flex items-center gap-1 text-green-600">
+                                        <CheckCircle className="w-4 h-4" />
+                                        All lessons completed
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <span
+                                        className={`flex items-center gap-1 ${assessmentData?.some((a) => a.attempt?.passed === true) ? "text-green-600" : "text-yellow-600"}`}
+                                      >
+                                        {assessmentData?.some(
+                                          (a) => a.attempt?.passed === true,
+                                        ) ? (
+                                          <CheckCircle className="w-4 h-4" />
+                                        ) : (
+                                          <Clock className="w-4 h-4" />
+                                        )}
+                                        {assessmentData?.some(
+                                          (a) => a.attempt?.passed === true,
+                                        )
+                                          ? "All assessments passed"
+                                          : "Complete all assessments with passing score"}
+                                      </span>
+                                    </div>
+                                    {assessmentData?.some(
+                                      (a) =>
+                                        a.attempt?.review_status === "pending",
+                                    ) && (
+                                      <div className="flex items-center gap-2 text-sm text-yellow-600">
+                                        <Clock className="w-4 h-4" />
+                                        Waiting for assessment review
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Certificate Preview Button (if exists) */}
+                          {certificateData && (
+                            <div className="text-center">
+                              <button
+                                onClick={() => setShowCertificateModal(true)}
+                                className="text-[#CC0000] hover:underline text-sm font-medium"
+                              >
+                                Preview Certificate →
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
-                    {assessmentData?.some(a => a.attempt?.passed === true) 
-                      ? 'All assessments passed' 
-                      : 'Complete all assessments with passing score'}
-                  </span>
-                </div>
-                {assessmentData?.some(a => a.attempt?.review_status === 'pending') && (
-                  <div className="flex items-center gap-2 text-sm text-yellow-600">
-                    <Clock className="w-4 h-4" />
-                    Waiting for assessment review
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Certificate Preview Button (if exists) */}
-      {certificateData && (
-        <div className="text-center">
-          <button
-            onClick={() => setShowCertificateModal(true)}
-            className="text-[#CC0000] hover:underline text-sm font-medium"
-          >
-            Preview Certificate →
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
-)}
                 </div>
               ) : (
                 // Not Enrolled or Not Authenticated - Show Program Details
@@ -2825,67 +2877,86 @@ const handleShareCertificate = async () => {
           </div>
         </div>
       </div>
-{/* Certificate Viewer Modal */}
-{showCertificateModal && certificateData && (
-  <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
-    <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden shadow-2xl">
-      {/* Modal Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[#D4A574]/20 bg-gradient-to-r from-amber-50 to-white flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#8B1A1A]/10 rounded-lg">
-            <Award className="w-6 h-6 text-[#8B1A1A]" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Certificate of Completion</h2>
-            <p className="text-xs text-gray-500">{certificateData?.course_title || program?.title}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleDownloadCertificate}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1A1A] text-white text-sm rounded-lg hover:bg-[#6B1212] transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Download
-          </button>
-          <button
-            onClick={handleShareCertificate}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <Share2 className="w-4 h-4" />
-            Share
-          </button>
-          <button
-            onClick={() => setShowCertificateModal(false)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+      {/* Certificate Viewer Modal */}
+      {showCertificateModal && certificateData && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-[#D4A574]/20 bg-gradient-to-r from-amber-50 to-white flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#8B1A1A]/10 rounded-lg">
+                  <Award className="w-6 h-6 text-[#8B1A1A]" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Certificate of Completion
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    {certificateData?.course_title || program?.title}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownloadCertificate}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1A1A] text-white text-sm rounded-lg hover:bg-[#6B1212] transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </button>
+                <button
+                  onClick={handleShareCertificate}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </button>
+                <button
+                  onClick={() => setShowCertificateModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Close modal"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
-      {/* Certificate Content */}
-      <div className="p-6 overflow-y-auto max-h-[calc(95vh-80px)] bg-gray-50">
-        <div className="max-w-3xl mx-auto">
-          <CertificateTemplate 
-            certificateData={certificateData} 
-            program={program} 
-          />
-          
-          {/* Additional Info */}
-          <div className="mt-4 text-center text-xs text-gray-400 space-y-1">
-            <p>This certificate is issued to <span className="font-medium text-gray-600">{certificateData.full_name}</span> for successfully completing <span className="font-medium text-gray-600">{certificateData.course_title || program?.title}</span>.</p>
-            {certificateData.certificate_code && (
-              <p>Verify this certificate at <span className="text-[#8B1A1A] font-medium">{window.location.origin}/certificates/verify/{certificateData.certificate_code}</span></p>
-            )}
+            {/* Certificate Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(95vh-80px)] bg-gray-50">
+              <div className="max-w-3xl mx-auto">
+                <CertificateTemplate
+                  certificateData={certificateData}
+                  program={program}
+                />
+
+                {/* Additional Info */}
+                <div className="mt-4 text-center text-xs text-gray-400 space-y-1">
+                  <p>
+                    This certificate is issued to{" "}
+                    <span className="font-medium text-gray-600">
+                      {certificateData.full_name}
+                    </span>{" "}
+                    for successfully completing{" "}
+                    <span className="font-medium text-gray-600">
+                      {certificateData.course_title || program?.title}
+                    </span>
+                    .
+                  </p>
+                  {certificateData.certificate_code && (
+                    <p>
+                      Verify this certificate at{" "}
+                      <span className="text-[#8B1A1A] font-medium">
+                        {window.location.origin}/certificates/verify/
+                        {certificateData.certificate_code}
+                      </span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
     </>
   );
 };
