@@ -845,10 +845,10 @@ const ProgramDetailPage = () => {
         try {
           const data = JSON.parse(certData);
           setCertificateData(data);
-          console.log(
-            data,
-            "-----------------certificate data-----------------------",
-          );
+          // console.log(
+          //   data,
+          //   "-----------------certificate data-----------------------",
+          // );
           setIsEligibleForCertificate(true);
           setCertificateCheckDone(true);
           certificateCheckDoneRef.current = true;
@@ -1000,70 +1000,90 @@ const ProgramDetailPage = () => {
   }, [checkCertificateEligibility, program?.id]);
 
   // Generate certificate
-  const generateCertificate = async () => {
-    if (isGeneratingCertificate) return;
+const generateCertificate = async () => {
+  if (isGeneratingCertificate) return;
 
-    setIsGeneratingCertificate(true);
-    try {
-      // Check eligibility first
-      const eligibilityResult =
-        await certificateApi.checkCertificateEligibility(program.id, session);
+  setIsGeneratingCertificate(true);
+  try {
+    // First try to get existing certificate
+    const existingResult = await certificateApi.getMyCertificate(
+      program.id,
+      session
+    );
 
-      console.log("Generate certificate - eligibility:", eligibilityResult);
-
-      // If certificate already exists
-      if (eligibilityResult.success && eligibilityResult.data) {
-        setCertificateData(eligibilityResult.data);
-        setShowCertificateModal(true);
-        setProgressSaveStatus("certificate_exists");
-        setTimeout(() => setProgressSaveStatus(""), 3000);
-        return;
-      }
-
-      // If user needs to complete assessment
-      if (eligibilityResult.needsAssessment) {
-        setProgressSaveStatus("assessment_needed");
-        setTimeout(() => setProgressSaveStatus(""), 3000);
-        alert(
-          "You need to complete and pass the assessment first before you can generate a certificate.",
-        );
-        return;
-      }
-
-      // If not eligible
-      if (!eligibilityResult.eligible) {
-        setProgressSaveStatus("certificate_not_eligible");
-        setTimeout(() => setProgressSaveStatus(""), 3000);
-        return;
-      }
-
-      // If eligible but no certificate, try to get it
-      const retryResult = await certificateApi.getMyCertificate(
-        program.id,
-        session,
-      );
-
-      if (retryResult.success && retryResult.data) {
-        setCertificateData(retryResult.data);
-        setShowCertificateModal(true);
-        setProgressSaveStatus("certificate_generated");
-        setTimeout(() => setProgressSaveStatus(""), 3000);
-      } else {
-        // If still no certificate, show message
-        setProgressSaveStatus("certificate_generation_failed");
-        setTimeout(() => setProgressSaveStatus(""), 3000);
-        alert(
-          "Certificate generation failed. Please contact support or check if you have passed all assessments.",
-        );
-      }
-    } catch (error) {
-      console.error("Error generating certificate:", error);
-      setProgressSaveStatus("certificate_error");
+    if (existingResult.success && existingResult.data) {
+      setCertificateData(existingResult.data);
+      setProgressSaveStatus("certificate_exists");
       setTimeout(() => setProgressSaveStatus(""), 3000);
-    } finally {
+      // Navigate to certificate page
+      if (existingResult.data.certificate_code) {
+        router.push(`/certificates/${existingResult.data.certificate_code}`);
+      }
       setIsGeneratingCertificate(false);
+      return;
     }
-  };
+
+    // If no existing certificate, check eligibility
+    const eligibilityResult = await certificateApi.checkCertificateEligibility(
+      program.id,
+      session
+    );
+
+    // console.log("Generate certificate - eligibility:", eligibilityResult);
+
+    if (eligibilityResult.needsAssessment) {
+      setProgressSaveStatus("assessment_needed");
+      setTimeout(() => setProgressSaveStatus(""), 3000);
+      alert(
+        "You need to complete and pass the assessment first before you can generate a certificate."
+      );
+      setIsGeneratingCertificate(false);
+      return;
+    }
+
+    if (!eligibilityResult.eligible) {
+      setProgressSaveStatus("certificate_not_eligible");
+      setTimeout(() => setProgressSaveStatus(""), 3000);
+      setIsGeneratingCertificate(false);
+      return;
+    }
+
+    // Try to get certificate again after eligibility check
+    const retryResult = await certificateApi.getMyCertificate(
+      program.id,
+      session
+    );
+
+    if (retryResult.success && retryResult.data) {
+      setCertificateData(retryResult.data);
+      setProgressSaveStatus("certificate_generated");
+      setTimeout(() => setProgressSaveStatus(""), 3000);
+      // Store in session
+      if (program?.id) {
+        sessionStorage.setItem(`cert_check_${program.id}`, "true");
+        sessionStorage.setItem(
+          `cert_data_${program.id}`,
+          JSON.stringify(retryResult.data)
+        );
+      }
+      // Navigate to certificate page
+      if (retryResult.data.certificate_code) {
+        router.push(`/certificates/${retryResult.data.certificate_code}`);
+      }
+    } else {
+      setProgressSaveStatus("certificate_generation_failed");
+      setTimeout(() => setProgressSaveStatus(""), 3000);
+      alert("Certificate generation failed. Please contact support.");
+    }
+  } catch (error) {
+    console.error("Error generating certificate:", error);
+    setProgressSaveStatus("certificate_error");
+    setTimeout(() => setProgressSaveStatus(""), 3000);
+  } finally {
+    setIsGeneratingCertificate(false);
+  }
+};
+
   // Download certificate
   const handleDownloadCertificate = async () => {
     if (!certificateData) return;
@@ -1084,34 +1104,33 @@ const ProgramDetailPage = () => {
     }
   };
 
-  // Share certificate
-  const handleShareCertificate = async () => {
-    if (!certificateData) return;
+// Share certificate
+const handleShareCertificate = async () => {
+  if (!certificateData?.certificate_code) return;
 
-    const shareUrl = certificateData.code
-      ? `${window.location.origin}/certificates/verify/${certificateData.code}`
-      : `${window.location.origin}/certificates/${certificateData.id}`;
+  const shareUrl = `${window.location.origin}/certificates/${certificateData.certificate_code}`;
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Certificate of Completion",
-          text: `I earned a certificate for ${program?.title}!`,
-          url: shareUrl,
-        });
-      } catch (error) {
-        console.error("Share error:", error);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("Certificate link copied to clipboard!");
-      } catch (error) {
-        console.error("Copy error:", error);
-      }
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "Certificate of Completion",
+        text: `I earned a certificate for ${program?.title}!`,
+        url: shareUrl,
+      });
+    } catch (error) {
+      console.error("Share error:", error);
     }
-  };
+  } else {
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setProgressSaveStatus("link_copied");
+      setTimeout(() => setProgressSaveStatus(""), 2000);
+    } catch (error) {
+      console.error("Copy error:", error);
+    }
+  }
+};
 
   // Loading state
   if (!isClient || status === "loading") {
@@ -2466,235 +2485,219 @@ const ProgramDetailPage = () => {
                       )}
                     </div>
                   )}
-                  {/* Certificate Tab */}
-                  {activeTab === "certificate" &&
-                    isLessonPurchased &&
-                    isAuthenticated &&
-                    allLessonsCompleted && (
-                      <div className="p-4 sm:p-6">
-                        <div className="space-y-4 sm:space-y-6">
-                          <div className="flex items-center gap-3">
-                            <Award className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600" />
-                            <div>
-                              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                                Your Certificate
-                              </h3>
-                              <p className="text-sm text-gray-500">
-                                {certificateData
-                                  ? "Your certificate of completion is ready!"
-                                  : isEligibleForCertificate
-                                    ? "Generate your certificate of completion"
-                                    : "Complete all requirements to earn your certificate"}
-                              </p>
-                            </div>
-                          </div>
 
-                          {/* Certificate Status */}
-                          {!certificateCheckDone ? (
-                            <div className="flex items-center justify-center py-8">
-                              <Loader2 className="w-8 h-8 animate-spin text-[#CC0000]" />
-                              <span className="ml-3 text-gray-600">
-                                Checking certificate status...
-                              </span>
-                            </div>
-                          ) : certificateData ? (
-                            // Certificate Already Exists
-                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
-                              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                  <div className="p-3 bg-green-500 rounded-full">
-                                    <CheckCircle className="w-8 h-8 text-white" />
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold text-green-800 text-lg">
-                                      Certificate Ready!
-                                    </h4>
-                                    <p className="text-sm text-green-600">
-                                      Issued on{" "}
-                                      {new Date(
-                                        certificateData.issued_at || Date.now(),
-                                      ).toLocaleDateString("en-US", {
-                                        month: "long",
-                                        day: "numeric",
-                                        year: "numeric",
-                                      })}
-                                    </p>
-                                    {certificateData.certificate_id && (
-                                      <p className="text-xs text-gray-500 mt-1">
-                                        ID: {certificateData.certificate_id}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    onClick={() =>
-                                      setShowCertificateModal(true)
-                                    }
-                                    className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
-                                  >
-                                    <Eye className="w-4 h-4" />
-                                    View
-                                  </button>
-                                  <button
-                                    onClick={handleDownloadCertificate}
-                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                                  >
-                                    <FileText className="w-4 h-4" />
-                                    Download PDF
-                                  </button>
-                                  <button
-                                    onClick={handleShareCertificate}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                                  >
-                                    <Share2 className="w-4 h-4" />
-                                    Share
-                                  </button>
-                                </div>
-                              </div>
+{/* Certificate Tab */}
+{activeTab === "certificate" &&
+  isLessonPurchased &&
+  isAuthenticated &&
+  allLessonsCompleted && (
+    <div className="p-4 sm:p-6">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex items-center gap-3">
+          <Award className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600" />
+          <div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+              Your Certificate
+            </h3>
+            <p className="text-sm text-gray-500">
+              {certificateData
+                ? "Your certificate of completion is ready!"
+                : isEligibleForCertificate
+                  ? "Generate your certificate of completion"
+                  : "Complete all requirements to earn your certificate"}
+            </p>
+          </div>
+        </div>
 
-                              {/* Shareable Link */}
-                              {certificateData.certificate_code && (
-                                <div className="mt-4 pt-4 border-t border-green-200">
-                                  <p className="text-sm text-gray-600 mb-2">
-                                    Shareable Verification Link:
-                                  </p>
-                                  <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-green-200">
-                                    <code className="flex-1 text-xs text-gray-700 truncate">
-                                      {`${window.location.origin}/certificates/verify/${certificateData.certificate_code}`}
-                                    </code>
-                                    <button
-                                      onClick={() => {
-                                        const url = `${window.location.origin}/certificates/verify/${certificateData.certificate_code}`;
-                                        navigator.clipboard.writeText(url);
-                                        alert(
-                                          "Verification link copied to clipboard!",
-                                        );
-                                      }}
-                                      className="px-3 py-1 text-sm text-[#CC0000] hover:bg-[#FDF8F0] rounded transition-colors whitespace-nowrap"
-                                    >
-                                      Copy Link
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ) : isEligibleForCertificate ? (
-                            // Eligible but no certificate yet
-                            <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-6 border-2 border-yellow-200">
-                              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                  <div className="p-3 bg-yellow-500 rounded-full">
-                                    <Sparkles className="w-8 h-8 text-white" />
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold text-yellow-800 text-lg">
-                                      You're Eligible!
-                                    </h4>
-                                    <p className="text-sm text-yellow-700">
-                                      You've completed all requirements.
-                                      Generate your certificate now.
-                                    </p>
-                                    <div className="flex items-center gap-3 mt-1 text-xs text-yellow-600">
-                                      <span className="flex items-center gap-1">
-                                        <CheckCircle className="w-3 h-3" />
-                                        All lessons completed
-                                      </span>
-                                      <span className="flex items-center gap-1">
-                                        <CheckCircle className="w-3 h-3" />
-                                        All assessments passed
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={generateCertificate}
-                                  disabled={isGeneratingCertificate}
-                                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#CC0000] to-[#E60000] text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                                >
-                                  {isGeneratingCertificate ? (
-                                    <>
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                      Generating...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Sparkles className="w-4 h-4" />
-                                      Generate Certificate
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            // Not eligible
-                            <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
-                              <div className="flex items-start gap-4">
-                                <div className="p-3 bg-gray-300 rounded-full">
-                                  <Lock className="w-8 h-8 text-gray-500" />
-                                </div>
-                                <div className="flex-1">
-                                  <h4 className="font-semibold text-gray-700 text-lg">
-                                    Certificate Not Available
-                                  </h4>
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    Complete all requirements to earn your
-                                    certificate.
-                                  </p>
-                                  <div className="mt-3 space-y-2">
-                                    <div className="flex items-center gap-2 text-sm">
-                                      <span className="flex items-center gap-1 text-green-600">
-                                        <CheckCircle className="w-4 h-4" />
-                                        All lessons completed
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm">
-                                      <span
-                                        className={`flex items-center gap-1 ${assessmentData?.some((a) => a.attempt?.passed === true) ? "text-green-600" : "text-yellow-600"}`}
-                                      >
-                                        {assessmentData?.some(
-                                          (a) => a.attempt?.passed === true,
-                                        ) ? (
-                                          <CheckCircle className="w-4 h-4" />
-                                        ) : (
-                                          <Clock className="w-4 h-4" />
-                                        )}
-                                        {assessmentData?.some(
-                                          (a) => a.attempt?.passed === true,
-                                        )
-                                          ? "All assessments passed"
-                                          : "Complete all assessments with passing score"}
-                                      </span>
-                                    </div>
-                                    {assessmentData?.some(
-                                      (a) =>
-                                        a.attempt?.review_status === "pending",
-                                    ) && (
-                                      <div className="flex items-center gap-2 text-sm text-yellow-600">
-                                        <Clock className="w-4 h-4" />
-                                        Waiting for assessment review
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+        {/* Certificate Status */}
+        {!certificateCheckDone ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-[#CC0000]" />
+            <span className="ml-3 text-gray-600">
+              Checking certificate status...
+            </span>
+          </div>
+        ) : certificateData ? (
+          // Certificate Already Exists
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-500 rounded-full">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-green-800 text-lg">
+                    Certificate Ready!
+                  </h4>
+                  <p className="text-sm text-green-600">
+                    Issued on{" "}
+                    {new Date(
+                      certificateData.issued_at || Date.now(),
+                    ).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                  {certificateData.certificate_code && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Code: {certificateData.certificate_code}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/certificates/${certificateData.certificate_code}`}
+                  // target="_blank"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  View Certificate
+                </Link>
+                <button
+                  onClick={handleShareCertificate}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </button>
+              </div>
+            </div>
 
-                          {/* Certificate Preview Button (if exists) */}
-                          {certificateData && (
-                            <div className="text-center">
-                              <button
-                                onClick={() => setShowCertificateModal(true)}
-                                className="text-[#CC0000] hover:underline text-sm font-medium"
-                              >
-                                Preview Certificate →
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+            {/* Shareable Link */}
+            {certificateData.certificate_code && (
+              <div className="mt-4 pt-4 border-t border-green-200">
+                <p className="text-sm text-gray-600 mb-2">
+                  Shareable Link:
+                </p>
+                <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-green-200">
+                  <code className="flex-1 text-xs text-gray-700 truncate">
+                    {`${window.location.origin}/certificates/${certificateData.certificate_code}`}
+                  </code>
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/certificates/${certificateData.certificate_code}`;
+                      navigator.clipboard.writeText(url);
+                      setProgressSaveStatus("link_copied");
+                      setTimeout(() => setProgressSaveStatus(""), 2000);
+                    }}
+                    className="px-3 py-1 text-sm text-[#CC0000] hover:bg-[#FDF8F0] rounded transition-colors whitespace-nowrap"
+                  >
+                    Copy Link
+                  </button>
+                </div>
+                {progressSaveStatus === "link_copied" && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ Link copied to clipboard!
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        ) : isEligibleForCertificate ? (
+          // Eligible but no certificate yet
+          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-6 border-2 border-yellow-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-yellow-500 rounded-full">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-yellow-800 text-lg">
+                    You're Eligible!
+                  </h4>
+                  <p className="text-sm text-yellow-700">
+                    You've completed all requirements.
+                    Generate your certificate now.
+                  </p>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-yellow-600">
+                    <span className="flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      All lessons completed
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      All assessments passed
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={generateCertificate}
+                disabled={isGeneratingCertificate}
+                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#CC0000] to-[#E60000] text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {isGeneratingCertificate ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Generate Certificate
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Not eligible
+          <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-gray-300 rounded-full">
+                <Lock className="w-8 h-8 text-gray-500" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-700 text-lg">
+                  Certificate Not Available
+                </h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  Complete all requirements to earn your certificate.
+                </p>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="flex items-center gap-1 text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                      All lessons completed
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span
+                      className={`flex items-center gap-1 ${assessmentData?.some((a) => a.attempt?.passed === true) ? "text-green-600" : "text-yellow-600"}`}
+                    >
+                      {assessmentData?.some(
+                        (a) => a.attempt?.passed === true,
+                      ) ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : (
+                        <Clock className="w-4 h-4" />
+                      )}
+                      {assessmentData?.some(
+                        (a) => a.attempt?.passed === true,
+                      )
+                        ? "All assessments passed"
+                        : "Complete all assessments with passing score"}
+                    </span>
+                  </div>
+                  {assessmentData?.some(
+                    (a) =>
+                      a.attempt?.review_status === "pending",
+                  ) && (
+                    <div className="flex items-center gap-2 text-sm text-yellow-600">
+                      <Clock className="w-4 h-4" />
+                      Waiting for assessment review
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )}
                 </div>
               ) : (
                 // Not Enrolled or Not Authenticated - Show Program Details

@@ -585,7 +585,7 @@ const ProgramCard = ({
 
                         <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                           {/* Activate/Deactivate buttons */}
-                          {assessment.is_active ? (
+                          {/* {assessment.is_active ? (
                             <button
                               onClick={(e) => { 
                                 e.stopPropagation(); 
@@ -618,7 +618,7 @@ const ProgramCard = ({
                                 <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                               )}
                             </button>
-                          )}
+                          )} */}
                           
                           <button
                             onClick={(e) => { 

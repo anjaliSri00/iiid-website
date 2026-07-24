@@ -319,9 +319,10 @@ export const useAssessmentOperations = (
         }
       }
         if (fetchPrograms) await fetchPrograms();
-      } else {
-        toast.error(response.meta?.message || "Failed to activate assessment");
-      }
+      } 
+      // else {
+      //   toast.error(response.meta?.message || "Failed to activate assessment");
+      // }
     } catch (error) {
       console.error("Error activating assessment:", error);
       toast.error("Failed to activate assessment");
@@ -374,9 +375,10 @@ export const useAssessmentOperations = (
         }
       }
         if (fetchPrograms) await fetchPrograms();
-      } else {
-        toast.error(response.meta?.message || "Failed to deactivate assessment");
       }
+      //  else {
+      //   toast.error(response.meta?.message || "Failed to deactivate assessment");
+      // }
     } catch (error) {
       console.error("Error deactivating assessment:", error);
       toast.error("Failed to deactivate assessment");

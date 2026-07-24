@@ -856,9 +856,10 @@ const AdminManagement = () => {
       if (response?.meta?.status === 200) {
         toast.success("Reattempt rejected successfully!");
         fetchReattemptRequests(reattemptPagination.page);
-      } else {
-        toast.error(response?.meta?.message || "Failed to reject reattempt");
-      }
+      } 
+      // else {
+      //   toast.error(response?.meta?.message || "Failed to reject reattempt");
+      // }
     } catch (error) {
       console.error("Error rejecting reattempt:", error);
       toast.error("Failed to reject reattempt");
@@ -894,9 +895,10 @@ const AdminManagement = () => {
         );
         fetchAttempts(attemptPagination.page);
         setShowAttemptDetail(false);
-      } else {
-        toast.error(response?.meta?.message || "Failed to review attempt");
       }
+      //  else {
+      //   toast.error(response?.meta?.message || "Failed to review attempt");
+      // }
     } catch (error) {
       console.error("Error reviewing attempt:", error);
       toast.error("Failed to review attempt");
@@ -924,11 +926,12 @@ const AdminManagement = () => {
       if (response?.meta?.status === 200) {
         toast.success("Default assessment updated successfully!");
         fetchAssessments(assessmentPagination.page);
-      } else {
-        toast.error(
-          response?.meta?.message || "Failed to set default assessment",
-        );
       }
+      //  else {
+      //   toast.error(
+      //     response?.meta?.message || "Failed to set default assessment",
+      //   );
+      // }
     } catch (error) {
       console.error("Error setting default assessment:", error);
       toast.error("Failed to set default assessment");
@@ -982,9 +985,10 @@ const AdminManagement = () => {
       if (response?.meta?.status === 200) {
         toast.success("Assessment deleted successfully!");
         fetchAssessments(assessmentPagination.page);
-      } else {
-        toast.error(response?.meta?.message || "Failed to delete assessment");
-      }
+      } 
+      // else {
+      //   toast.error(response?.meta?.message || "Failed to delete assessment");
+      // }
     } catch (error) {
       console.error("Error deleting assessment:", error);
       toast.error("Failed to delete assessment");
@@ -1007,9 +1011,10 @@ const AdminManagement = () => {
         toast.success("Assessment published successfully!");
         assessmentsCache = {};
         fetchAssessments(assessmentPagination.page);
-      } else {
-        toast.error(response?.meta?.message || "Failed to publish assessment");
-      }
+      } 
+      // else {
+      //   toast.error(response?.meta?.message || "Failed to publish assessment");
+      // }
     } catch (error) {
       console.error("Error activating assessment:", error);
       toast.error("Failed to publish assessment");
@@ -1030,11 +1035,12 @@ const AdminManagement = () => {
       if (response?.meta?.status === 200) {
         toast.success("Assessment deactivated successfully!");
         fetchAssessments(assessmentPagination.page);
-      } else {
-        toast.error(
-          response?.meta?.message || "Failed to deactivate assessment",
-        );
-      }
+      } 
+      // else {
+      //   toast.error(
+      //     response?.meta?.message || "Failed to deactivate assessment",
+      //   );
+      // }
     } catch (error) {
       console.error("Error deactivating assessment:", error);
       toast.error("Failed to deactivate assessment");
@@ -1815,9 +1821,9 @@ const AdminManagement = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Joined
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -1885,7 +1891,7 @@ const AdminManagement = () => {
                       <td className="px-4 py-3 text-sm text-gray-500">
                         {user.created_at ? formatDate(user.created_at) : "N/A"}
                       </td>
-                      <td className="px-4 py-3">
+                      {/* <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() =>
@@ -1919,7 +1925,7 @@ const AdminManagement = () => {
                             )}
                           </button>
                         </div>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -2083,9 +2089,9 @@ const AdminManagement = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Enrolled
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -2152,7 +2158,7 @@ const AdminManagement = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      {/* <td className="px-4 py-3">
                         <select
                           value={enrollment.enrollment_status || ""}
                           onChange={(e) => {
@@ -2171,7 +2177,7 @@ const AdminManagement = () => {
                           <option value="completed">Completed</option>
                           <option value="cancelled">Cancelled</option>
                         </select>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -2707,7 +2713,7 @@ const AdminManagement = () => {
                               <CheckCircle className="w-4 h-4" />
                             </button>
                           )}
-                          {assessment.status === "published" && (
+                          {/* {assessment.status === "published" && (
                             <button
                               onClick={() =>
                                 handleDeactivateAssessment(
@@ -2720,7 +2726,7 @@ const AdminManagement = () => {
                             >
                               <XCircle className="w-4 h-4" />
                             </button>
-                          )}
+                          )} */}
                           {/* <button
                             onClick={() =>
                               handleSyncEnrollmentsToDefault(

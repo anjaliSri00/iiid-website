@@ -110,7 +110,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="#certification" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
+                <Link href="/certificates" className="text-gray-600 hover:text-[#CC0000] transition-colors flex items-center group">
                   <ChevronRight size={16} className="mr-2 text-[#D4A574] group-hover:translate-x-1 transition-transform" />
                   Certification
                 </Link>
