@@ -72,6 +72,135 @@ export const certificateApi = {
   },
 
   /**
+   * Get all certificates for the current user with pagination and filters
+   * GET /api/v1/certificates/my-certificates
+   */
+  getUserCertificates: async (session, filters = {}) => {
+    try {
+      const {
+        course_id,
+        certificate_code,
+        search,
+        from_date,
+        to_date,
+        page = 1,
+        limit = 10
+      } = filters;
+
+      // Build query string
+      const queryParams = new URLSearchParams();
+      if (course_id) queryParams.append('course_id', course_id);
+      if (certificate_code) queryParams.append('certificate_code', certificate_code);
+      if (search) queryParams.append('search', search);
+      if (from_date) queryParams.append('from_date', from_date);
+      if (to_date) queryParams.append('to_date', to_date);
+      queryParams.append('page', page);
+      queryParams.append('limit', limit);
+
+      // const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/certificates/my-certificates`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/certificates/my-certificates${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      
+      const response = await fetchApiResponse(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            'Access-Token': session?.accessToken,
+            'Refresh-Token': session?.refreshToken,
+          },
+        }
+      );
+      
+      if (response.meta?.status === 200 && response.data) {
+        return {
+          success: true,
+          data: response.data,
+          meta: response.meta,
+          message: response.meta?.message || 'Certificates fetched successfully'
+        };
+      }
+      
+      return {
+        success: false,
+        data: null,
+        message: response.meta?.message || 'Failed to fetch certificates'
+      };
+    } catch (error) {
+      console.error('Error fetching user certificates:', error);
+      return {
+        success: false,
+        data: null,
+        message: 'Error fetching certificates'
+      };
+    }
+  },
+
+  /**
+   * Get all certificates (Admin only)
+   * GET /api/v1/certificates/admin/all
+   */
+  getAllCertificates: async (session, filters = {}) => {
+    try {
+      const {
+        user_id,
+        course_id,
+        certificate_code,
+        search,
+        from_date,
+        to_date,
+        page = 1,
+        limit = 10
+      } = filters;
+
+      // Build query string
+      const queryParams = new URLSearchParams();
+      if (user_id) queryParams.append('user_id', user_id);
+      if (course_id) queryParams.append('course_id', course_id);
+      if (certificate_code) queryParams.append('certificate_code', certificate_code);
+      if (search) queryParams.append('search', search);
+      if (from_date) queryParams.append('from_date', from_date);
+      if (to_date) queryParams.append('to_date', to_date);
+      queryParams.append('page', page);
+      queryParams.append('limit', limit);
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/certificates/admin/all${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      
+      const response = await fetchApiResponse(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            'Access-Token': session?.accessToken,
+            'Refresh-Token': session?.refreshToken,
+          },
+        }
+      );
+      
+      if (response.meta?.status === 200 && response.data) {
+        return {
+          success: true,
+          data: response.data,
+          meta: response.meta,
+          message: response.meta?.message || 'Certificates fetched successfully'
+        };
+      }
+      
+      return {
+        success: false,
+        data: null,
+        message: response.meta?.message || 'Failed to fetch certificates'
+      };
+    } catch (error) {
+      console.error('Error fetching all certificates:', error);
+      return {
+        success: false,
+        data: null,
+        message: 'Error fetching certificates'
+      };
+    }
+  },
+
+  /**
    * Check if user is eligible for certificate
    * This handles both 403 (not passed) and 404 (no certificate yet) responses
    */
@@ -147,10 +276,27 @@ export const certificateApi = {
           method: 'GET',
         }
       );
-      return response;
+      
+      if (response.meta?.status === 200 && response.data) {
+        return {
+          success: true,
+          data: response.data,
+          message: 'Certificate found'
+        };
+      }
+      
+      return {
+        success: false,
+        data: null,
+        message: response.meta?.message || 'Certificate not found'
+      };
     } catch (error) {
       console.error('Error fetching certificate by code:', error);
-      throw error;
+      return {
+        success: false,
+        data: null,
+        message: 'Error fetching certificate'
+      };
     }
   },
 
@@ -182,6 +328,6 @@ export const certificateApi = {
    * Generate a shareable link for certificate
    */
   getShareableLink: (code) => {
-    return `${process.env.NEXT_PUBLIC_APP_URL}/certificates/verify/${code}`;
+    return `${process.env.NEXT_PUBLIC_APP_URL}/certificates/${code}`;
   },
 };
