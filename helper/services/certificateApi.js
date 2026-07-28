@@ -300,6 +300,97 @@ export const certificateApi = {
     }
   },
 
+
+ downloadCertificate: async (courseId, session) => {
+    try {
+      if (!courseId) {
+        return {
+          success: false,
+          message: 'Course ID is required'
+        };
+      }
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/certificates/download?course_id=${courseId}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Access-Token': session?.accessToken,
+          'Refresh-Token': session?.refreshToken,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Check if response is ok
+      if (!response.ok) {
+        // Try to parse error message from response
+        let errorMessage = `Download failed: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.meta?.message) {
+            errorMessage = errorData.meta.message;
+          }
+        } catch (e) {
+          // If response is not JSON, use default error
+        }
+        
+        // Handle specific status codes
+        if (response.status === 403) {
+          return {
+            success: false,
+            message: 'You have not passed the assessment for this course',
+            needsAssessment: true
+          };
+        } else if (response.status === 404) {
+          return {
+            success: false,
+            message: 'Certificate not found. Please generate the certificate first.'
+          };
+        }
+        
+        return {
+          success: false,
+          message: errorMessage
+        };
+      }
+
+      // Get the blob from response
+      const blob = await response.blob();
+      
+      // Check if blob is empty
+      if (blob.size === 0) {
+        return {
+          success: false,
+          message: 'Downloaded file is empty'
+        };
+      }
+      
+      // Get filename from Content-Disposition header if available
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `certificate-${courseId}.pdf`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+
+      return {
+        success: true,
+        blob: blob,
+        filename: filename
+      };
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to download certificate',
+        error: error
+      };
+    }
+  },
+
   /**
    * Generate/Regenerate certificate for an enrollment
    * POST /api/v1/certificates/regenerate/{enrollmentId}

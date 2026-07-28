@@ -71,7 +71,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
             </div>
 
             {/* DIPLOMA CERTIFICATE */}
-            <p className="text-4xl tracking-[0.13em]  text-[#000] font-sans font-bold mb-6">
+            <p className="text-4xl max-sm:text-2xl tracking-[0.13em]  text-[#000] font-sans font-bold mb-6">
               DIPLOMA CERTIFICATE
             </p>
 
@@ -82,7 +82,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
 
             {/* Recipient Name - with underline */}
             <div className="mb-4">
-              <p className="text-3xl md:text-4xl merienda-600 text-[#1a0f0a]  border-b-2 border-[#c9a84c] inline-block px-12 pb-2">
+              <p className="text-3xl md:text-2xl merienda-600 text-[#1a0f0a]  border-b-2 border-[#c9a84c] inline-block px-12 pb-2">
                 {fullName}
               </p>
             </div>
@@ -108,29 +108,31 @@ const CertificateTemplate = ({ certificateData, program }) => {
               AWARDED THIS {formatDate(issuedDate).toUpperCase()}
             </p>
 
-            {/* SIGNED */}
-            <p className="text-sm hidden tracking-[0.2em] text-[#2c1810] font-serif mb-6">
+          
+            {/* Signatures with Stamp Overlay */}
+            <div className="relative w-[60%] max-lg:w-full mx-auto  p-4">
+              <div className="flex justify-between items-center max-sm:flex-col w-full gap-20  relative">
+                {/* Registrar */}
+                <div className="text-center ">
+                    {/* SIGNED */}
+            <p className="text-sm tracking-[0.2em] mb-2 text-[#2c1810] font-serif">
               SIGNED
             </p>
-
-            {/* Signatures with Stamp Overlay */}
-            <div className="relative py-10">
-              <div className="flex justify-center items-start gap-20 relative">
-                {/* Registrar */}
-                <div className="text-center hidden">
-                  <div className="w-40 border-b border-[#2c1810] mb-1 h-12 flex items-end justify-center">
-                    <span className="font-serif text-[#2c1810] text-sm tracking-widest italic">
+<hr/>
+                  <div className="w-40  mb-2 h-12 flex items-end justify-center">
+                    <span className="font-serif text-[#2c1810] text-sm tracking-widest merienda-500  italic">
                       Signature
                     </span>
                   </div>
-                  <p className="text-xs tracking-[0.2em] text-[#2c1810] font-serif uppercase">
+                  <hr/>
+                  <p className="text-xs mt-4 tracking-[0.2em] text-[#2c1810] font-serif uppercase">
                     Registrar
                   </p>
                 </div>
 
                 {/* Stamp - Positioned in the center between signatures */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                  <div className="w-[990px] h-30 relative opacity-70">
+                  <div className="w-50 max-sm:w-25 h-30  relative opacity-70">
                     <Image
                       src={stamp}
                       alt="Institute Stamp"
@@ -142,25 +144,24 @@ const CertificateTemplate = ({ certificateData, program }) => {
                 </div>
 
                 {/* Director */}
-                <div className="text-center hidden">
-                  <div className="w-40 border-b border-[#2c1810] mb-1 h-12 flex items-end justify-center">
-                    <span className="font-serif text-[#2c1810] text-sm tracking-widest italic">
+                
+                <div className="text-center ">
+              <p className="text-xs tracking-[0.2em] mb-2 text-[#2c1810] font-serif uppercase">
+                DIRECTOR
+              </p>
+              <hr/>
+                  <div className="w-40 mb-2 h-12 flex items-end justify-center">
+                    <span className="font-serif text-[#2c1810] text-sm tracking-widest merienda-500 italic">
                       Signature
                     </span>
                   </div>
-                  <p className="text-xs tracking-[0.2em] text-[#2c1810] font-serif uppercase">
+                  <hr/>
+                  <p className="text-xs mt-4 tracking-[0.2em] text-[#2c1810] font-serif uppercase">
                     Director
                   </p>
                 </div>
               </div>
-            </div>
-
-            {/* DIRECTOR (second line) */}
-            <div className="text-center hidden mt-1">
-              <p className="text-xs tracking-[0.2em] text-[#2c1810] font-serif uppercase">
-                DIRECTOR
-              </p>
-            </div>
+            </div>           
 
             {/* Footer with verification link */}
             {certificateCode && (

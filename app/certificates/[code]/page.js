@@ -16,13 +16,16 @@ import {
 } from 'lucide-react';
 import CertificateTemplate from '../../components/certificates/CertificateTemplate';
 import { certificateApi } from '@/helper/services/certificateApi';
+import { useSession } from 'next-auth/react';
 
 export default function CertificatePage() {
+  const {data:session} = useSession();
   const params = useParams();
   const router = useRouter();
   const code = params?.code;
   const [certificate, setCertificate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
 
 
@@ -40,7 +43,7 @@ export default function CertificatePage() {
     setLoading(true);
     setError(null);
     try {
-      console.log('Fetching certificate with code:', code);
+      // console.log('Fetching certificate with code:', code);
       const result = await certificateApi.getCertificateByCode(code);
       console.log('API Result:', result);
       
@@ -74,9 +77,51 @@ export default function CertificatePage() {
     }
   };
 
-  const handleDownload = () => {
-    window.print();
+   const handleDownload = async () => {
+    if (!certificate?.course_id) {
+      alert('Course ID not found. Cannot download certificate.');
+      return;
+    }
+    
+    if (!session?.accessToken) {
+      alert('Please login to download your certificate.');
+      router.push('/login');
+      return;
+    }
+    
+    setDownloading(true);
+    try {
+      // Use the course_id to download
+      const result = await certificateApi.downloadCertificate(
+        certificate.course_id,
+        session
+      );
+      
+      if (result.success && result.blob) {
+        // Create a download link
+        const url = window.URL.createObjectURL(result.blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = result.filename || `certificate-${certificate.certificate_code}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        if (result.needsAssessment) {
+          alert('You have not passed the assessment for this course. Please complete the assessment first.');
+        } else {
+          alert(result.message || 'Failed to download certificate');
+        }
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('An error occurred while downloading the certificate');
+    } finally {
+      setDownloading(false);
+    }
   };
+
 
   if (loading) {
     return (
@@ -139,12 +184,22 @@ export default function CertificatePage() {
               <Share2 className="w-4 h-4" />
               Share
             </button>
-            <button
+             <button
               onClick={handleDownload}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#CC0000] text-white text-sm rounded-lg hover:bg-[#B30000] transition-colors"
+              disabled={downloading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#CC0000] text-white text-sm rounded-lg hover:bg-[#B30000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Download className="w-4 h-4" />
-              Download
+              {downloading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Downloading...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  Download PDF
+                </>
+              )}
             </button>
           </div>
         </div>
