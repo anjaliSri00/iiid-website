@@ -89,7 +89,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
         backgroundColor: "#ffffff",
         logging: false,
         width: 1100,
-        height: 780,
+        height: 900,
         onclone: (clonedDoc) => {
           // Fix any lab() colors in cloned document
           const elements = clonedDoc.querySelectorAll("*");
