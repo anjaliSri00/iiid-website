@@ -18,11 +18,9 @@ export const QuestionForm = ({
     onSuccess,
 
 }) => {
-//   console.log("QuestionForm rendered with:", { courseId, assessmentId, editingQuestion });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // console.log("Question form submitted with courseId:", courseId, "assessmentId:", assessmentId);
     if (courseId && assessmentId) {
       handleQuestionSubmit(courseId, assessmentId);
     } else {

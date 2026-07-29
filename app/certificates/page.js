@@ -1,95 +1,139 @@
 // app/certificates/page.js
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
-import { 
-  Award, 
-  Search, 
-  Grid, 
-  List, 
-  Loader2, 
-  Plus, 
-  Sparkles, 
+import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import {
+  Award,
+  Search,
+  Grid,
+  List,
+  Loader2,
+  Plus,
+  Sparkles,
   AlertCircle,
   Calendar,
   Filter,
   ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-import CertificateCard from '../components/certificates/CertificateCard';
-import { certificateApi } from '@/helper/services/certificateApi';
+  ChevronRight,
+} from "lucide-react";
+import CertificateCard from "../components/certificates/CertificateCard";
+import { certificateApi } from "@/helper/services/certificateApi";
 
 export default function CertificatesPage() {
   const { data: session, status } = useSession();
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState("grid");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
-    totalPages: 0
+    totalPages: 0,
   });
 
+  // Debounce timer reference
+  const debounceTimerRef = useRef(null);
+
+  // Debounce search term
   useEffect(() => {
-    if (status === 'authenticated') {
+    // Clear previous timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new timer
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms delay
+
+    // Cleanup on unmount or searchTerm change
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    if (debouncedSearchTerm !== undefined) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+    }
+  }, [debouncedSearchTerm]);
+
+  // Fetch certificates when session, page, or debounced search changes
+  useEffect(() => {
+    if (status === "authenticated") {
       fetchCertificates();
     }
-  }, [status, pagination.page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, pagination.page, debouncedSearchTerm]);
 
   const fetchCertificates = async () => {
+    if (!session) return;
+
     setLoading(true);
     setError(null);
+
     try {
       const result = await certificateApi.getUserCertificates(session, {
-        search: searchTerm || undefined,
+        search: debouncedSearchTerm || undefined,
         page: pagination.page,
-        limit: pagination.limit
+        limit: pagination.limit,
       });
-      
+
       if (result.success && result.data) {
-        // Assuming response.data contains { certificates: [], pagination: {} }
         const certificatesData = result.data.certificates || result.data || [];
-        setCertificates(Array.isArray(certificatesData) ? certificatesData : []);
-        
-        // Set pagination info if available
+        setCertificates(
+          Array.isArray(certificatesData) ? certificatesData : [],
+        );
+
         if (result.data.pagination) {
-          setPagination(prev => ({
+          setPagination((prev) => ({
             ...prev,
-            total: result.data.pagination.total || 0,
-            totalPages: result.data.pagination.totalPages || 0
+            total: result.data.pagination?.total || 0,
+            totalPages: result.data.pagination?.totalPages || 0,
           }));
         }
       } else {
-        setError(result.message || 'Failed to fetch certificates');
+        setError(result.message || "Failed to fetch certificates");
         setCertificates([]);
       }
     } catch (err) {
-      console.error('Error fetching certificates:', err);
-      setError('An error occurred while fetching certificates');
+      console.error("Error fetching certificates:", err);
+      setError("An error occurred while fetching certificates");
       setCertificates([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Manual search handler (for form submit)
   const handleSearch = (e) => {
     e.preventDefault();
-    setPagination(prev => ({ ...prev, page: 1 }));
-    fetchCertificates();
+    // The debounce will handle the search
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setDebouncedSearchTerm("");
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= pagination.totalPages) {
-      setPagination(prev => ({ ...prev, page: newPage }));
+      setPagination((prev) => ({ ...prev, page: newPage }));
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center">
         <div className="text-center">
@@ -100,13 +144,17 @@ export default function CertificatesPage() {
     );
   }
 
-  if (status === 'unauthenticated') {
+  if (status === "unauthenticated") {
     return (
       <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
           <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
-          <p className="text-gray-600 mb-6">Please login to view your certificates</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Login Required
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Please login to view your certificates
+          </p>
           <Link
             href="/login"
             className="inline-flex items-center gap-2 px-6 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
@@ -132,49 +180,24 @@ export default function CertificatesPage() {
               Track and manage all your earned certificates
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Link
-              href="/programs"
+              href="/apply-online"
               className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Continue Learning
+              New Courses
             </Link>
           </div>
         </div>
 
-        {/* Stats */}
-        {certificates.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-[#D4A574]/20">
-              <p className="text-sm text-gray-500">Total</p>
-              <p className="text-2xl font-bold text-gray-900">{pagination.total || certificates.length}</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-green-200">
-              <p className="text-sm text-gray-500">Active</p>
-              <p className="text-2xl font-bold text-green-600">
-                {certificates.filter(c => c.status === 'active').length}
-              </p>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-red-200">
-              <p className="text-sm text-gray-500">Expired</p>
-              <p className="text-2xl font-bold text-red-600">
-                {certificates.filter(c => c.status === 'expired').length}
-              </p>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-yellow-200">
-              <p className="text-sm text-gray-500">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {certificates.filter(c => c.status === 'pending').length}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Search */}
+        {/* Search Section */}
         <div className="bg-white rounded-xl shadow-sm border border-[#D4A574]/20 p-4 mb-6">
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
+          <form
+            onSubmit={handleSearch}
+            className="flex flex-col sm:flex-row gap-4"
+          >
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -184,8 +207,17 @@ export default function CertificatesPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
               />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 type="submit"
@@ -193,27 +225,19 @@ export default function CertificatesPage() {
               >
                 Search
               </button>
-              
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+              {searchTerm && (
                 <button
                   type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-[#CC0000] text-white' : 'bg-white text-gray-600'}`}
-                  aria-label="Grid view"
+                  onClick={handleClearSearch}
+                  className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <Grid className="w-4 h-4" />
+                  Clear
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-[#CC0000] text-white' : 'bg-white text-gray-600'}`}
-                  aria-label="List view"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
+              )}
             </div>
           </form>
+
+          {/* View toggle and results count */}
         </div>
 
         {/* Certificates Grid/List */}
@@ -228,27 +252,15 @@ export default function CertificatesPage() {
               Try Again
             </button>
           </div>
-        ) : certificates.length === 0 ? (
-          <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-[#D4A574]/20">
-            <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Certificates Yet</h3>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Complete courses and pass assessments to earn certificates
-            </p>
-            <Link
-              href="/programs"
-              className="inline-flex items-center gap-2 mt-4 px-6 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
-            >
-              <Sparkles className="w-4 h-4" />
-              Browse Programs
-            </Link>
-          </div>
         ) : (
           <>
-            <div className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-              : 'space-y-4'
-            }>
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  : "space-y-4"
+              }
+            >
               {certificates.map((certificate) => (
                 <CertificateCard
                   key={certificate.id || certificate.certificate_code}
@@ -260,26 +272,29 @@ export default function CertificatesPage() {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-between">
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-sm text-gray-600">
-                  Showing {certificates.length} of {pagination.total} certificates
+                  Showing {certificates.length} of {pagination.total}{" "}
+                  certificates
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
                     <ChevronLeft className="w-4 h-4" />
+                    Previous
                   </button>
-                  <span className="px-4 py-2 bg-[#CC0000] text-white rounded-lg">
+                  <span className="px-4 py-2 bg-[#CC0000] text-white rounded-lg min-w-[40px] text-center">
                     {pagination.page}
                   </span>
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
-                    className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
+                    Next
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
