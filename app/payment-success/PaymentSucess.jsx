@@ -328,8 +328,9 @@ const PaymentSuccess = () => {
                   )}
                   {hasDiscount && (
                     <div className="flex justify-between text-sm text-green-600">
-                      <span>Discount ({courseData.discount}%)</span>
-                      <span>- ₹{((parseFloat(courseData.original_price) * parseFloat(courseData.discount)) / 100).toFixed(2)}</span>
+                      <span>Discount ({courseData.discount}) RS.</span>
+                      <span>- ₹{courseData.discount}</span>
+                      {/* <span>- ₹{((parseFloat(courseData.original_price) * parseFloat(courseData.discount)) / 100).toFixed(2)}</span> */}
                     </div>
                   )}
                 </div>
