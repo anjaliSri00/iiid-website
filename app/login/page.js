@@ -148,14 +148,14 @@ function LoginPage() {
 
     setIsOtpVerifying(true);
     setOtpError('');
-
+// console.log(mobileOtpData,"")
     try {
       // Hash OTP with SHA-256 for security
-      const hashedOtp = sha256(mobileOtpData.otp).toString();
+      // const hashedOtp = sha256(mobileOtpData.otp).toString();
       
       const result = await signIn('credentials', {
         mobile: mobileOtpData.mobile,
-        otp: hashedOtp,
+        otp: mobileOtpData.otp,
         action: 'verify',
         session_id: mobileOtpData.session_id,
         redirect: false,
