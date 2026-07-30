@@ -16,6 +16,11 @@ export default function HeroSection() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4A574] rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#D4A574] rounded-full blur-3xl"></div>
       </div>
+         <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-20 -right-20 w-80 h-80 border-4 border-white/10 rounded-full animate-pulse"></div>
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 border-4 border-white/10 rounded-full animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 border-2 border-white/5 rounded-full animate-pulse delay-500"></div>
+      </div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto">
@@ -44,7 +49,7 @@ export default function HeroSection() {
             transition={{ delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <div className="bg-[#fff]/20 backdrop-blur-sm rounded-lg px-6 py-3 inline-flex items-center gap-2 border border-[#D4A574]/30">
+            <div className="bg-[#fff]/20 backdrop-blur-sm  px-6 py-3 inline-flex items-center gap-2 border border-[#D4A574]/30">
               <Calendar className="w-5 h-5 text-[#fffff]" />
               <span className="font-semibold text-[#ffff]">Next batch: June 15, 2026</span>
             </div>
@@ -54,3 +59,5 @@ export default function HeroSection() {
     </motion.section>
   );
 }
+
+

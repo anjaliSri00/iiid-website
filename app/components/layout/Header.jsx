@@ -72,14 +72,15 @@ export default function Header() {
                 Home
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
+              <Link href="/about-us" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+                About
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
+              </Link>
               <Link href="/apply-online" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
                 Apply Online
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="/#about" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
-                About
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
-              </Link>
+             
               {/* <Link href="#programs" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
                 Programs
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>

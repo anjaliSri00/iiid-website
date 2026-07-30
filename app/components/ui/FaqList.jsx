@@ -75,11 +75,11 @@ const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-12"
         >
-          <div className="inline-flex items-center gap-2 bg-[#CC0000]/10 px-4 py-2 rounded-full mb-4">
+          <div className="inline-flex items-center gap-2 bg-[#CC0000]/10 px-4 py-2  mb-4">
             <ThumbsUp className="w-4 h-4 text-[#CC0000]" />
             <span className="text-sm font-medium text-[#CC0000]">FAQ</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 font-serif">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 ">
             Frequently Asked Questions
           </h2>
           <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
@@ -89,7 +89,7 @@ const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
 
         {/* FAQs List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl">
+          <div className="flex flex-col items-center justify-center py-16 bg-white ">
             <Loader2 className="w-10 h-10 animate-spin text-[#CC0000]" />
             <p className="mt-3 text-gray-500 font-medium">Loading FAQs...</p>
             <p className="text-sm text-gray-400">Please wait while we fetch the questions</p>
@@ -98,7 +98,7 @@ const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200"
+            className="text-center py-16 bg-white border-2 border-dashed border-gray-200"
           >
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <HelpCircle className="w-10 h-10 text-gray-300" />
@@ -122,7 +122,7 @@ const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
                 <motion.div
                   key={faq.id}
                   variants={itemVariants}
-                  className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-[#CC0000]/30 hover:shadow-lg transition-all duration-300"
+                  className="bg-white  border border-gray-200 overflow-hidden hover:border-[#CC0000]/30 hover:shadow-lg transition-all duration-300"
                 >
                   <button
                     onClick={() => toggleExpand(faq.id)}
@@ -190,7 +190,7 @@ const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="mt-8 text-center bg-gradient-to-br from-[#FDF8F0] to-[#F5E6D3] rounded-2xl p-6 sm:p-8 border border-[#D4A574]/30"
+            className="mt-8 text-center bg-gradient-to-br from-[#FDF8F0] to-[#F5E6D3] p-6 sm:p-8 border border-[#D4A574]/30"
           >
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Still have questions?</h4>
             <p className="text-gray-600 mb-4">
@@ -198,7 +198,7 @@ const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
             </p>
             <a
               href="/contact-us"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] hover:shadow-lg transition-all duration-300 font-medium"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#CC0000] text-white hover:bg-[#B30000] hover:shadow-lg transition-all duration-300 font-medium"
             >
               <MessageSquare className="w-4 h-4" />
               Contact Us

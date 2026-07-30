@@ -147,7 +147,7 @@ export default function CertificatesPage() {
   if (status === "unauthenticated") {
     return (
       <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+        <div className="bg-white shadow-lg p-8 max-w-md w-full text-center">
           <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Login Required
@@ -157,7 +157,7 @@ export default function CertificatesPage() {
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-6 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
           >
             Login Now
           </Link>
@@ -184,7 +184,7 @@ export default function CertificatesPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/apply-online"
-              className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
             >
               <Plus className="w-4 h-4" />
               New Courses
@@ -193,7 +193,7 @@ export default function CertificatesPage() {
         </div>
 
         {/* Search Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-[#D4A574]/20 p-4 mb-6">
+        <div className="bg-white shadow-sm border border-[#D4A574]/20 p-4 mb-6">
           <form
             onSubmit={handleSearch}
             className="flex flex-col sm:flex-row gap-4"
@@ -205,7 +205,7 @@ export default function CertificatesPage() {
                 placeholder="Search certificates by course name or code..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
               />
               {searchTerm && (
                 <button
@@ -221,7 +221,7 @@ export default function CertificatesPage() {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+                className="px-4 py-2 bg-[#CC0000] text-white  hover:bg-[#B30000] transition-colors"
               >
                 Search
               </button>
@@ -229,7 +229,7 @@ export default function CertificatesPage() {
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   Clear
                 </button>
@@ -281,18 +281,18 @@ export default function CertificatesPage() {
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    className="px-4 py-2 border border-gray-200  hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     Previous
                   </button>
-                  <span className="px-4 py-2 bg-[#CC0000] text-white rounded-lg min-w-[40px] text-center">
+                  <span className="px-4 py-2 bg-[#CC0000] text-white min-w-[40px] text-center">
                     {pagination.page}
                   </span>
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
-                    className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    className="px-4 py-2 border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
                     Next
                     <ChevronRight className="w-4 h-4" />

@@ -7,7 +7,7 @@ export default function TrustBadges() {
   const badges = [
     {
       icon: Clock,
-      title: "24hr Response",
+      title: "48hr Response",
       description: "Quick replies",
     },
     {

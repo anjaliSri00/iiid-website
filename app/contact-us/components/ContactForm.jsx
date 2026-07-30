@@ -101,7 +101,7 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-gray-100">
+    <div className="bg-white p-6 md:p-8 shadow-lg border border-gray-100">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-1">Send Us a Message</h2>
         <p className="text-gray-500 text-sm">
@@ -115,7 +115,7 @@ export default function ContactForm() {
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center justify-center py-12"
         >
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <div className="w-20 h-20 bg-green-100 flex items-center justify-center mb-4">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent! 🎉</h3>
@@ -140,7 +140,7 @@ export default function ContactForm() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 bg-[#CC0000]/10 border border-[#CC0000]/30 rounded-xl flex items-start gap-3"
+              className="p-4 bg-[#CC0000]/10 border border-[#CC0000]/30  flex items-start gap-3"
             >
               <AlertCircle className="w-5 h-5 text-[#CC0000] shrink-0 mt-0.5" />
               <div>
@@ -163,7 +163,7 @@ export default function ContactForm() {
                   value={formData.name}
                   required
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all ${
+                  className={`w-full pl-10 pr-4 py-3 border focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all ${
                     errors.name ? "border-[#CC0000] ring-2 ring-[#CC0000]/20" : "border-gray-200"
                   }`}
                   placeholder="Enter your full name"
@@ -188,7 +188,7 @@ export default function ContactForm() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all ${
+                  className={`w-full pl-10 pr-4 py-3 border  focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all ${
                     errors.email ? "border-[#CC0000] ring-2 ring-[#CC0000]/20" : "border-gray-200"
                   }`}
                   required
@@ -216,7 +216,7 @@ export default function ContactForm() {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all ${
+                className={`w-full pl-10 pr-4 py-3 border focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all ${
                   errors.phone ? "border-[#CC0000] ring-2 ring-[#CC0000]/20" : "border-gray-200"
                 }`}
                 placeholder="Enter your phone number"
@@ -242,7 +242,7 @@ export default function ContactForm() {
                 value={formData.message}
                 onChange={handleChange}
                 rows="5"
-                className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all resize-none ${
+                className={`w-full pl-10 pr-4 py-3 border focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000] outline-none transition-all resize-none ${
                   errors.message ? "border-[#CC0000] ring-2 ring-[#CC0000]/20" : "border-gray-200"
                 }`}
                 placeholder="Tell us how we can help you..."
@@ -259,7 +259,7 @@ export default function ContactForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-4 bg-[#CC0000] text-white rounded-xl font-semibold hover:bg-[#B30000] hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-base"
+            className="w-full py-3 bg-[#CC0000] text-white font-semibold hover:bg-[#B30000] hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-base"
           >
             {isSubmitting ? (
               <>
