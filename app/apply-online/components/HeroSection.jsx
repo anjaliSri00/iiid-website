@@ -29,7 +29,7 @@ export default function HeroSection() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-serif"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 "
           >
             Apply Online for Live Interior Design Courses
           </motion.h1>

@@ -178,7 +178,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
           <button
             onClick={downloadCertificate}
             disabled={isDownloading}
-            className="bg-[#c9a84c] hover:bg-[#b8973a] text-white font-semibold py-2 px-6 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#c9a84c] hover:bg-[#b8973a] text-white font-semibold py-2 px-6 shadow-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isDownloading ? (
               <>
@@ -219,7 +219,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                   />
                 </svg>
-                Download Certificate
+                 Download<sub>(.png)</sub>
               </>
             )}
           </button>
@@ -259,7 +259,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
               style={{ borderColor: "#c9a84c" }}
             ></div>
 
-            <div className="text-center relative">
+            <div className="text-center relative mb-4">
               {/* Logo Section */}
               <div className="flex justify-start mb-4">
                 <div className="w-[300px] relative">
@@ -275,14 +275,14 @@ const CertificateTemplate = ({ certificateData, program }) => {
               </div>
 
               {/* Certificate ID Badge */}
-              {certificateCode && (
+              {/* {certificateCode && (
                 <div className="inline-block bg-[#8B1A1A]/10 text-[#8B1A1A] text-xs px-4 py-1 rounded-full mb-4 font-mono">
                   Certificate #{certificateCode}
                 </div>
-              )}
+              )} */}
 
               {/* Decorative line with diamonds */}
-              <div className="flex items-center justify-center gap-2 mb-4">
+              {/* <div className="flex items-center justify-center gap-2 mb-4">
                 <div
                   className="h-[1px] w-12 bg-[#c9a84c]"
                   style={{ backgroundColor: "#c9a84c" }}
@@ -303,11 +303,11 @@ const CertificateTemplate = ({ certificateData, program }) => {
                   className="h-[1px] w-12 bg-[#c9a84c]"
                   style={{ backgroundColor: "#c9a84c" }}
                 ></div>
-              </div>
+              </div> */}
 
               {/* DIPLOMA CERTIFICATE */}
               <p
-                className="text-4xl max-sm:text-2xl tracking-[0.13em] text-[#000] font-sans font-bold mb-6"
+                className="text-4xl max-sm:text-2xl tracking-[0.13em] mt-4 text-[#000] font-sans font-bold mb-4"
                 style={{ color: "#000000" }}
               >
                 DIPLOMA CERTIFICATE
@@ -436,7 +436,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
               </div>
 
               {/* Footer with verification link */}
-              {certificateCode && (
+              {/* {certificateCode && (
                 <div className="mt-8 pt-4 border-t border-[#c9a84c]/30 text-center">
                   <p className="text-[10px] text-gray-400 tracking-wider">
                     Verify at:{" "}
@@ -446,7 +446,7 @@ const CertificateTemplate = ({ certificateData, program }) => {
                     /certificates/verify/{certificateCode}
                   </p>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>

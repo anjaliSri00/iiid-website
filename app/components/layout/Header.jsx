@@ -117,7 +117,7 @@ export default function Header() {
 
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-[#D4A574]/20 py-2 z-50">
+                  <div className="absolute right-0 mt-3 w-56 bg-white shadow-lg border border-[#D4A574]/20 py-2 z-50">
                     {isAuthenticated ? (
                       <>
                         <div className="px-4 py-3 border-b border-[#D4A574]/20 bg-[#ffff]">
@@ -179,7 +179,7 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <button 
-              className="md:hidden text-gray-900 hover:text-[#CC0000] transition-colors p-2 rounded-lg hover:bg-[#FDF8F0]" 
+              className="md:hidden text-gray-900 hover:text-[#CC0000] transition-colors p-2 hover:bg-[#FDF8F0]" 
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -192,35 +192,35 @@ export default function Header() {
               <div className="flex flex-col space-y-4">
                 <Link
                   href="/" 
-                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 hover:bg-[#FDF8F0]"
                   onClick={() => setIsOpen(false)}
                 >
                   Home
                 </Link>
                 <Link 
                   href="/apply-online" 
-                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2  hover:bg-[#FDF8F0]"
                   onClick={() => setIsOpen(false)}
                 >
                   Apply Online
                 </Link>
                 <Link 
                   href="/#about" 
-                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 hover:bg-[#FDF8F0]"
                   onClick={() => setIsOpen(false)}
                 >
                   About
                 </Link>
                 <Link 
                   href="/#programs" 
-                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2  hover:bg-[#FDF8F0]"
                   onClick={() => setIsOpen(false)}
                 >
                   Programs
                 </Link>
                  <Link href="/contact-us"
                                    onClick={() => setIsOpen(false)}
-                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
+                  className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2 hover:bg-[#FDF8F0]"
                   >
               Contact Us
               </Link>
@@ -229,8 +229,8 @@ export default function Header() {
                 <div className="pt-4 border-t border-[#D4A574]/20">
                   {isAuthenticated ? (
                     <>
-                      <div className="flex items-center space-x-3 text-gray-700 py-2 px-3 bg-[#FDF8F0] rounded-lg">
-                        <div className="w-8 h-8 rounded-full bg-[#CC0000] text-white flex items-center justify-center text-sm font-semibold">
+                      <div className="flex items-center space-x-3 text-gray-700 py-2 px-3 bg-[#FDF8F0] ">
+                        <div className="w-8 h-8 bg-[#CC0000] text-white flex items-center justify-center text-sm font-semibold">
                           {getUserInitials()}
                         </div>
                         <div>
@@ -240,7 +240,7 @@ export default function Header() {
                       </div>
                       <Link
                         href="/dashboard"
-                        className="flex items-center space-x-3 text-gray-600 hover:text-[#CC0000] transition-colors py-2 px-3 rounded-lg hover:bg-[#FDF8F0]"
+                        className="flex items-center space-x-3 text-gray-600 hover:text-[#CC0000] transition-colors py-2 px-3 hover:bg-[#FDF8F0]"
                         onClick={() => setIsOpen(false)}
                       >
                         <Settings size={18} className="text-[#D4A574]" />
@@ -251,7 +251,7 @@ export default function Header() {
                           setIsOpen(false);
                           handleLogout();
                         }}
-                        className="flex items-center space-x-3 text-[#CC0000] hover:bg-[#CC0000]/5 transition-colors py-2 px-3 rounded-lg w-full"
+                        className="flex items-center space-x-3 text-[#CC0000] hover:bg-[#CC0000]/5 transition-colors py-2 px-3 w-full"
                       >
                         <LogOut size={18} />
                         <span>Logout</span>
@@ -261,7 +261,7 @@ export default function Header() {
                     <>
                       <Link
                         href="/login" 
-                        className="flex items-center space-x-3 text-gray-600 hover:text-[#CC0000] transition-colors py-2 px-3 rounded-lg hover:bg-[#FDF8F0]"
+                        className="flex items-center space-x-3 text-gray-600 hover:text-[#CC0000] transition-colors py-2 px-3 hover:bg-[#FDF8F0]"
                         onClick={() => setIsOpen(false)}
                       >
                         <LogIn size={18} className="text-[#D4A574]" />
@@ -269,7 +269,7 @@ export default function Header() {
                       </Link>
                       <Link
                         href="/register" 
-                        className="flex items-center space-x-3 text-gray-600 hover:text-[#CC0000] transition-colors py-2 px-3 rounded-lg hover:bg-[#FDF8F0]"
+                        className="flex items-center space-x-3 text-gray-600 hover:text-[#CC0000] transition-colors py-2 px-3 hover:bg-[#FDF8F0]"
                         onClick={() => setIsOpen(false)}
                       >
                         <UserPlus size={18} className="text-[#D4A574]" />

@@ -171,7 +171,7 @@ export default function CertificatePage() {
     <div className="min-h-screen bg-[#FDF8F0] py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Verification Badge */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center justify-between gap-4">
+        <div className="bg-green-50 border border-green-200 p-4 mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-6 h-6 text-green-600 shrink-0" />
             <div>
@@ -186,12 +186,12 @@ export default function CertificatePage() {
           <div className="flex gap-2">
             <button
               onClick={handleShare}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#CC0000] text-sm rounded-lg  hover:bg-[#B30000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#CC0000] text-sm  hover:bg-[#B30000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white"
             >
               <Share2 className="w-4 h-4" />
               Share
             </button>
-            {/* <button
+            <button
               onClick={handleDownload}
               disabled={downloading}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-[#CC0000] text-white text-sm rounded-lg hover:bg-[#B30000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -207,7 +207,7 @@ export default function CertificatePage() {
                   Download PDF
                 </>
               )}
-            </button> */}
+            </button>
           </div>
         </div>
 
@@ -221,7 +221,7 @@ export default function CertificatePage() {
         <div className="text-center mt-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home

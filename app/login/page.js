@@ -64,6 +64,19 @@ function LoginPage() {
     }
   }, [otpTimer]);
 
+  useEffect(() => {
+    if (showForgotPassword) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showForgotPassword]);
+
   const validateForm = () => {
     const newErrors = {};
     if (loginMethod === 'email') {
@@ -389,12 +402,12 @@ function LoginPage() {
 
   return (
     <>
-    <div className="min-h-screen bg-gray-50 flex flex-col montserrat-600 justify-start py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen max-lg:min-h-[60vh] bg-gray-50 flex flex-col montserrat-600 justify-start py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           {/* Security Badge */}
           <div className="flex justify-center mb-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-100">
               <Shield className="w-4 h-4 text-green-600" />
               <span className="text-xs text-green-700 font-medium">Secure Login</span>
             </div>
@@ -412,7 +425,7 @@ function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white py-8 px-4 shadow sm:px-10">
           {/* Security Tip */}
           {showSecurityTip && (
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md relative">
@@ -430,7 +443,7 @@ function LoginPage() {
           )}
 
           {/* Login Method Toggle */}
-          <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
+          <div className="flex bg-gray-100 p-1 mb-6">
             <button
               type="button"
               onClick={() => {
@@ -444,7 +457,7 @@ function LoginPage() {
                   step: 'mobile'
                 });
               }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
+              className={`flex-1 py-2 text-sm font-medium transition ${
                 loginMethod === 'email'
                   ? 'bg-white text-red-600 shadow'
                   : 'text-gray-500 hover:text-gray-700'
@@ -459,7 +472,7 @@ function LoginPage() {
                 setErrors({});
                 setOtpError('');
               }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
+              className={`flex-1 py-2 text-sm font-medium transition ${
                 loginMethod === 'mobile'
                   ? 'bg-white text-red-600 shadow'
                   : 'text-gray-500 hover:text-gray-700'
@@ -470,8 +483,8 @@ function LoginPage() {
           </div>
 
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
               <p className="text-sm text-red-600">{errors.general}</p>
             </div>
           )}
@@ -497,7 +510,7 @@ function LoginPage() {
                       onChange={handleChange}
                       className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
                         errors.email ? 'border-red-300' : 'border-gray-300'
-                      } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                      } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                       placeholder="you@example.com"
                     />
                   </div>
@@ -525,7 +538,7 @@ function LoginPage() {
                       onChange={handleChange}
                       className={`appearance-none block w-full pl-10 pr-10 py-2 border ${
                         errors.password ? 'border-red-300' : 'border-gray-300'
-                      } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                      } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                       placeholder="••••••••"
                     />
                     <button
@@ -553,7 +566,7 @@ function LoginPage() {
                       id="remember-me"
                       name="remember-me"
                       type="checkbox"
-                      className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-red-600 focus:ring-red-500 accent-red-600 border-gray-300 "
                     />
                     <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                       Remember me
@@ -575,7 +588,7 @@ function LoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -609,7 +622,7 @@ function LoginPage() {
                       disabled={mobileOtpData.step === 'otp'}
                       className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
                         otpError ? 'border-red-300' : 'border-gray-300'
-                      } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                      } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                       placeholder="9876543210"
                     />
                   </div>
@@ -635,7 +648,7 @@ function LoginPage() {
                         onChange={handleOtpChange}
                         className={`appearance-none block w-full px-3 py-2 border ${
                           otpError ? 'border-red-300' : 'border-gray-300'
-                        } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                        } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                         placeholder="Enter 6-digit OTP"
                         autoFocus
                       />
@@ -687,7 +700,7 @@ function LoginPage() {
                     <button
                       type="submit"
                       disabled={isOtpSending || !mobileOtpData.mobile}
-                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isOtpSending ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -704,7 +717,7 @@ function LoginPage() {
                     <button
                       type="submit"
                       disabled={isOtpVerifying || !mobileOtpData.otp}
-                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isOtpVerifying ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -747,15 +760,15 @@ function LoginPage() {
           <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
             <div 
               className="fixed inset-0 bg-black/50 bg-opacity-75 transition-opacity"
-              onClick={closeModal}
+              // onClick={closeModal}
             ></div>
 
-            <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md sm:p-6">
+            <div className="relative transform overflow-hidden bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md sm:p-6">
               <div className="absolute right-0 top-0 pr-4 pt-4">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                  className=" bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -792,7 +805,7 @@ function LoginPage() {
                             setForgotEmail(e.target.value);
                             setForgotError('');
                           }}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
                           placeholder="you@example.com"
                           autoFocus
                         />
@@ -807,7 +820,7 @@ function LoginPage() {
                         <button
                           type="submit"
                           disabled={resetLoading}
-                          className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex w-full justify-center bg-red-600 px-3 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {resetLoading ? (
                             <>
@@ -827,7 +840,7 @@ function LoginPage() {
                 ) : (
                   // Step 2: Show OTP
                   <>
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center bg-green-100">
                       <CheckCircle className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="mt-3 text-center sm:mt-5">
@@ -845,14 +858,14 @@ function LoginPage() {
                       
                       {/* OTP Display Box - Only show if we have OTP */}
                       {otpDisplay && /^\d{4}$/.test(otpDisplay) ? (
-                        <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-red-200">
+                        <div className="mt-4 p-4 bg-gray-50 border-2 border-dashed border-red-200">
                           <p className="text-xs text-gray-500 mb-2">Your OTP Code:</p>
                           <div className="flex items-center justify-center gap-4">
                             <div className="flex gap-2">
                               {otpDisplay.split('').map((digit, index) => (
                                 <div
                                   key={index}
-                                  className="w-12 h-14 bg-white border-2 border-red-300 rounded-lg flex items-center justify-center text-2xl font-bold text-red-600 shadow-sm"
+                                  className="w-12 h-14 bg-white border-2 border-red-300  flex items-center justify-center text-2xl font-bold text-red-600 shadow-sm"
                                 >
                                   {digit}
                                 </div>
@@ -877,7 +890,7 @@ function LoginPage() {
                         </div>
                       ) : (
                         // Show a message if OTP couldn't be extracted
-                        <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200">
                           <p className="text-sm text-yellow-700">
                             <AlertCircle className="w-4 h-4 inline mr-1" />
                             Please check your email for the 4-digit OTP.
@@ -889,7 +902,7 @@ function LoginPage() {
                         {sessionId && (
                           <Link
                             href={`/reset-password?session_id=${sessionId}`}
-                            className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700"
+                            className="inline-flex w-full justify-center bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700"
                           >
                             Reset Password Now
                           </Link>

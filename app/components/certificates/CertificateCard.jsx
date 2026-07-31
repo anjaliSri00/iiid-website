@@ -67,7 +67,7 @@ const CertificateCard = ({ certificate }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-[#D4A574]/20 overflow-hidden group">
+    <div className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-[#D4A574]/20 overflow-hidden group">
       {/* Card Header - Clickable to navigate to certificate page */}
       <Link
         href={`/certificates/${certificate.certificate_code}`}
@@ -87,7 +87,7 @@ const CertificateCard = ({ certificate }) => {
 
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <div className="px-4 py-2 bg-white text-[#CC0000] rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2">
+          <div className="px-4 py-2 bg-white text-[#CC0000] font-medium hover:bg-gray-100 transition-colors flex items-center gap-2">
             <Eye className="w-4 h-4" />
             View Certificate
           </div>
@@ -95,7 +95,7 @@ const CertificateCard = ({ certificate }) => {
 
         {/* Status Badge */}
         <div
-          className={`absolute top-3 right-3 px-2 py-1 rounded-lg border text-xs font-medium flex items-center gap-1 ${getStatusColor(certificate.status || "active")}`}
+          className={`absolute top-3 right-3 px-2 py-1  border text-xs font-medium flex items-center gap-1 ${getStatusColor(certificate.status || "active")}`}
         >
           {getStatusIcon(certificate.status || "active")}
           <span className="capitalize">{certificate.status || "Active"}</span>
@@ -103,7 +103,7 @@ const CertificateCard = ({ certificate }) => {
 
         {/* Certificate Code */}
         {certificate.certificate_code && (
-          <div className="absolute bottom-3 left-3 bg-black/30 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded font-mono">
+          <div className="absolute bottom-3 left-3 bg-black/30 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1  font-mono">
             #{certificate.certificate_code}
           </div>
         )}
@@ -136,21 +136,21 @@ const CertificateCard = ({ certificate }) => {
         <div className="flex items-center gap-2 pt-3 border-t border-[#D4A574]/20">
           <Link
             href={`/certificates/${certificate.certificate_code}`}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#FDF8F0] text-[#CC0000] text-sm rounded-lg hover:bg-[#F5E6D3] transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#FDF8F0] text-[#CC0000] text-sm hover:bg-[#F5E6D3] transition-colors"
           >
             <Eye className="w-4 h-4" />
             View
           </Link>
           <button
             onClick={handleShare}
-            className="p-1.5 text-gray-400 hover:text-[#CC0000] rounded-lg hover:bg-[#FDF8F0] transition-colors"
+            className="p-1.5 text-gray-400 hover:text-[#CC0000] hover:bg-[#FDF8F0] transition-colors"
             aria-label="Share"
           >
             <Share2 className="w-4 h-4" />
           </button>
           <Link
             href={`/certificates/${certificate.certificate_code}`}
-            className="p-1.5 text-gray-400 hover:text-[#CC0000] rounded-lg hover:bg-[#FDF8F0] transition-colors"
+            className="p-1.5 text-gray-400 hover:text-[#CC0000] hover:bg-[#FDF8F0] transition-colors"
             aria-label="View details"
           >
             <ChevronRight className="w-4 h-4" />

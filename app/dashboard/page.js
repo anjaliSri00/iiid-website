@@ -2030,7 +2030,7 @@ instructions: assessment.instructions || "",
         <div className="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-linear-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
+              <div className="w-10 h-10 bg-linear-to-br from-red-600 to-red-700 flex items-center justify-center shadow-lg shadow-red-200">
                 <LayoutDashboard className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -2043,15 +2043,15 @@ instructions: assessment.instructions || "",
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium text-gray-700">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-100 ">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-black">
                   {isAdmin ? "Admin" : "Student"}
                 </span>
               </div>
               <button
                 onClick={() => signOut()}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-100 transition-colors"
               >
                 <LogOut className="w-5 h-5 text-gray-500" />
               </button>
@@ -2064,11 +2064,11 @@ instructions: assessment.instructions || "",
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 overflow-hidden sticky top-24">
+            <div className="bg-white shadow-lg shadow-gray-100/50 overflow-hidden sticky top-24">
               <div className="bg-[#FDF8F0] border-red-200/30 px-6 py-8">
                 <div className="flex flex-col items-center">
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-full border-4 border-white/30 bg-white/10 overflow-hidden shadow-lg">
+                    <div className="w-24 h-24 border-4 border-white/30 bg-white/10 overflow-hidden shadow-lg">
                       {profile.avatar_url ? (
                         <Image
                           width={96}
@@ -2085,7 +2085,7 @@ instructions: assessment.instructions || "",
                         </div>
                       )}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500  border-2 border-white flex items-center justify-center">
                       <CheckCircle className="w-3 h-3 text-white" />
                     </div>
                   </div>
@@ -2096,11 +2096,11 @@ instructions: assessment.instructions || "",
                     {profile.user_code}
                   </p>
                   <div className="mt-3 flex gap-2 flex-wrap justify-center">
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#EEDBDD] text-red-800 uppercase">
+                    <span className="px-3 py-1 text-xs font-medium bg-[#EEDBDD] text-red-800 uppercase">
                       {profile.role_type?.join(", ") || "User"}
                     </span>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs uppercase font-medium ${
+                      className={`px-3 py-1 text-xs uppercase font-medium ${
                         profile.is_active
                           ? "bg-emerald-700 text-emerald-100"
                           : "bg-red-500/30 text-red-100"
@@ -2113,8 +2113,8 @@ instructions: assessment.instructions || "",
               </div>
 
               <div className="p-4 space-y-3">
-                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                <div className="flex items-center gap-3 p-2 hover:bg-gray-50 transition-colors">
+                  <div className="w-8 h-8 bg-blue-50 flex items-center justify-center">
                     <Mail className="w-4 h-4 text-blue-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -2124,8 +2124,8 @@ instructions: assessment.instructions || "",
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                  <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                <div className="flex items-center gap-3 p-2  hover:bg-gray-50 transition-colors">
+                  <div className="w-8 h-8 bg-purple-50 flex items-center justify-center">
                     <Phone className="w-4 h-4 text-purple-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -2133,8 +2133,8 @@ instructions: assessment.instructions || "",
                     <p className="text-sm text-gray-700">{profile.mobile}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                  <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                <div className="flex items-center gap-3 p-2  hover:bg-gray-50 transition-colors">
+                  <div className="w-8 h-8 bg-emerald-50  flex items-center justify-center">
                     <GraduationCap className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -2146,7 +2146,7 @@ instructions: assessment.instructions || "",
                 </div>
                 <Link
                   href="/profile"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FDF8F0] text-[#CC0000] rounded-xl hover:bg-[#fff5e4] transition-all mt-2"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FDF8F0] text-[#CC0000] hover:bg-[#fff5e4] transition-all mt-2"
                 >
                   <User className="w-4 h-4" />
                   View Full Profile
@@ -2159,7 +2159,7 @@ instructions: assessment.instructions || "",
           {/* Right Column - Tabs */}
           <div className="lg:col-span-3">
             {/* Tab Navigation - Updated with Admin Management and Payment tabs */}
-            <div className="bg-white rounded-lg shadow mb-6">
+            <div className="bg-white  shadow mb-6">
               <div className="border-b border-gray-200">
                 <nav className="flex -mb-px overflow-x-auto">
                   <button
@@ -2185,7 +2185,7 @@ instructions: assessment.instructions || "",
                       <BookOpen className="w-4 h-4 inline mr-2" />
                       My Courses
                       {enrolledCourses.length > 0 && (
-                        <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 rounded-full">
+                        <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 ">
                           {enrolledCourses.length}
                         </span>
                       )}
@@ -2258,7 +2258,7 @@ instructions: assessment.instructions || "",
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white shadow p-6">
               {activeTab === "overview" ? (
                 // Overview Tab - Updated with all stats
                 <div>
@@ -2276,7 +2276,7 @@ instructions: assessment.instructions || "",
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`px-3 py-1 text-xs font-medium ${
                           isAdmin
                             ? "bg-red-100 text-red-700"
                             : "bg-blue-100 text-blue-700"
@@ -2287,7 +2287,7 @@ instructions: assessment.instructions || "",
                       {isAdmin && (
                         <button
                           onClick={fetchAdminStats}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-2 hover:bg-gray-100 transition-colors"
                           title="Refresh Dashboard"
                         >
                           <RefreshCw className="w-4 h-4 text-gray-500" />
@@ -2313,7 +2313,7 @@ instructions: assessment.instructions || "",
                           {/* Main Stats Grid - Consolidated */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-5 mb-6 md:mb-8">
                             {/* Total Users */}
-                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:-translate-y-1 overflow-hidden">
+                            <div className="group bg-white p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:-translate-y-1 overflow-hidden">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
@@ -2706,7 +2706,7 @@ instructions: assessment.instructions || "",
                     // Student Overview (existing code)
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-red-200 hover:-translate-y-1">
+                        <div className="group bg-white p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-red-200 hover:-translate-y-1">
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="text-sm font-medium text-gray-500 mb-1">
@@ -2737,7 +2737,7 @@ instructions: assessment.instructions || "",
                           </div>
                         </div>
 
-                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-green-200 hover:-translate-y-1">
+                        <div className="group bg-white p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-green-200 hover:-translate-y-1">
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="text-sm font-medium text-gray-500 mb-1">
@@ -2768,7 +2768,7 @@ instructions: assessment.instructions || "",
                           </div>
                         </div>
 
-                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1">
+                        <div className="group bg-white  p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1">
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="text-sm font-medium text-gray-500 mb-1">
@@ -2812,7 +2812,7 @@ instructions: assessment.instructions || "",
                           </div>
                         </div>
 
-                        <div className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1">
+                        <div className="group bg-white p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1">
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="text-sm font-medium text-gray-500 mb-1">
@@ -2845,7 +2845,7 @@ instructions: assessment.instructions || "",
                       </div>
 
                       {/* Recent Activity Section */}
-                      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                      <div className="bg-white p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                           <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <Activity className="w-4 h-4 text-red-500" />
@@ -2871,10 +2871,10 @@ instructions: assessment.instructions || "",
                               .map((course, index) => (
                                 <div
                                   key={index}
-                                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                                  className="flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors group"
                                 >
                                   <div className="relative">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <div className="w-10 h-10  bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                                       {course.progress === 100 ? (
                                         <CheckCircle className="w-5 h-5 text-green-600" />
                                       ) : course.progress > 0 ? (
@@ -2907,13 +2907,13 @@ instructions: assessment.instructions || "",
                                         ).toLocaleDateString()}
                                       </span>
                                       {course.progress !== undefined && (
-                                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                                        <span className="text-xs font-medium px-2 py-0.5 bg-gray-100 text-gray-600">
                                           {course.progress}% complete
                                         </span>
                                       )}
                                       {course.enrollment_status && (
                                         <span
-                                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                          className={`text-xs font-medium px-2 py-0.5 ${
                                             course.enrollment_status ===
                                             "active"
                                               ? "bg-green-100 text-green-700"
@@ -2933,7 +2933,7 @@ instructions: assessment.instructions || "",
                                   </div>
                                   <Link
                                     href={`/programs/${course.course_id}`}
-                                    className="shrink-0 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                                    className="shrink-0 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all"
                                   >
                                     {course.progress > 0
                                       ? "Continue →"
@@ -2982,7 +2982,7 @@ instructions: assessment.instructions || "",
                       </div>
                       <Link
                         href="/#programs"
-                        className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-200 text-sm font-medium"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-200 text-sm font-medium"
                       >
                         <Plus className="w-4 h-4" />
                         Browse Courses
@@ -2992,7 +2992,7 @@ instructions: assessment.instructions || "",
 
                   {/* Loading State */}
                   {enrolledCoursesLoading ? (
-                    <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-200">
+                    <div className="flex flex-col items-center justify-center py-16 bg-white border border-gray-200">
                       <Loader2 className="w-10 h-10 animate-spin text-red-600" />
                       <p className="mt-3 text-gray-500 font-medium">
                         Loading your courses...
@@ -3003,7 +3003,7 @@ instructions: assessment.instructions || "",
                     </div>
                   ) : enrolledCourses.length === 0 ? (
                     /* Empty State */
-                    <div className="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                    <div className="text-center py-16 bg-white  border-2 border-dashed border-gray-200">
                       <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <BookOpen className="w-10 h-10 text-red-400" />
                       </div>
@@ -3017,7 +3017,7 @@ instructions: assessment.instructions || "",
                       </p>
                       <Link
                         href="/#programs"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-200 font-medium"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-200 font-medium"
                       >
                         Explore Programs
                         <ArrowRight className="w-4 h-4" />
@@ -3035,7 +3035,7 @@ instructions: assessment.instructions || "",
                         return (
                           <div
                             key={course.enrollment_id || course.course_id}
-                            className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                            className="group bg-white border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                           >
                             <div className="flex flex-col md:flex-row">
                               {/* Thumbnail */}
@@ -3059,7 +3059,7 @@ instructions: assessment.instructions || "",
                                 {/* Progress Badge on Thumbnail */}
                                 {progress > 0 && progress < 100 && (
                                   <div className="absolute bottom-3 left-3 right-3">
-                                    <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                                    <div className="bg-black/70 backdrop-blur-sm px-3 py-1.5">
                                       <div className="flex items-center justify-between text-white text-xs mb-1">
                                         <span className="font-medium">
                                           Progress
@@ -3081,7 +3081,7 @@ instructions: assessment.instructions || "",
                                 {/* Status Badge on Thumbnail */}
                                 <div className="absolute top-3 right-3">
                                   <span
-                                    className={`px-3 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm shadow-lg ${
+                                    className={`px-3 py-1  text-xs font-semibold backdrop-blur-sm shadow-lg ${
                                       isCompleted
                                         ? "bg-green-500/90 text-white"
                                         : isActive
@@ -3108,7 +3108,7 @@ instructions: assessment.instructions || "",
                                         {course.title}
                                       </h4>
                                       {course.course_code && (
-                                        <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg whitespace-nowrap">
+                                        <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium whitespace-nowrap">
                                           {course.course_code}
                                         </span>
                                       )}
@@ -3121,20 +3121,20 @@ instructions: assessment.instructions || "",
 
                                     {/* Course Meta */}
                                     <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 ">
                                         <BookOpen className="w-3.5 h-3.5 text-gray-400" />
                                         {course.category || "General"}
                                       </span>
-                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 ">
                                         <Clock className="w-3.5 h-3.5 text-gray-400" />
                                         {course.duration || "Self-paced"}
                                       </span>
-                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50">
                                         <Award className="w-3.5 h-3.5 text-gray-400" />
                                         {course.level || "Beginner"}
                                       </span>
                                       {course.enrolled_at && (
-                                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg">
+                                        <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50">
                                           <Calendar className="w-3.5 h-3.5 text-gray-400" />
                                           {new Date(
                                             course.enrolled_at,
@@ -3156,7 +3156,7 @@ instructions: assessment.instructions || "",
                                                 <span className="text-sm text-gray-400 line-through">
                                                   ₹{course.original_price}
                                                 </span>
-                                                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold rounded-lg">
+                                                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold">
                                                   {Math.round(course.discount)}%
                                                   OFF
                                                 </span>
@@ -3165,7 +3165,7 @@ instructions: assessment.instructions || "",
                                         </div>
                                       )}
                                       {course.certificate_issued && (
-                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-600 text-xs font-semibold rounded-lg">
+                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-600 text-xs font-semibold">
                                           <Award className="w-3.5 h-3.5" />
                                           Certificate Issued
                                         </span>
@@ -3177,7 +3177,7 @@ instructions: assessment.instructions || "",
                                   <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-gray-100">
                                     <Link
                                       href={`/programs/${course.course_id}`}
-                                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+                                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-red-600 text-white hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
                                     >
                                       {progress > 0 && progress < 100 ? (
                                         <>
@@ -3205,7 +3205,7 @@ instructions: assessment.instructions || "",
                                             "_blank",
                                           )
                                         }
-                                        className="px-4 py-2.5 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-all text-sm font-medium flex items-center gap-2"
+                                        className="px-4 py-2.5 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all text-sm font-medium flex items-center gap-2"
                                       >
                                         <FileCheck className="w-4 h-4" />
                                         Certificate
@@ -3241,7 +3241,7 @@ instructions: assessment.instructions || "",
                           placeholder="Search programs..."
                           value={debouncedSearch}
                           onChange={(e) => setDebouncedSearch(e.target.value)}
-                          className="w-full px-3 sm:px-4 py-2 pr-8 sm:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                          className="w-full px-3 sm:px-4 py-2 pr-8 sm:pr-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                         />
                         {debouncedSearch && (
                           <button
@@ -3260,7 +3260,7 @@ instructions: assessment.instructions || "",
 
                       <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3 py-2 border rounded-lg transition-colors flex-shrink-0 ${
+                        className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3 py-2 border transition-colors flex-shrink-0 ${
                           showFilters || Object.values(filters).some((f) => f)
                             ? "bg-red-50 border-red-200 text-red-600"
                             : "border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -3294,7 +3294,7 @@ instructions: assessment.instructions || "",
                           setEditingProgram(null);
                           resetProgramForm();
                         }}
-                        className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex-shrink-0 text-sm sm:text-base"
+                        className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors shrink-0 text-sm sm:text-base"
                       >
                         <Plus className="w-4 h-4" />
                         <span className="hidden xs:inline">Create Program</span>
@@ -3305,7 +3305,7 @@ instructions: assessment.instructions || "",
                             onClick={handleExportCSV}
                             disabled={isExporting}
                             className={`
-                              flex items-center gap-2 px-3 py-2 rounded-lg font-medium
+                              flex items-center gap-2 px-3 py-2  font-medium
                               transition-all duration-200 ease-in-out
                               ${isExporting 
                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
@@ -3335,7 +3335,7 @@ instructions: assessment.instructions || "",
                   </div>
 
                   {showFilters && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="mb-6 p-4 bg-gray-50 border border-gray-200">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-medium text-gray-700">
                           Filters
@@ -3363,7 +3363,7 @@ instructions: assessment.instructions || "",
                               setFilters(newFilters);
                               fetchPrograms(newFilters);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                           >
                             <option value="">All Categories</option>
                             {getUniqueValues("category").map((category) => (
@@ -3389,7 +3389,7 @@ instructions: assessment.instructions || "",
                               setFilters(newFilters);
                               fetchPrograms(newFilters);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                           >
                             <option value="">All Levels</option>
                             {getUniqueValues("level").map((level) => (
@@ -3415,7 +3415,7 @@ instructions: assessment.instructions || "",
                               setFilters(newFilters);
                               fetchPrograms(newFilters);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                           >
                             <option value="">All Status</option>
                             <option value="draft">Draft</option>
@@ -3425,7 +3425,7 @@ instructions: assessment.instructions || "",
                         </div>
 
                         <div className="flex items-end">
-                          <div className="w-full p-2 bg-white rounded-md border border-gray-200">
+                          <div className="w-full p-2 bg-white border border-gray-200">
                             <p className="text-sm text-gray-600">
                               <span className="font-semibold">
                                 {filteredPrograms.length}
@@ -3440,7 +3440,7 @@ instructions: assessment.instructions || "",
                   )}
                   {/* Create/Edit Program Form */}
                   {showCreateProgram && (
-                    <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="mb-6 p-6 bg-gray-50 border border-gray-200">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-md font-semibold text-gray-900">
                           {editingProgram
@@ -3461,7 +3461,7 @@ instructions: assessment.instructions || "",
                       </div>
 
                       {programSuccess && (
-                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-green-600" />
                           <p className="text-sm text-green-700">
                             {editingProgram
@@ -3472,7 +3472,7 @@ instructions: assessment.instructions || "",
                       )}
 
                       {programErrors.general && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 flex items-center gap-2">
                           <AlertCircle className="w-4 h-4 text-red-600" />
                           <p className="text-sm text-red-700">
                             {programErrors.general}
@@ -3499,7 +3499,7 @@ instructions: assessment.instructions || "",
                                 name="title"
                                 value={programFormData.title}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${programErrors.title ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.title ? "border-red-300" : "border-gray-300"}  focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                                 placeholder="Enter course title"
                               />
                               {programErrors.title && (
@@ -3516,7 +3516,7 @@ instructions: assessment.instructions || "",
                                 name="category"
                                 value={programFormData.category}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${programErrors.category ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.category ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                               >
                                 <option value="">Select category</option>
                                 <option value="Web Development">
@@ -3543,7 +3543,7 @@ instructions: assessment.instructions || "",
                                 name="level"
                                 value={programFormData.level}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${programErrors.level ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.level ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                               >
                                 <option value="">Select level</option>
                                 <option value="beginner">Beginner</option>
@@ -3567,7 +3567,7 @@ instructions: assessment.instructions || "",
                                 name="mode"
                                 value={programFormData.mode || "online"}
                                 onChange={handleProgramFormChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
                               >
                                 <option value="online">Online</option>
                                 <option value="offline">Offline</option>
@@ -3581,7 +3581,7 @@ instructions: assessment.instructions || "",
                                 name="duration"
                                 value={programFormData.duration}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${programErrors.duration ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.duration ? "border-red-300" : "border-gray-300"}  focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                               >
                                 <option value="">Select duration</option>
                                 <option value="1 month">1 month</option>
@@ -3607,7 +3607,7 @@ instructions: assessment.instructions || "",
                                 name="price"
                                 value={programFormData.price || ""}
                                 onChange={handleProgramFormChange}
-                                className={`w-full px-3 py-2 border ${programErrors.price ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.price ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                                 placeholder="0.00"
                                 min="0"
                                 step="0.01"
@@ -3627,7 +3627,7 @@ instructions: assessment.instructions || "",
                                 name="discount"
                                 value={programFormData.discount || ""}
                                 onChange={handleProgramFormChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
                                 placeholder="0"
                                 min="0"
                                 // max="100"
@@ -3645,7 +3645,7 @@ instructions: assessment.instructions || "",
                                 name="status"
                                 value={programFormData.status}
                                 onChange={handleProgramFormChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
                               >
                                 <option value="draft">Draft</option>
                                 <option value="published">Published</option>
@@ -3660,7 +3660,7 @@ instructions: assessment.instructions || "",
                                 value={programFormData.description}
                                 onChange={handleProgramFormChange}
                                 rows="3"
-                                className={`w-full px-3 py-2 border ${programErrors.description ? "border-red-300" : "border-gray-300"} rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                                className={`w-full px-3 py-2 border ${programErrors.description ? "border-red-300" : "border-gray-300"} focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                                 placeholder="Describe your course..."
                               />
                               {programErrors.description && (
@@ -3696,7 +3696,7 @@ instructions: assessment.instructions || "",
               }
               handleOpenCreateAssessment(courseId);
             }}
-            className="flex items-center gap-1.5 text-sm bg-red-50 px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+            className="flex items-center gap-1.5 text-sm bg-red-50 px-3 py-1.5 text-red-600 hover:bg-red-100 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Assessment
@@ -3717,7 +3717,7 @@ instructions: assessment.instructions || "",
           return (
             <div
               key={assessment.id || `assessment-${index}`}
-              className="p-4 bg-white rounded-lg border border-gray-200"
+              className="p-4 bg-white border border-gray-200"
             >
               {/* Assessment Header with Actions */}
               <div className="flex items-start justify-between mb-3">
@@ -3729,7 +3729,7 @@ instructions: assessment.instructions || "",
                     {assessment.title || `Assessment ${index + 1}`}
                   </h6>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessment.status)}`}
+                    className={`px-2 py-0.5 text-xs font-medium ${getStatusBadge(assessment.status)}`}
                   >
                     {assessment.status || "draft"}
                   </span>
@@ -3753,7 +3753,7 @@ instructions: assessment.instructions || "",
                         index,
                       );
                     }}
-                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                     title="Edit Assessment"
                   >
                     <Edit className="w-4 h-4" />
@@ -3783,7 +3783,7 @@ instructions: assessment.instructions || "",
                         handleDeleteAssessment(deleteCourseId, assessment.id);
                       }
                     }}
-                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                     title="Delete Assessment"
                   >
                     <Trash2Icon className="w-4 h-4" />
@@ -3813,7 +3813,7 @@ instructions: assessment.instructions || "",
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Status </p>
-                  <p className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(assessment.status)}`}>
+                  <p className={`px-2 py-0.5 text-xs font-medium ${getStatusBadge(assessment.status)}`}>
                     {assessment.status || 'draft'}
                   </p>
                 </div>
@@ -3821,7 +3821,7 @@ instructions: assessment.instructions || "",
 
               {/* PDF Task Specific Details */}
               {isPdfTask && (
-                <div className="mb-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="mb-3 p-3 bg-orange-50 border border-orange-200">
                   <div className="grid grid-cols-1 gap-2">
                     {assessment.instructions && (
                       <div>
@@ -3846,7 +3846,7 @@ instructions: assessment.instructions || "",
                             href={assessment.pdf_template_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-2 py-0.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                            className="px-2 py-0.5 text-xs bg-blue-50 text-blue-600  hover:bg-blue-100 transition-colors"
                           >
                             Download
                           </a>
@@ -3877,7 +3877,7 @@ instructions: assessment.instructions || "",
                         setEditingQuestion(null);
                         resetQuestionForm();
                       }}
-                      className="text-xs text-emerald-600 hover:text-emerald-700 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1"
+                      className="text-xs text-emerald-600 hover:text-emerald-700 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 transition-colors flex items-center gap-1"
                     >
                       <Plus className="w-3 h-3" />
                       Add Question
@@ -3888,7 +3888,7 @@ instructions: assessment.instructions || "",
                   {assessment.questions && assessment.questions.length > 0 ? (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {assessment.questions.map((question, qIdx) => (
-                        <div key={question.id || qIdx} className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+                        <div key={question.id || qIdx} className="bg-gray-50 p-2 border border-gray-200">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -3900,26 +3900,26 @@ instructions: assessment.instructions || "",
                                 </p>
                               </div>
                               <div className="mt-1 flex flex-wrap gap-1 text-xs">
-                                <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                <span className="px-1.5 py-0.5 bg-gray-100  text-gray-600">
                                   A: {question.option_a}
                                 </span>
-                                <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                <span className="px-1.5 py-0.5 bg-gray-100  text-gray-600">
                                   B: {question.option_b}
                                 </span>
                                 {question.option_c && (
-                                  <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                  <span className="px-1.5 py-0.5 bg-gray-100  text-gray-600">
                                     C: {question.option_c}
                                   </span>
                                 )}
                                 {question.option_d && (
-                                  <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                  <span className="px-1.5 py-0.5 bg-gray-100  text-gray-600">
                                     D: {question.option_d}
                                   </span>
                                 )}
-                                <span className="px-1.5 py-0.5 bg-emerald-50 rounded text-emerald-600 font-medium">
+                                <span className="px-1.5 py-0.5 bg-emerald-50  text-emerald-600 font-medium">
                                   ✓ {question.correct_option}
                                 </span>
-                                <span className="px-1.5 py-0.5 bg-blue-50 rounded text-blue-600">
+                                <span className="px-1.5 py-0.5 bg-blue-50  text-blue-600">
                                   {question.marks || 1} mark{question.marks > 1 ? "s" : ""}
                                 </span>
                               </div>
@@ -3944,7 +3944,7 @@ instructions: assessment.instructions || "",
                                   setSelectedAssessmentIndex(index);
                                   setShowAddQuestion(true);
                                 }}
-                                className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50  transition-colors"
                                 title="Edit Question"
                               >
                                 <Edit className="w-3.5 h-3.5" />
@@ -3970,7 +3970,7 @@ instructions: assessment.instructions || "",
                                     await refreshAssessmentData(courseId);
                                   }
                                 }}
-                                className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50  transition-colors"
                                 title="Delete Question"
                               >
                                 <Trash2Icon className="w-3.5 h-3.5" />
@@ -3981,7 +3981,7 @@ instructions: assessment.instructions || "",
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-3 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                    <div className="text-center py-3 bg-gray-50 border border-dashed border-gray-200">
                       <p className="text-sm text-gray-400">No questions added yet</p>
                       <p className="text-xs text-gray-300">Click "Add Question" to get started</p>
                     </div>
@@ -4049,7 +4049,7 @@ instructions: assessment.instructions || "",
                       PDF-based assessment
                     </span>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 text-center">
+                  <div className="bg-gray-50 p-3  border border-gray-200 text-center">
                     <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">
                       This is a PDF task assessment
@@ -4059,7 +4059,7 @@ instructions: assessment.instructions || "",
                         href={assessment.pdf_template_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm"
+                        className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-sm"
                       >
                         <FileText className="w-4 h-4" />
                         View PDF Template
@@ -4073,7 +4073,7 @@ instructions: assessment.instructions || "",
         })}
       </div>
     ) : (
-      <div className="text-center py-6 bg-white rounded-lg border border-dashed border-gray-200">
+      <div className="text-center py-6 bg-white border border-dashed border-gray-200">
         <FileCheck className="w-8 h-8 text-gray-300 mx-auto mb-2" />
         <p className="text-sm text-gray-400">No assessments created yet</p>
         <p className="text-xs text-gray-300 mt-0.5">Click "Add Assessment" to create one</p>
@@ -4090,7 +4090,7 @@ instructions: assessment.instructions || "",
                             <button
                               type="button"
                               onClick={addLesson}
-                              className="flex items-center gap-1 text-sm bg-red-100 p-2 rounded-lg text-red-600 hover:text-red-700"
+                              className="flex items-center gap-1 text-sm bg-red-100 p-2 text-red-600 hover:text-red-700"
                             >
                               <Plus className="w-4 h-4" />
                               Add Lesson
@@ -4103,7 +4103,7 @@ instructions: assessment.instructions || "",
                               {programFormData.lessons.map((lesson, index) => (
                                 <div
                                   key={index}
-                                  className="p-4 bg-white rounded-lg border border-gray-200"
+                                  className="p-4 bg-white border border-gray-200"
                                 >
                                   <div className="flex items-start justify-between mb-2">
                                     <h6 className="text-sm font-medium text-gray-900">
@@ -4115,7 +4115,7 @@ instructions: assessment.instructions || "",
                                           type="button"
                                           onClick={() => updateLesson(index)}
                                           disabled={lessonSaving}
-                                          className="text-xs bg-blue-100 p-2 rounded-lg text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                                          className="text-xs bg-blue-100 p-2 text-blue-600 hover:text-blue-700 disabled:opacity-50"
                                         >
                                           {lessonSaving ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -4128,7 +4128,7 @@ instructions: assessment.instructions || "",
                                           type="button"
                                           onClick={() => saveLesson(index)}
                                           disabled={lessonSaving}
-                                          className="text-xs bg-green-100 p-2 rounded-lg text-green-600 hover:text-green-700 disabled:opacity-50"
+                                          className="text-xs bg-green-100 p-2 text-green-600 hover:text-green-700 disabled:opacity-50"
                                         >
                                           {lessonSaving ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -4161,7 +4161,7 @@ instructions: assessment.instructions || "",
                                             e.target.value,
                                           )
                                         }
-                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                        className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                         placeholder="Lesson title"
                                       />
                                     </div>
@@ -4178,7 +4178,7 @@ instructions: assessment.instructions || "",
                                             e.target.value,
                                           )
                                         }
-                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                        className="w-full px-3 py-1.5 border border-gray-300  text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                       >
                                         <option value="video">Video</option>
                                         <option value="pdf">PDF</option>
@@ -4198,7 +4198,7 @@ instructions: assessment.instructions || "",
                                           )
                                         }
                                         rows="2"
-                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                        className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                         placeholder="Lesson description"
                                       />
                                     </div>
@@ -4220,11 +4220,11 @@ instructions: assessment.instructions || "",
                                                 e.target.value,
                                               )
                                             }
-                                            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                            className="flex-1 px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                             placeholder="https://example.com/video.mp4"
                                           />
                                           <div className="relative">
-                                            <label className="cursor-pointer px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors text-sm border border-blue-200 whitespace-nowrap">
+                                            <label className="cursor-pointer px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-sm border border-blue-200 whitespace-nowrap">
                                               <Upload className="w-4 h-4 inline mr-1" />
                                               Upload Video
                                               <input
@@ -4238,7 +4238,7 @@ instructions: assessment.instructions || "",
                                               />
                                             </label>
                                             {uploadingVideo && (
-                                              <div className="absolute top-full right-0 mt-1 w-48 bg-white border rounded-md shadow-lg p-2 z-10">
+                                              <div className="absolute top-full right-0 mt-1 w-48 bg-white border shadow-lg p-2 z-10">
                                                 <div className="flex items-center gap-2">
                                                   <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                                                   <span className="text-xs text-gray-600">
@@ -4271,10 +4271,10 @@ instructions: assessment.instructions || "",
                                               e.target.value,
                                             )
                                           }
-                                          className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                          className="flex-1 px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                           placeholder="PDF URL"
                                         />
-                                        <label className="cursor-pointer px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors text-sm border border-red-200 whitespace-nowrap">
+                                        <label className="cursor-pointer px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-sm border border-red-200 whitespace-nowrap">
                                           <Upload className="w-4 h-4 inline mr-1" />
                                           Upload PDF
                                           <input
@@ -4308,7 +4308,7 @@ instructions: assessment.instructions || "",
                                             e.target.value,
                                           )
                                         }
-                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                        className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                         placeholder="600"
                                         min="0"
                                       />
@@ -4327,7 +4327,7 @@ instructions: assessment.instructions || "",
                                             e.target.value,
                                           )
                                         }
-                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                                        className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                                         placeholder="1"
                                         min="1"
                                       />
@@ -4346,7 +4346,7 @@ instructions: assessment.instructions || "",
                                               e.target.checked,
                                             )
                                           }
-                                          className="rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4"
+                                          className=" border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4"
                                         />
                                         Free Preview
                                       </label>
@@ -4382,7 +4382,7 @@ instructions: assessment.instructions || "",
                                 <div className="flex items-center justify-center w-full">
                                   <label
                                     htmlFor="thumbnail-upload"
-                                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
                                   >
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                       {uploadingThumbnail ? (
@@ -4506,7 +4506,7 @@ instructions: assessment.instructions || "",
                               resetProgramForm();
                               setProgramSuccess(false);
                             }}
-                            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
                           >
                             Cancel
                           </button>
@@ -4700,7 +4700,7 @@ instructions: assessment.instructions || "",
                 // Change Password Tab (existing code)
                 <div>
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-red-100 rounded-full">
+                    <div className="p-3 bg-red-100">
                       <Shield className="w-6 h-6 text-red-600" />
                     </div>
                     <div>
@@ -4755,7 +4755,7 @@ instructions: assessment.instructions || "",
                             passwordErrors.old_password
                               ? "border-red-300"
                               : "border-gray-300"
-                          } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                          } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                           placeholder="Enter current password"
                         />
                         <button
@@ -4799,7 +4799,7 @@ instructions: assessment.instructions || "",
                             passwordErrors.new_password
                               ? "border-red-300"
                               : "border-gray-300"
-                          } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                          }  shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                           placeholder="Enter new password"
                         />
                         <button
@@ -4865,7 +4865,7 @@ instructions: assessment.instructions || "",
                             passwordErrors.confirm_password
                               ? "border-red-300"
                               : "border-gray-300"
-                          } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                          } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                           placeholder="Confirm new password"
                         />
                         <button
@@ -4890,7 +4890,7 @@ instructions: assessment.instructions || "",
                       )}
                     </div>
 
-                    <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="p-4 bg-gray-50">
                       <p className="text-sm font-medium text-gray-700 mb-2">
                         Password Requirements:
                       </p>
@@ -4926,7 +4926,7 @@ instructions: assessment.instructions || "",
                       <button
                         type="submit"
                         disabled={passwordLoading}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium bg-[#CC0000] text-white hover:bg-[#B30000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium bg-[#CC0000] text-white hover:bg-[#B30000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {passwordLoading ? (
                           <Loader2 className="w-5 h-5 animate-spin" />

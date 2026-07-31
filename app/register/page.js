@@ -39,7 +39,7 @@ const FileUploadField = ({ type, label, required, fileUrl, file, uploadProgress,
         <div
           className={`relative flex flex-col items-center justify-center w-full p-4 border-2 ${
             isDragging ? 'border-red-500 bg-red-50' : 'border-gray-300 border-dashed'
-          } rounded-lg transition-colors duration-200 hover:bg-gray-50 cursor-pointer`}
+          } transition-colors duration-200 hover:bg-gray-50 cursor-pointer`}
           onDragEnter={() => setIsDragging(true)}
           onDragLeave={() => setIsDragging(false)}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -697,7 +697,7 @@ const shouldShowError = (fieldName) => {
         </div>
 
         {/* Main Card - Reduced padding */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white shadow-xl overflow-hidden">
           <div className="p-5 sm:p-6">
             {errors.general && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -707,7 +707,7 @@ const shouldShowError = (fieldName) => {
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Personal Information Section - Compact */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <User className="w-4 h-4 text-red-600" />
                   <h3 className="text-sm font-semibold text-gray-900">Personal Information</h3>
@@ -732,7 +732,7 @@ const shouldShowError = (fieldName) => {
                         onBlur={handleBlur}
                         className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                           errors.full_name && touched.full_name ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                        } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                         placeholder="John Doe"
                       />
                     </div>
@@ -745,7 +745,7 @@ const shouldShowError = (fieldName) => {
                   </div>
 
                   {/* Email OTP - Compact */}
-                  <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                  <div className="border border-gray-200  p-3 bg-white">
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-xs font-medium text-gray-700">
                         Email Address <span className="text-red-500">*</span>
@@ -772,7 +772,7 @@ const shouldShowError = (fieldName) => {
                           className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                             emailOtpData.isVerified ? 'border-green-300 bg-green-50' : 
                             errors.email ? 'border-red-300' : 'border-gray-300'
-                          } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                          } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                           placeholder="john@example.com"
                         />
                         {emailOtpData.isVerified && (
@@ -786,7 +786,7 @@ const shouldShowError = (fieldName) => {
                           type="button"
                           onClick={handleGenerateEmailOtp}
                           disabled={emailOtpData.isSending || !emailOtpData.email || otpTimer.email > 0}
-                          className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
+                          className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
                         >
                           {emailOtpData.isSending ? (
                             <div className="flex items-center gap-1">
@@ -815,14 +815,14 @@ const shouldShowError = (fieldName) => {
                             placeholder="Enter 6-digit OTP"
                             value={emailOtpData.otp}
                             onChange={(e) => setEmailOtpData(prev => ({ ...prev, otp: e.target.value }))}
-                            className="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            className="block w-full px-3 py-1.5 text-sm border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={handleVerifyEmailOtp}
                           disabled={emailOtpData.isVerifying || !emailOtpData.otp}
-                          className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
+                          className="px-3 py-2 text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
                         >
                           {emailOtpData.isVerifying ? (
                             <div className="flex items-center gap-1">
@@ -848,7 +848,7 @@ const shouldShowError = (fieldName) => {
                   </div>
 
                   {/* Mobile OTP - Compact */}
-                  <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                  <div className="border border-gray-200 p-3 bg-white">
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-xs font-medium text-gray-700">
                         Mobile Number <span className="text-red-500">*</span>
@@ -877,7 +877,7 @@ const shouldShowError = (fieldName) => {
                           className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                             mobileOtpData.isVerified ? 'border-green-300 bg-green-50' : 
                             errors.mobile ? 'border-red-300' : 'border-gray-300'
-                          } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                          } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                           placeholder="9876543210"
                         />
                         {mobileOtpData.isVerified && (
@@ -891,7 +891,7 @@ const shouldShowError = (fieldName) => {
                           type="button"
                           onClick={handleGenerateMobileOtp}
                           disabled={mobileOtpData.isSending || !mobileOtpData.mobile || otpTimer.mobile > 0}
-                          className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
+                          className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
                         >
                           {mobileOtpData.isSending ? (
                             <div className="flex items-center gap-1">
@@ -920,14 +920,14 @@ const shouldShowError = (fieldName) => {
                             placeholder="Enter 6-digit OTP"
                             value={mobileOtpData.otp}
                             onChange={(e) => setMobileOtpData(prev => ({ ...prev, otp: e.target.value }))}
-                            className="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            className="block w-full px-3 py-1.5 text-sm border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={handleVerifyMobileOtp}
                           disabled={mobileOtpData.isVerifying || !mobileOtpData.otp}
-                          className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
+                          className="px-3 py-2 text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition duration-200"
                         >
                           {mobileOtpData.isVerifying ? (
                             <div className="flex items-center gap-1">
@@ -955,7 +955,7 @@ const shouldShowError = (fieldName) => {
               </div>
 
               {/* Address Section - Compact */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <MapPin className="w-4 h-4 text-red-600" />
                   <h3 className="text-sm font-semibold text-gray-900">Address Details</h3>
@@ -980,7 +980,7 @@ const shouldShowError = (fieldName) => {
                           onBlur={handleBlur}
                           className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                             errors.city && touched.city ? 'border-red-300' : 'border-gray-300'
-                          } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                          } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                           placeholder="Mumbai"
                         />
                       </div>
@@ -1007,7 +1007,7 @@ const shouldShowError = (fieldName) => {
                           onBlur={handleBlur}
                           className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                             errors.state && touched.state ? 'border-red-300' : 'border-gray-300'
-                          } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                          } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                           placeholder="Maharashtra"
                         />
                       </div>
@@ -1037,7 +1037,7 @@ const shouldShowError = (fieldName) => {
                         onBlur={handleBlur}
                         className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                           errors.pincode && touched.pincode ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                        } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                         placeholder="400001"
                       />
                     </div>
@@ -1065,7 +1065,7 @@ const shouldShowError = (fieldName) => {
                         onBlur={handleBlur}
                         className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                           errors.full_address && touched.full_address ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                        } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                         placeholder="Street Address, Area, Landmark"
                       />
                     </div>
@@ -1079,7 +1079,7 @@ const shouldShowError = (fieldName) => {
               </div>
 
               {/* Professional Details - Compact */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Briefcase className="w-4 h-4 text-red-600" />
                   <h3 className="text-sm font-semibold text-gray-900">Professional Details</h3>
@@ -1102,7 +1102,7 @@ const shouldShowError = (fieldName) => {
                         onBlur={handleBlur}
                         className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                           errors.highest_qualification && touched.highest_qualification ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                        }  shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                       >
                         <option value="">Select qualification</option>
                         <option value="10th">10th Pass</option>
@@ -1135,7 +1135,7 @@ const shouldShowError = (fieldName) => {
                         type="text"
                         value={formData.current_organization}
                         onChange={handleChange}
-                        className="block w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200"
+                        className="block w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200"
                         placeholder="Company Name (optional)"
                       />
                     </div>
@@ -1157,7 +1157,7 @@ const shouldShowError = (fieldName) => {
                         onBlur={handleBlur}
                         className={`block w-full pl-8 pr-3 py-1.5 text-sm border ${
                           errors.years_of_experience && touched.years_of_experience ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                        }  shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                       >
                         <option value="">Select experience level</option>
                         <option value="fresher">Fresher</option>
@@ -1176,7 +1176,7 @@ const shouldShowError = (fieldName) => {
               </div>
 
               {/* Document Uploads - Compact */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Upload className="w-4 h-4 text-red-600" />
                   <h3 className="text-sm font-semibold text-gray-900">Document Uploads</h3>
@@ -1221,7 +1221,7 @@ const shouldShowError = (fieldName) => {
               </div>
 
               {/* Password Section - Compact */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50  p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Lock className="w-4 h-4 text-red-600" />
                   <h3 className="text-sm font-semibold text-gray-900">Set Password</h3>
@@ -1245,7 +1245,7 @@ const shouldShowError = (fieldName) => {
                         onBlur={handleBlur}
                         className={`block w-full pl-8 pr-8 py-1.5 text-sm border ${
                           errors.password && touched.password ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                        } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                         placeholder="••••••••"
                       />
                       <button
@@ -1324,7 +1324,7 @@ const shouldShowError = (fieldName) => {
                         onBlur={handleBlur}
                         className={`block w-full pl-8 pr-8 py-1.5 text-sm border ${
                           errors.confirmPassword && touched.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                        } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
+                        } shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200`}
                         placeholder="••••••••"
                       />
                       <button
@@ -1357,7 +1357,7 @@ const shouldShowError = (fieldName) => {
                     id="terms"
                     name="terms"
                     type="checkbox"
-                    className="h-3.5 w-3.5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                    className="h-3.5 w-3.5 text-red-600 focus:ring-red-500 border-gray-300  accent-red-600"
                     required
                   />
                 </div>
@@ -1380,7 +1380,7 @@ const shouldShowError = (fieldName) => {
                 <button
                   type="submit"
                   disabled={loading || !emailOtpData.isVerified || !mobileOtpData.isVerified || uploading}
-                  className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-60 disabled:cursor-not-allowed transition duration-200"
+                  className="w-full flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-60 disabled:cursor-not-allowed transition duration-200"
                 >
                   {loading ? (
                     <>
@@ -1407,7 +1407,7 @@ const shouldShowError = (fieldName) => {
               </div>
             </form>
 
-            <div className="mt-4 bg-blue-50 rounded-lg p-2">
+            <div className="mt-4 bg-blue-50 p-2">
               <p className="text-[10px] text-center text-gray-600">
                 🔒 Your information is secure and used only for verification.
               </p>

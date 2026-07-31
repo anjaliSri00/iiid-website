@@ -343,14 +343,14 @@ export default function ProfilePage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
              <div>
             
-            <h1 className="text-2xl font-bold text-gray-900 font-serif">Profile</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
             <p className="text-sm text-gray-500 mt-1">Manage your personal information</p>
           </div>
           <div className="mt-4 md:mt-0 flex gap-3">
              {!isEditing ? (
               <button
                 onClick={handleEditToggle}
-                className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors shadow-md hover:shadow-lg"
+                className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors shadow-md hover:shadow-lg"
               >
                 <Edit2 className="w-4 h-4" />
                 Edit Profile
@@ -359,7 +359,7 @@ export default function ProfilePage() {
               <>
                 <button
                   onClick={handleEditToggle}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#FDF8F0] text-gray-700 rounded-lg hover:bg-[#F5E6D3] transition-colors border border-[#D4A574]/20"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#FDF8F0] text-gray-700 hover:bg-[#F5E6D3] transition-colors border border-[#D4A574]/20"
                 >
                   <X className="w-4 h-4" />
                   Cancel
@@ -367,7 +367,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSubmit}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 shadow-md hover:shadow-lg"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50 shadow-md hover:shadow-lg"
                 >
                   {saving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -382,7 +382,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-lg border border-[#D4A574]/20 overflow-hidden">
+        <div className="bg-white shadow-lg border border-[#D4A574]/20 overflow-hidden">
           {/* Cover Section */}
           <div className="relative h-28 bg-gradient-to-r from-[#CC0000] to-[#DC2626]">
             <div className="absolute inset-0 opacity-50"></div>
@@ -391,7 +391,7 @@ export default function ProfilePage() {
             
             {/* Status Badges */}
             <div className="absolute top-3 right-3 flex gap-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm border border-[#D4A574]/20 ${
+              <span className={`px-3 py-1 text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm border border-[#D4A574]/20 ${
                 profile.role_type?.includes('student') 
                   ? 'text-[#CC0000]' 
                   : profile.role_type?.includes('designer')
@@ -400,7 +400,7 @@ export default function ProfilePage() {
               }`}>
                 {profile.role_type?.join(', ') || 'User'}
               </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm border border-[#D4A574]/20 ${
+              <span className={`px-3 py-1 text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm border border-[#D4A574]/20 ${
                 profile.is_active ? 'text-green-700' : 'text-[#CC0000]'
               }`}>
                 {profile.is_active ? 'Active' : 'Inactive'}
@@ -411,7 +411,7 @@ export default function ProfilePage() {
           <div className="relative px-6">
             <div className="relative -mt-14">
               <div className="relative inline-block">
-                <div className="w-28 h-28 rounded-full border-4 border-white  bg-[#FDF8F0] shadow-md overflow-hidden">
+                <div className="w-28 h-28  border-4 border-white  bg-[#FDF8F0] shadow-md overflow-hidden">
                   {avatarPreview || profile.avatar_url ? (
                     <img
                       src={avatarPreview || profile.avatar_url}
@@ -427,7 +427,7 @@ export default function ProfilePage() {
                 {isEditing && (
                   <label
                     htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 p-1.5 bg-[#CC0000] rounded-full cursor-pointer hover:bg-[#B30000] transition-colors shadow-sm border-2 border-white"
+                    className="absolute bottom-0 right-0 p-1.5 bg-[#CC0000] cursor-pointer hover:bg-[#B30000] transition-colors shadow-sm border-2 border-white"
                   >
                     <Camera className="w-3.5 h-3.5 text-white" />
                     <input
@@ -493,7 +493,7 @@ export default function ProfilePage() {
                 </h3>
 
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <Phone className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div>
                       <p className="text-xs text-gray-500">Mobile</p>
@@ -501,7 +501,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <Briefcase className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">Experience</p>
@@ -510,7 +510,7 @@ export default function ProfilePage() {
                           name="years_of_experience"
                           value={editedData.years_of_experience || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                         >
                           <option value="">Select experience</option>
                           <option value="fresher">Fresher</option>
@@ -534,7 +534,7 @@ export default function ProfilePage() {
                 </h3>
 
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <GraduationCap className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">Qualification</p>
@@ -543,7 +543,7 @@ export default function ProfilePage() {
                           name="highest_qualification"
                           value={editedData.highest_qualification || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                         >
                           <option value="">Select qualification</option>
                           <option value="10th">10th Pass</option>
@@ -560,7 +560,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <Building className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">Organization</p>
@@ -570,7 +570,7 @@ export default function ProfilePage() {
                           name="current_organization"
                           value={editedData.current_organization || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="Organization name"
                         />
                       ) : (
@@ -589,7 +589,7 @@ export default function ProfilePage() {
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <MapPin className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">City</p>
@@ -599,7 +599,7 @@ export default function ProfilePage() {
                           name="city"
                           value={editedData.city || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="City"
                         />
                       ) : (
@@ -608,7 +608,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <MapPin className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">State</p>
@@ -618,7 +618,7 @@ export default function ProfilePage() {
                           name="state"
                           value={editedData.state || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="State"
                         />
                       ) : (
@@ -627,7 +627,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <Hash className="w-5 h-5 text-[#D4A574] mt-0.5" />
                     <div className="flex-1">
                       <p className="text-xs text-gray-500">PIN Code</p>
@@ -637,7 +637,7 @@ export default function ProfilePage() {
                           name="pincode"
                           value={editedData.pincode || ''}
                           onChange={handleChange}
-                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
+                          className="text-sm text-gray-900 bg-white border border-[#D4A574]/30  px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                           placeholder="PIN Code"
                         />
                       ) : (
@@ -647,7 +647,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20 mt-3">
+                <div className="flex items-start gap-3 p-3 bg-[#FDF8F0]  border border-[#D4A574]/20 mt-3">
                   <Home className="w-5 h-5 text-[#D4A574] mt-0.5" />
                   <div className="flex-1">
                     <p className="text-xs text-gray-500">Full Address</p>
@@ -657,7 +657,7 @@ export default function ProfilePage() {
                         value={editedData.full_address || ''}
                         onChange={handleChange}
                         rows="2"
-                        className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 rounded-lg px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
+                        className="text-sm text-gray-900 bg-white border border-[#D4A574]/30 px-3 py-1.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-[#CC0000]"
                         placeholder="Full address"
                       />
                     ) : (
@@ -676,10 +676,10 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Aadhaar Card */}
-                  <div className="p-4 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="p-4 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-[#CC0000]/10 rounded-lg">
+                        <div className="p-2 bg-[#CC0000]/10">
                           <Shield className="w-5 h-5 text-[#CC0000]" />
                         </div>
                         <div>
@@ -701,7 +701,7 @@ export default function ProfilePage() {
                       </div>
                       {isEditing && (
                         <label className="cursor-pointer">
-                          <div className="p-1.5 text-[#CC0000] hover:bg-[#FDF8F0] rounded-lg transition-colors">
+                          <div className="p-1.5 text-[#CC0000] hover:bg-[#FDF8F0] transition-colors">
                             <Upload className="w-4 h-4" />
                           </div>
                           <input
@@ -723,10 +723,10 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Experience Letter */}
-                  <div className="p-4 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                  <div className="p-4 bg-[#FDF8F0] border border-[#D4A574]/20">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-50 rounded-lg">
+                        <div className="p-2 bg-purple-50">
                           <Award className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
@@ -748,7 +748,7 @@ export default function ProfilePage() {
                       </div>
                       {isEditing && (
                         <label className="cursor-pointer">
-                          <div className="p-1.5 text-[#CC0000] hover:bg-[#FDF8F0] rounded-lg transition-colors">
+                          <div className="p-1.5 text-[#CC0000] hover:bg-[#FDF8F0] transition-colors">
                             <Upload className="w-4 h-4" />
                           </div>
                           <input
