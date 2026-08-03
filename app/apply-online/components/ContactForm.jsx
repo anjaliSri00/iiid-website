@@ -98,10 +98,10 @@ export default function ContactForm() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="inline-flex items-center gap-2 bg-[#CC0000]/10 px-4 py-2 rounded-full mb-4">
+          {/* <span className="inline-flex items-center gap-2 bg-[#CC0000]/10 px-4 py-2 rounded-full mb-4">
             <Sparkles className="w-4 h-4 text-[#CC0000]" />
             <span className="text-sm font-medium text-[#CC0000]">Get in Touch</span>
-          </span>
+          </span> */}
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-serif">
             We'd Love to Hear From You
           </h2>
@@ -118,7 +118,7 @@ export default function ContactForm() {
             viewport={{ once: true }}
             className="space-y-6"
           >
-            <div className="bg-[#FDF8F0] rounded-2xl p-6 shadow-sm border border-[#D4A574]/30">
+            <div className="bg-[#FDF8F0] p-6 shadow-sm border border-[#D4A574]/30">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">

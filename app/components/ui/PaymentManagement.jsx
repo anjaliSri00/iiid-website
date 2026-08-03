@@ -259,14 +259,14 @@ const PaymentManagement = () => {
   const getRoleBadge = () => {
     if (isAdmin) {
       return (
-        <span className="flex items-center gap-1 px-3 py-1 text-xs font-medium bg-red-100 text-red-700 rounded-full">
+        <span className="flex items-center gap-1 px-3 py-1 text-xs font-medium bg-red-100 text-red-700 ">
           <Shield className="w-3 h-3" />
           Admin View
         </span>
       );
     }
     return (
-      <span className="flex items-center gap-1 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+      <span className="flex items-center gap-1 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700">
         <User className="w-3 h-3" />
         My Payments
       </span>
@@ -301,7 +301,7 @@ const PaymentManagement = () => {
 
       {/* Stats Cards - Show different stats for admin vs student */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
+        <div className="bg-white p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-500">Total Revenue</span>
             <IndianRupee className="w-4 h-4 text-emerald-600" />
@@ -315,7 +315,7 @@ const PaymentManagement = () => {
           )}
         </div>
         
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
+        <div className="bg-white p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-500">Total Payments</span>
             <Receipt className="w-4 h-4 text-blue-600" />
@@ -328,8 +328,8 @@ const PaymentManagement = () => {
             </p>
           )}
         </div>
-        
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
+      
+        <div className="bg-white p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-500">Successful</span>
             <CheckCircle className="w-4 h-4 text-emerald-600" />
@@ -343,7 +343,7 @@ const PaymentManagement = () => {
           )}
         </div>
         
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
+        <div className="bg-white p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-500">Pending</span>
             <Clock className="w-4 h-4 text-amber-600" />
@@ -357,7 +357,7 @@ const PaymentManagement = () => {
           )}
         </div>
         
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
+        <div className="bg-white p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-500">Failed</span>
             <XCircle className="w-4 h-4 text-red-600" />
@@ -371,7 +371,7 @@ const PaymentManagement = () => {
           )}
         </div>
         
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
+        <div className="bg-white p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-500">Avg Amount</span>
             <TrendingUp className="w-4 h-4 text-purple-600" />
@@ -387,7 +387,7 @@ const PaymentManagement = () => {
       </div>
 
       {/* Payment List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
         {/* Header and Search */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex flex-wrap items-center gap-4">
@@ -399,7 +399,7 @@ const PaymentManagement = () => {
                   : "Search by Order ID, Payment Code, Course ID..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                className="w-full px-4 py-2 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
               />
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               {searchTerm && (
@@ -414,7 +414,7 @@ const PaymentManagement = () => {
             
             <button
               onClick={fetchPayments}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               <span className="text-sm">Refresh</span>
@@ -423,7 +423,7 @@ const PaymentManagement = () => {
                   onClick={handleExportCSV}
                   disabled={isExporting}
                   className={`
-                    flex items-center gap-2 px-3 py-2 rounded-lg font-medium
+                    flex items-center gap-2 px-3 py-2 font-medium
                     transition-all duration-200 ease-in-out
                     ${isExporting 
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
@@ -527,7 +527,7 @@ const PaymentManagement = () => {
                               e.stopPropagation();
                               copyToClipboard(payment.payment_code || `PAY-${payment.id}`);
                             }}
-                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            className="p-1 hover:bg-gray-200 transition-colors"
                             title="Copy Payment Code"
                           >
                             {copied ? (
@@ -584,7 +584,7 @@ const PaymentManagement = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 uppercase tracking-[1.36px]  px-2 py-1 text-xs rounded-full ${getStatusBadge(payment.status)}`}>
+                      <span className={`inline-flex items-center gap-1 uppercase tracking-[1.36px]  px-2 py-1 text-xs ${getStatusBadge(payment.status)}`}>
                         {getStatusIcon(payment.status)}
                         {payment.status || "N/A"}
                       </span>
@@ -604,7 +604,7 @@ const PaymentManagement = () => {
                           setSelectedPayment(payment);
                           setShowPaymentDetail(true);
                         }}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 transition-colors"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
@@ -621,14 +621,14 @@ const PaymentManagement = () => {
       {/* Payment Detail Modal */}
       {showPaymentDetail && selectedPayment && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-gray-700" />
                 <h2 className="text-lg font-semibold text-gray-900">
                   Payment Details
                 </h2>
-                <span className={`ml-2 px-2 py-0.5 text-xs uppercase tracking-[1.36px]  rounded-full ${getStatusBadge(selectedPayment.status)}`}>
+                <span className={`ml-2 px-2 py-0.5 text-xs uppercase tracking-[1.36px] ${getStatusBadge(selectedPayment.status)}`}>
                   {selectedPayment.status}
                 </span>
               </div>
@@ -637,7 +637,7 @@ const PaymentManagement = () => {
                   setShowPaymentDetail(false);
                   setSelectedPayment(null);
                 }}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-gray-100 transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -646,68 +646,68 @@ const PaymentManagement = () => {
             <div className="p-6">
               {/* Payment Info */}
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Payment Code</p>
                   <p className="text-sm font-mono text-gray-900">
                     {selectedPayment.payment_code || "N/A"}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Order ID</p>
                   <p className="text-sm font-mono text-gray-900 break-all">
                     {selectedPayment.order_id || "N/A"}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Razorpay Order ID</p>
                   <p className="text-sm font-mono text-gray-900 break-all">
                     {selectedPayment.partner_order_id || "N/A"}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Payment Type</p>
                   <p className="text-sm font-medium text-gray-900 capitalize">
                     {getPaymentTypeLabel(selectedPayment.payment_for)}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Amount Paid</p>
                   <p className="text-lg font-bold text-emerald-600">
                     {formatCurrency(selectedPayment.amount_paid)}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Payment Method</p>
                   <p className="text-sm font-medium text-gray-900 uppercase tracking-[1.36px]  flex items-center gap-1">
                     {getPaymentMethodIcon(selectedPayment.payment_method)}
                     {selectedPayment.payment_method || "N/A"}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Original Price</p>
                   <p className="text-sm text-gray-900">
                     {formatCurrency(selectedPayment.price)}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Discount</p>
                   <p className="text-sm text-emerald-600">
                     {formatCurrency(selectedPayment.discount)}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">PG Source</p>
                   <p className="text-sm text-gray-900">
                     {selectedPayment.pg_source || "N/A"}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Created At</p>
                   <p className="text-sm text-gray-900">
                     {formatDate(selectedPayment.created_at)}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50">
                   <p className="text-xs text-gray-500">Last Updated</p>
                   <p className="text-sm text-gray-900">
                     {formatDate(selectedPayment.updated_at)}
@@ -722,7 +722,7 @@ const PaymentManagement = () => {
                     <User className="w-4 h-4 text-blue-600" />
                     User Information
                   </h4>
-                  <div className="p-3 bg-blue-50 rounded-lg">
+                  <div className="p-3 bg-blue-50">
                     <p className="text-sm text-gray-900">
                       <span className="text-gray-500">User ID:</span> {selectedPayment.user_id}
                     </p>
@@ -733,7 +733,7 @@ const PaymentManagement = () => {
                     <BookOpen className="w-4 h-4 text-purple-600" />
                     Course Information
                   </h4>
-                  <div className="p-3 bg-purple-50 rounded-lg">
+                  <div className="p-3 bg-purple-50">
                     <p className="text-sm text-gray-900">
                       <span className="text-gray-500">Course ID:</span> {selectedPayment.course_id}
                     </p>
@@ -745,7 +745,7 @@ const PaymentManagement = () => {
               {selectedPayment.partner_txn_id && (
                 <div className="mt-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-2">Transaction Details</h4>
-                  <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="p-3 bg-gray-50">
                     <p className="text-sm text-gray-900">
                       <span className="text-gray-500">Transaction ID:</span> {selectedPayment.partner_txn_id}
                     </p>

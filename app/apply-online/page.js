@@ -92,6 +92,9 @@ export default async function ApplyOnline({ faqs, error }) {
       <Suspense fallback={<Loading />}>
         <HeroSection />
       </Suspense>
+      <Suspense fallback ={<Loading/>}>
+     <Programs />
+      </Suspense>
 
       <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
         <BenefitsSection />

@@ -37,6 +37,7 @@ const itemVariants = {
 
 export default function ContactInfo() {
   return (
+    <>
     <motion.div
       variants={containerVariants}
       initial="hidden"
@@ -90,9 +91,9 @@ export default function ContactInfo() {
       </motion.div>
 
       {/* Address */}
-      <motion.div
+      {/* <motion.div
         variants={itemVariants}
-        className="bg-white py-4 px-6 shadow-lg border border-gray-100"
+        className="bg-white py-4 px-6 hidden shadow-lg border border-gray-100"
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Building className="w-5 h-5 text-[#CC0000]" />
@@ -103,8 +104,7 @@ export default function ContactInfo() {
             <MapPin className="w-5 h-5 text-[#CC0000] shrink-0 mt-0.5" />
             <p className="text-sm text-gray-600">
               IIID,<br />
-              {/* Hyderabad,<br /> */}
-              {/* Telangana, India */}
+            
             </p>
           </div>
           <div className="pt-3 border-t border-gray-100">
@@ -118,7 +118,7 @@ export default function ContactInfo() {
             </Link>
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
 
       {/* Social Links */}
       {/* <motion.div
@@ -161,5 +161,6 @@ export default function ContactInfo() {
         </div>
       </motion.div> */}
     </motion.div>
+    </>
   );
 }

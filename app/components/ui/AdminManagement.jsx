@@ -1489,7 +1489,7 @@ const AdminManagement = () => {
             e.preventDefault();
             setActiveTab("users");
           }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+          className={`flex items-center gap-2 px-3 py-2 transition-all duration-200 ${
             activeTab === "users"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
               : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
@@ -1517,7 +1517,7 @@ const AdminManagement = () => {
             e.preventDefault();
             setActiveTab("enrollments");
           }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+          className={`flex items-center gap-2 px-3 py-2 transition-all duration-200 ${
             activeTab === "enrollments"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
               : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
@@ -1545,7 +1545,7 @@ const AdminManagement = () => {
             e.preventDefault();
             setActiveTab("contacts");
           }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+          className={`flex items-center gap-2 px-3 py-2 transition-all duration-200 ${
             activeTab === "contacts"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
               : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
@@ -1578,7 +1578,7 @@ const AdminManagement = () => {
             e.preventDefault();
             setActiveTab("assessments");
           }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+          className={`flex items-center gap-2 px-3 py-2 transition-all duration-200 ${
             activeTab === "assessments"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
               : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
@@ -1606,7 +1606,7 @@ const AdminManagement = () => {
             e.preventDefault();
             setActiveTab("attempts");
           }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+          className={`flex items-center gap-2 px-3 py-2 transition-all duration-200 ${
             activeTab === "attempts"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
               : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
@@ -1634,7 +1634,7 @@ const AdminManagement = () => {
             e.preventDefault();
             setActiveTab("reattempts");
           }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+          className={`flex items-center gap-2 px-3 py-2 transition-all duration-200 ${
             activeTab === "reattempts"
               ? "bg-red-50 text-red-700 border-2 border-red-200 shadow-sm"
               : "bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent hover:border-gray-200"
@@ -1663,7 +1663,7 @@ const AdminManagement = () => {
           onClick={handleExportCSV}
           disabled={isExporting}
           className={`
-            flex items-center gap-2 px-3 py-2 rounded-lg font-medium
+            flex items-center gap-2 px-3 py-2 font-medium
             transition-all duration-200 ease-in-out
             ${
               isExporting
@@ -1690,7 +1690,7 @@ const AdminManagement = () => {
       {/* Users Tab - Keep existing */}
       {activeTab === "users" && (
         // ... existing users tab code ...
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white  shadow-sm border border-gray-200 overflow-hidden">
           {/* User Filters */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-wrap items-center gap-4">
@@ -1701,14 +1701,14 @@ const AdminManagement = () => {
                   placeholder="Search users by name, email, or code..."
                   value={userFilters.search}
                   onChange={handleUserFilterChange}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
 
               <button
                 onClick={() => setShowUserFilters(!showUserFilters)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 border transition-colors ${
                   showUserFilters || userFilters.role || userFilters.is_active
                     ? "bg-red-50 border-red-200 text-red-600"
                     : "border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -1723,7 +1723,7 @@ const AdminManagement = () => {
 
               <button
                 onClick={() => fetchUsers(1)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-sm">Refresh</span>
@@ -1731,7 +1731,7 @@ const AdminManagement = () => {
             </div>
 
             {showUserFilters && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-gray-700">
                     Filter Users
@@ -1752,7 +1752,7 @@ const AdminManagement = () => {
                       name="role"
                       value={userFilters.role}
                       onChange={handleUserFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All Roles</option>
                       <option value="admin">Admin</option>
@@ -1769,7 +1769,7 @@ const AdminManagement = () => {
                       name="is_active"
                       value={userFilters.is_active}
                       onChange={handleUserFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All Status</option>
                       <option value="true">Active</option>
@@ -1860,14 +1860,14 @@ const AdminManagement = () => {
                             user.role_type.map((role) => (
                               <span
                                 key={role}
-                                className={`px-2 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getRoleBadge(role)}`}
+                                className={`px-2 py-0.5 text-xs uppercase tracking-[1.36px] ${getRoleBadge(role)}`}
                               >
                                 {role}
                               </span>
                             ))
                           ) : (
                             <span
-                              className={`px-2 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getRoleBadge(user.role_type)}`}
+                              className={`px-2 py-0.5 text-xs uppercase tracking-[1.36px] ${getRoleBadge(user.role_type)}`}
                             >
                               {user.role_type}
                             </span>
@@ -1876,14 +1876,14 @@ const AdminManagement = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(user.is_active ? "active" : "inactive")}`}
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px]  ${getStatusBadge(user.is_active ? "active" : "inactive")}`}
                         >
                           {user.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         {user.is_enrolled && (
-                          <span className="px-1.5 py-0.5 uppercase tracking-[1.36px] text-xs bg-emerald-100 text-emerald-700 rounded-full">
+                          <span className="px-1.5 py-0.5 uppercase tracking-[1.36px] text-xs bg-emerald-100 text-emerald-700 ">
                             Enrolled
                           </span>
                         )}
@@ -1942,7 +1942,7 @@ const AdminManagement = () => {
       {/* Enrollments Tab - Keep existing */}
       {activeTab === "enrollments" && (
         // ... existing enrollments tab code ...
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
           {/* Enrollment Filters */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-wrap items-center gap-4">
@@ -1953,14 +1953,14 @@ const AdminManagement = () => {
                   placeholder="Search by user name or email..."
                   value={enrollmentFilters.user_id}
                   onChange={handleEnrollmentFilterChange}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
 
               <button
                 onClick={() => setShowEnrollmentFilters(!showEnrollmentFilters)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 border transition-colors ${
                   showEnrollmentFilters ||
                   enrollmentFilters.course_id ||
                   enrollmentFilters.status ||
@@ -1980,7 +1980,7 @@ const AdminManagement = () => {
 
               <button
                 onClick={() => fetchEnrollments(1)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-sm">Refresh</span>
@@ -1988,7 +1988,7 @@ const AdminManagement = () => {
             </div>
 
             {showEnrollmentFilters && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-gray-700">
                     Filter Enrollments
@@ -2011,7 +2011,7 @@ const AdminManagement = () => {
                       value={enrollmentFilters.course_id}
                       onChange={handleEnrollmentFilterChange}
                       placeholder="Enter course ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -2022,7 +2022,7 @@ const AdminManagement = () => {
                       name="status"
                       value={enrollmentFilters.status}
                       onChange={handleEnrollmentFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All Status</option>
                       <option value="active">Active</option>
@@ -2039,7 +2039,7 @@ const AdminManagement = () => {
                       name="is_active"
                       value={enrollmentFilters.is_active}
                       onChange={handleEnrollmentFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All</option>
                       <option value="true">Active</option>
@@ -2102,7 +2102,7 @@ const AdminManagement = () => {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 text-xs font-semibold flex-shrink-0">
+                          <div className="w-8 h-8 bg-gray-100 flex items-center justify-center text-gray-700 text-xs font-semibold flex-shrink-0">
                             {enrollment.user_name
                               ? enrollment.user_name.charAt(0).toUpperCase()
                               : "U"}
@@ -2134,7 +2134,7 @@ const AdminManagement = () => {
                           )}
                           {enrollment.course_status && (
                             <span
-                              className={`px-1.5 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(enrollment.course_status)}`}
+                              className={`px-1.5 py-0.5 text-xs uppercase tracking-[1.36px] ${getStatusBadge(enrollment.course_status)}`}
                             >
                               {enrollment.course_status}
                             </span>
@@ -2143,7 +2143,7 @@ const AdminManagement = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(enrollment.enrollment_status)}`}
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${getStatusBadge(enrollment.enrollment_status)}`}
                         >
                           {enrollment.enrollment_status || "N/A"}
                         </span>
@@ -2197,7 +2197,7 @@ const AdminManagement = () => {
       {/* Contacts Tab - Keep existing */}
       {activeTab === "contacts" && (
         // ... existing contacts tab code ...
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
           {/* Contact Filters */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-wrap items-center gap-4">
@@ -2214,7 +2214,7 @@ const AdminManagement = () => {
                       fetchContacts(1);
                     }
                   }}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                 {contactFilters.filter && (
@@ -2231,7 +2231,7 @@ const AdminManagement = () => {
 
               <button
                 onClick={() => setShowContactFilters(!showContactFilters)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 border transition-colors ${
                   showContactFilters || contactFilters.is_read
                     ? "bg-red-50 border-red-200 text-red-600"
                     : "border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -2246,7 +2246,7 @@ const AdminManagement = () => {
 
               <button
                 onClick={() => fetchContacts(1)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-sm">Refresh</span>
@@ -2254,7 +2254,7 @@ const AdminManagement = () => {
             </div>
 
             {showContactFilters && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-gray-700">
                     Filter Contacts
@@ -2275,7 +2275,7 @@ const AdminManagement = () => {
                       name="is_read"
                       value={contactFilters.is_read}
                       onChange={handleContactFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All</option>
                       <option value="true">Read</option>
@@ -2336,7 +2336,7 @@ const AdminManagement = () => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ${!contact.is_read ? "bg-red-500" : "bg-gray-400"}`}
+                            className={`w-10 h-10 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ${!contact.is_read ? "bg-red-500" : "bg-gray-400"}`}
                           >
                             {contact.full_name
                               ? contact.full_name.charAt(0).toUpperCase()
@@ -2381,7 +2381,7 @@ const AdminManagement = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(contact.is_read ? "read" : "unread")}`}
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${getStatusBadge(contact.is_read ? "read" : "unread")}`}
                         >
                           {contact.is_read ? "Read" : "Unread"}
                         </span>
@@ -2398,7 +2398,7 @@ const AdminManagement = () => {
                               setSelectedContact(contact);
                               setShowContactDetail(true);
                             }}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 transition-colors"
                             title="View details"
                           >
                             <Eye className="w-4 h-4" />
@@ -2410,7 +2410,7 @@ const AdminManagement = () => {
                                 contact.is_read,
                               )
                             }
-                            className={`p-1.5 rounded-lg transition-colors ${
+                            className={`p-1.5 transition-colors ${
                               contact.is_read
                                 ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
                                 : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
@@ -2429,7 +2429,7 @@ const AdminManagement = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteContact(contact.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                             title="Delete message"
                           >
                             <Trash className="w-4 h-4" />
@@ -2454,7 +2454,7 @@ const AdminManagement = () => {
 
       {/* Assessments Tab */}
       {activeTab === "assessments" && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white  shadow-sm border border-gray-200 overflow-hidden">
           {/* Assessment Filters */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-wrap items-center gap-4">
@@ -2465,14 +2465,14 @@ const AdminManagement = () => {
                   placeholder="Search assessments..."
                   value={assessmentFilters.search}
                   onChange={handleAssessmentFilterChange}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
 
               <button
                 onClick={() => setShowAssessmentFilters(!showAssessmentFilters)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 border transition-colors ${
                   showAssessmentFilters ||
                   assessmentFilters.type ||
                   assessmentFilters.status ||
@@ -2492,7 +2492,7 @@ const AdminManagement = () => {
 
               <button
                 onClick={() => fetchAssessments(1)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-sm">Refresh</span>
@@ -2500,7 +2500,7 @@ const AdminManagement = () => {
             </div>
 
             {showAssessmentFilters && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-gray-700">
                     Filter Assessments
@@ -2521,7 +2521,7 @@ const AdminManagement = () => {
                       name="type"
                       value={assessmentFilters.type}
                       onChange={handleAssessmentFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All Types</option>
                       <option value="mcq">MCQ</option>
@@ -2536,7 +2536,7 @@ const AdminManagement = () => {
                       name="status"
                       value={assessmentFilters.status}
                       onChange={handleAssessmentFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All Status</option>
                       <option value="draft">Draft</option>
@@ -2554,7 +2554,7 @@ const AdminManagement = () => {
                       value={assessmentFilters.course_id}
                       onChange={handleAssessmentFilterChange}
                       placeholder="Enter course ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
@@ -2666,7 +2666,7 @@ const AdminManagement = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(assessment.status)}`}
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${getStatusBadge(assessment.status)}`}
                         >
                           {assessment.status || "draft"}
                         </span>
@@ -2679,7 +2679,7 @@ const AdminManagement = () => {
                               assessment.id,
                             )
                           }
-                          className={`p-1.5 rounded-lg transition-colors ${
+                          className={`p-1.5 transition-colors ${
                             assessment.is_default
                               ? "text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50"
                               : "text-gray-300 hover:text-yellow-500 hover:bg-yellow-50"
@@ -2781,14 +2781,14 @@ const AdminManagement = () => {
                   placeholder="Search by user, assessment, or course..."
                   value={attemptFilters.search}
                   onChange={handleAttemptFilterChange}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               </div>
 
               <button
                 onClick={() => setShowAttemptFilters(!showAttemptFilters)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 border transition-colors ${
                   showAttemptFilters ||
                   attemptFilters.passed ||
                   attemptFilters.review_status ||
@@ -2808,7 +2808,7 @@ const AdminManagement = () => {
 
               <button
                 onClick={() => fetchAttempts(1)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-sm">Refresh</span>
@@ -2816,7 +2816,7 @@ const AdminManagement = () => {
             </div>
 
             {showAttemptFilters && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-gray-700">
                     Filter Attempts
@@ -2837,7 +2837,7 @@ const AdminManagement = () => {
                       name="passed"
                       value={attemptFilters.passed}
                       onChange={handleAttemptFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All</option>
                       <option value="true">Passed</option>
@@ -2852,7 +2852,7 @@ const AdminManagement = () => {
                       name="review_status"
                       value={attemptFilters.review_status}
                       onChange={handleAttemptFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All</option>
                       <option value="pending">Pending Review</option>
@@ -2869,7 +2869,7 @@ const AdminManagement = () => {
                       value={attemptFilters.course_id}
                       onChange={handleAttemptFilterChange}
                       placeholder="Enter course ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
@@ -2968,7 +2968,7 @@ const AdminManagement = () => {
                           {attempt.passed !== null &&
                             attempt.passed !== undefined && (
                               <span
-                                className={`px-1.5 py-0.5 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(attempt.passed ? "passed" : "failed")}`}
+                                className={`px-1.5 py-0.5 text-xs uppercase tracking-[1.36px] ${getStatusBadge(attempt.passed ? "passed" : "failed")}`}
                               >
                                 {attempt.passed ? "Passed" : "Failed"}
                               </span>
@@ -2977,14 +2977,14 @@ const AdminManagement = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(attempt.review_status || "pending")}`}
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${getStatusBadge(attempt.review_status || "pending")}`}
                         >
                           {attempt.review_status || "Pending"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${
                             attempt.assessment_type === "pdf_task"
                               ? "bg-orange-100 text-orange-700"
                               : "bg-purple-100 text-purple-700"
@@ -3020,7 +3020,7 @@ const AdminManagement = () => {
                                 setSelectedAttempt(attempt);
                                 setShowAttemptDetail(true);
                               }}
-                              className={`p-1.5 rounded-lg transition-colors ${
+                              className={`p-1.5 transition-colors ${
                                 attempt.assessment_type === "pdf_task"
                                   ? "text-amber-600 hover:bg-amber-50"
                                   : "text-emerald-600 hover:bg-emerald-50"
@@ -3057,13 +3057,13 @@ const AdminManagement = () => {
       )}
       {/* Reattempts Tab */}
       {activeTab === "reattempts" && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white shadow-sm border border-gray-200 overflow-hidden">
           {/* Reattempt Filters */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={() => setShowReattemptFilters(!showReattemptFilters)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 border transition-colors ${
                   showReattemptFilters ||
                   reattemptFilters.status ||
                   reattemptFilters.user_id ||
@@ -3083,7 +3083,7 @@ const AdminManagement = () => {
 
               <button
                 onClick={() => fetchReattemptRequests(1)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300  hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-sm">Refresh</span>
@@ -3091,7 +3091,7 @@ const AdminManagement = () => {
             </div>
 
             {showReattemptFilters && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-gray-700">
                     Filter Reattempts
@@ -3112,7 +3112,7 @@ const AdminManagement = () => {
                       name="status"
                       value={reattemptFilters.status}
                       onChange={handleReattemptFilterChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     >
                       <option value="">All</option>
                       <option value="pending">Pending</option>
@@ -3130,7 +3130,7 @@ const AdminManagement = () => {
                       value={reattemptFilters.user_id}
                       onChange={handleReattemptFilterChange}
                       placeholder="Enter user ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -3143,7 +3143,7 @@ const AdminManagement = () => {
                       value={reattemptFilters.course_id}
                       onChange={handleReattemptFilterChange}
                       placeholder="Enter course ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
@@ -3245,7 +3245,7 @@ const AdminManagement = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(request.status)}`}
+                          className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${getStatusBadge(request.status)}`}
                         >
                           {request.status || "pending"}
                         </span>
@@ -3262,7 +3262,7 @@ const AdminManagement = () => {
                             <div className="flex items-center gap-1">
                               <select
                                 id={`assessment-select-${request.id}`}
-                                className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white w-full max-w-[150px]"
+                                className="px-2 py-1 text-xs border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white w-full max-w-[150px]"
                                 defaultValue=""
                               >
                                 <option value="">Select Assessment</option>
@@ -3315,7 +3315,7 @@ const AdminManagement = () => {
                                   handleRejectReattempt(request.id);
                                 }
                               }}
-                              className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 transition-colors"
                             >
                               <ThumbsDown className="w-3 h-3" />
                               Reject
@@ -3373,7 +3373,7 @@ const AdminManagement = () => {
       {/* Contact Detail Modal */}
       {showContactDetail && selectedContact && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+          <div className="bg-white max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center gap-3">
                 <div
@@ -3418,13 +3418,13 @@ const AdminManagement = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(selectedContact.is_read ? "read" : "unread")}`}
+                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px]  ${getStatusBadge(selectedContact.is_read ? "read" : "unread")}`}
                   >
                     {selectedContact.is_read ? "Read" : "Unread"}
                   </span>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="bg-gray-50 p-4 border border-gray-200">
                 <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
                   {selectedContact.message}
                 </p>
@@ -3451,7 +3451,7 @@ const AdminManagement = () => {
                     setShowContactDetail(false);
                     setSelectedContact(null);
                   }}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-2"
                 >
                   {selectedContact.is_read ? (
                     <>
@@ -3471,7 +3471,7 @@ const AdminManagement = () => {
                     setShowContactDetail(false);
                     setSelectedContact(null);
                   }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center gap-2"
                 >
                   <Trash className="w-4 h-4" />
                   Delete
@@ -3484,11 +3484,11 @@ const AdminManagement = () => {
 
       {showAttemptDetail && selectedAttempt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+          <div className="bg-white max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center gap-3">
                 <div
-                  className={`p-2 rounded-lg ${
+                  className={`p-2 ${
                     selectedAttempt.assessment_type === "pdf_task"
                       ? "bg-amber-100"
                       : "bg-emerald-100"
@@ -3523,7 +3523,7 @@ const AdminManagement = () => {
                   setShowAttemptDetail(false);
                   setSelectedAttempt(null);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -3545,7 +3545,7 @@ const AdminManagement = () => {
                   {selectedAttempt.passed !== null &&
                   selectedAttempt.passed !== undefined ? (
                     <span
-                      className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(selectedAttempt.passed ? "passed" : "failed")}`}
+                      className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${getStatusBadge(selectedAttempt.passed ? "passed" : "failed")}`}
                     >
                       {selectedAttempt.passed ? "Passed" : "Failed"}
                     </span>
@@ -3556,7 +3556,7 @@ const AdminManagement = () => {
                 <div>
                   <p className="text-xs text-gray-400">Review Status</p>
                   <span
-                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${getStatusBadge(selectedAttempt.review_status || "pending")}`}
+                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${getStatusBadge(selectedAttempt.review_status || "pending")}`}
                   >
                     {selectedAttempt.review_status || "Pending"}
                   </span>
@@ -3572,7 +3572,7 @@ const AdminManagement = () => {
                 <div>
                   <p className="text-xs text-gray-400">Assessment Type</p>
                   <span
-                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px] rounded-full ${
+                    className={`px-2 py-1 text-xs uppercase tracking-[1.36px] ${
                       selectedAttempt.assessment_type === "pdf_task"
                         ? "bg-orange-100 text-orange-700"
                         : "bg-purple-100 text-purple-700"
@@ -3596,7 +3596,7 @@ const AdminManagement = () => {
                       href={selectedAttempt.submitted_file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
                     >
                       <FileText className="w-4 h-4" />
                       View PDF Submission
@@ -3624,7 +3624,7 @@ const AdminManagement = () => {
                         min="0"
                         max="100"
                         defaultValue={selectedAttempt.score || 0}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                       />
                     </div>
                     <div className="flex-1">
@@ -3641,7 +3641,7 @@ const AdminManagement = () => {
                               : "false"
                             : "true"
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                       >
                         <option value="true">Yes</option>
                         <option value="false">No</option>
@@ -3668,7 +3668,7 @@ const AdminManagement = () => {
                             },
                           );
                         }}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                        className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center gap-2"
                       >
                         <Send className="w-4 h-4" />
                         Submit Review
@@ -3685,7 +3685,7 @@ const AdminManagement = () => {
                   setShowAttemptDetail(false);
                   setSelectedAttempt(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 border border-gray-300  hover:bg-gray-100 transition-colors"
               >
                 Close
               </button>

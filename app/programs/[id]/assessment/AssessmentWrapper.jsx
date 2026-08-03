@@ -229,13 +229,13 @@ const AssessmentWrapper = () => {
                 assessmentId : null;
               fetchAssessment(programId, validAssessmentId);
             }}
-            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
           >
             Try Again
           </button>
           <Link
             href={`/programs/${programId}`}
-            className="inline-flex items-center ml-3 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="inline-flex items-center ml-3 px-6 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
           >
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Program
@@ -257,7 +257,7 @@ const AssessmentWrapper = () => {
           <p className="text-gray-600 mb-6">This program doesn't have an assessment yet.</p>
           <Link
             href={`/programs/${programId}`}
-            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
           >
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Program

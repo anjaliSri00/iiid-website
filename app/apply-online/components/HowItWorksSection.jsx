@@ -348,7 +348,7 @@ export default function HowItWorksSection() {
           viewport={{ once: true }}
           className="text-center mt-16"
         >
-          <Link href="/#programs">
+          <Link href="/apply-online">
             <button className="bg-[#CC0000] text-white px-6 py-3 hover:bg-[#B30000] hover:shadow-lg transition-all duration-300 text-lg font-semibold inline-flex items-center gap-3">
               Start Your Journey
               <ArrowRight className="w-5 h-5" />

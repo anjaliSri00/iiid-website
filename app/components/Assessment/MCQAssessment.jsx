@@ -303,7 +303,7 @@ if (showResultsView && results) {
         </Link>
 
         {/* Main Results Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-[#D4A574]/10">
+        <div className="bg-white shadow-xl overflow-hidden border border-[#D4A574]/10">
           {/* Hero Section */}
           <div className={`relative px-6 py-8 text-center ${
             passed 
@@ -315,7 +315,7 @@ if (showResultsView && results) {
             
             <div className="relative">
               {/* Status Badge */}
-              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold mb-4 ${
                 passed 
                   ? 'bg-emerald-100 text-emerald-700' 
                   : 'bg-red-100 text-red-700'
@@ -389,7 +389,7 @@ if (showResultsView && results) {
           <div className="px-6 py-4 border-b border-[#D4A574]/10">
             <div className="flex flex-wrap items-center justify-center gap-3">
               {/* Score Badge */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-[#FDF8F0] rounded-xl border border-[#D4A574]/10">
+              <div className="flex items-center gap-2 px-4 py-2 bg-[#FDF8F0] border border-[#D4A574]/10">
                 <BarChart3 className="w-4 h-4 text-[#CC0000]" />
                 <span className="text-sm font-medium text-gray-700">{score}%</span>
                 <span className="text-xs text-gray-400">Score</span>
@@ -435,10 +435,10 @@ if (showResultsView && results) {
           {/* Reattempt Section - Show if failed */}
           {!passed && !reattemptStatus && (
             <div className="px-6 py-4 border-b border-[#D4A574]/10">
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-amber-100 rounded-lg flex-shrink-0">
+                    <div className="p-2 bg-amber-100 flex-shrink-0">
                       <RefreshCw className="w-4 h-4 text-amber-600" />
                     </div>
                     <div>
@@ -451,7 +451,7 @@ if (showResultsView && results) {
                   </div>
                   <button
                     onClick={handleReattemptRequest}
-                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-all text-sm font-medium flex items-center gap-2 shadow-sm hover:shadow-md flex-shrink-0"
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white  transition-all text-sm font-medium flex items-center gap-2 shadow-sm hover:shadow-md flex-shrink-0"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     Request Reattempt
@@ -464,9 +464,9 @@ if (showResultsView && results) {
           {/* Reattempt Status */}
           {reattemptStatus === 'pending' && (
             <div className="px-6 py-4 border-b border-[#D4A574]/10">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="bg-blue-50 border border-blue-200  p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                  <div className="p-2 bg-blue-100 shrink-0">
                     <Clock className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
@@ -486,7 +486,7 @@ if (showResultsView && results) {
             <div className="px-6 py-4 border-b border-[#D4A574]/10 bg-gradient-to-r from-[#FDF8F0] to-white">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-[#CC0000]/10 rounded-xl">
+                  <div className="p-2.5 bg-[#CC0000]/10">
                     <Award className="w-5 h-5 text-[#CC0000]" />
                   </div>
                   <div>
@@ -502,7 +502,7 @@ if (showResultsView && results) {
                       toast.info('Certificate download will be available soon.');
                     }
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] hover:bg-[#B30000] text-white rounded-lg transition-all text-sm font-medium shadow-sm hover:shadow-md"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] hover:bg-[#B30000] text-white transition-all text-sm font-medium shadow-sm hover:shadow-md"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Download Certificate
@@ -515,7 +515,7 @@ if (showResultsView && results) {
           <div className="px-6 py-4 flex flex-wrap items-center justify-center gap-3">
             <Link
               href={`/programs/${programId}`}
-              className="inline-flex items-center px-5 py-2.5 bg-[#CC0000] hover:bg-[#B30000] text-white rounded-lg transition-all text-sm font-medium shadow-sm hover:shadow-md"
+              className="inline-flex items-center px-5 py-2.5 bg-[#CC0000] hover:bg-[#B30000] text-white transition-all text-sm font-medium shadow-sm hover:shadow-md"
             >
               <ArrowLeft size={16} className="mr-2" />
               Back to Program
@@ -533,7 +533,7 @@ if (showResultsView && results) {
                     }).catch(() => {});
                   }
                 }}
-                className="inline-flex items-center px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all text-sm font-medium"
+                className="inline-flex items-center px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all text-sm font-medium"
               >
                 <MessageSquare size={16} className="mr-2" />
                 Share Results
@@ -546,7 +546,7 @@ if (showResultsView && results) {
       {/* Reattempt Modal */}
       {showReattemptModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
             <div className="text-center mb-4">
               <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <RefreshCw className="w-7 h-7 text-amber-600" />
@@ -565,7 +565,7 @@ if (showResultsView && results) {
                 value={reattemptReason}
                 onChange={(e) => setReattemptReason(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm resize-none"
+                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm resize-none"
                 placeholder="Explain why you need a reattempt..."
               />
             </div>
@@ -576,14 +576,14 @@ if (showResultsView && results) {
                   setShowReattemptModal(false);
                   setReattemptReason('');
                 }}
-                className="flex-1 px-4 py-2 border-2 border-[#D4A574]/20 text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-medium text-sm"
+                className="flex-1 px-4 py-2 border-2 border-[#D4A574]/20 text-gray-700 hover:bg-[#FDF8F0] transition-all font-medium text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitReattempt}
                 disabled={!reattemptReason.trim()}
-                className="flex-1 px-4 py-2 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                className="flex-1 px-4 py-2 bg-[#CC0000] text-white hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
               >
                 Submit Request
               </button>
@@ -615,7 +615,7 @@ if (showResultsView && results) {
             <div className="flex items-center gap-3 min-w-0">
               <Link
                 href={`/programs/${programId}`}
-                className="p-2 hover:bg-[#FDF8F0] rounded-xl transition-colors"
+                className="p-2 hover:bg-[#FDF8F0] transition-colors"
               >
                 <ArrowLeft size={20} className="text-gray-600" />
               </Link>
@@ -978,7 +978,7 @@ if (showResultsView && results) {
       {/* Submit Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
             <div className="text-center">
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-8 h-8 text-yellow-600" />
@@ -995,13 +995,13 @@ if (showResultsView && results) {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 px-4 py-2.5 border-2 border-[#D4A574]/20 text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-medium"
+                  className="flex-1 px-4 py-2.5 border-2 border-[#D4A574]/20 text-gray-700 hover:bg-[#FDF8F0] transition-all font-medium"
                 >
                   Continue
                 </button>
                 <button
                   onClick={performSubmit}
-                  className="flex-1 px-4 py-2.5 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-medium shadow-md"
+                  className="flex-1 px-4 py-2.5 bg-[#CC0000] text-white hover:bg-[#B30000] transition-all font-medium shadow-md"
                 >
                   Submit Anyway
                 </button>

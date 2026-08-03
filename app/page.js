@@ -10,7 +10,7 @@ export default function page() {
     <>
     <div className='max-w-screen-3xl overflow-x-hidden w-full min-h-screen h-full'>
       <Hero />
-      <Programs />
+    <Programs />
       <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
               <HowItWorksSection />
             </Suspense>

@@ -17,6 +17,12 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  BookOpen,
+  GraduationCap,
+  ArrowRight,
+  School,
+  Target,
+  Star,
 } from "lucide-react";
 import CertificateCard from "../components/certificates/CertificateCard";
 import { certificateApi } from "@/helper/services/certificateApi";
@@ -41,17 +47,14 @@ export default function CertificatesPage() {
 
   // Debounce search term
   useEffect(() => {
-    // Clear previous timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Set new timer
     debounceTimerRef.current = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 500); // 500ms delay
+    }, 500);
 
-    // Cleanup on unmount or searchTerm change
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -116,7 +119,6 @@ export default function CertificatesPage() {
   // Manual search handler (for form submit)
   const handleSearch = (e) => {
     e.preventDefault();
-    // The debounce will handle the search
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
@@ -132,6 +134,9 @@ export default function CertificatesPage() {
       setPagination((prev) => ({ ...prev, page: newPage }));
     }
   };
+
+  // Check if no certificates
+  const hasNoCertificates = !loading && certificates.length === 0 && !error && !searchTerm;
 
   if (status === "loading" || loading) {
     return (
@@ -192,56 +197,124 @@ export default function CertificatesPage() {
           </div>
         </div>
 
-        {/* Search Section */}
-        <div className="bg-white shadow-sm border border-[#D4A574]/20 p-4 mb-6">
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search certificates by course name or code..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
-              />
-              {searchTerm && (
+        {/* Search Section - Only show if there are certificates or search is active */}
+        {(!hasNoCertificates || searchTerm) && (
+          <div className="bg-white shadow-sm border border-[#D4A574]/20 p-4 mb-6">
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-col sm:flex-row gap-4"
+            >
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search certificates by course name or code..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="flex gap-3">
                 <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  type="submit"
+                  className="px-4 py-2 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
                 >
-                  ✕
+                  Search
                 </button>
-              )}
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Empty State - No Certificates */}
+        {hasNoCertificates && (
+          <div className="bg-white shadow-sm border border-[#D4A574]/20 p-12 text-center">
+            <div className="max-w-2xl mx-auto">
+              {/* Icon with animation */}
+              <div className="relative inline-block mb-6">
+                <div className="w-24 h-24 bg-[#CC0000]/10 rounded-full flex items-center justify-center mx-auto">
+                  <Award className="w-12 h-12 text-[#CC0000]" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#CC0000] rounded-full flex items-center justify-center">
+                  <Star className="w-4 h-4 text-white" />
+                </div>
+              </div>
+
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                No Certificates Yet
+              </h2>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                You haven't earned any certificates yet. Start your learning journey and earn your first professional certification.
+              </p>
+
+              {/* Quick Stats or Benefits */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="bg-[#FDF8F0] p-4 border border-[#D4A574]/20">
+                  <div className="flex items-center justify-center gap-2 text-[#CC0000] mb-1">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm text-gray-600">Quality Courses</p>
+                </div>
+                <div className="bg-[#FDF8F0] p-4 border border-[#D4A574]/20">
+                  <div className="flex items-center justify-center gap-2 text-[#CC0000] mb-1">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm text-gray-600">Expert Instructors</p>
+                </div>
+                <div className="bg-[#FDF8F0] p-4  border border-[#D4A574]/20">
+                  <div className="flex items-center justify-center gap-2 text-[#CC0000] mb-1">
+                    <Target className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm text-gray-600">Industry Recognition</p>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/apply-online">
+                  <button className="px-6 py-3 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors font-medium flex items-center gap-2 mx-auto sm:mx-0">
+                    <Plus className="w-4 h-4" />
+                    Browse Courses
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+                {/* <Link href="/#programs">
+                  <button className="px-6 py-3 border-2 border-[#CC0000] text-[#CC0000] hover:bg-[#CC0000] hover:text-white transition-colors font-medium flex items-center gap-2 mx-auto sm:mx-0">
+                    <School className="w-4 h-4" />
+                    View Programs
+                  </button>
+                </Link> */}
+              </div>
+
+              {/* Help text */}
+              <p className="text-xs text-gray-400 mt-6">
+                Need help? Contact our support team at support@iiid.institute
+              </p>
             </div>
+          </div>
+        )}
 
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#CC0000] text-white  hover:bg-[#B30000] transition-colors"
-              >
-                Search
-              </button>
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </form>
-
-          {/* View toggle and results count */}
-        </div>
-
-        {/* Certificates Grid/List */}
-        {error ? (
+        {/* Error State */}
+        {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-3" />
             <p className="text-red-800 font-medium">{error}</p>
@@ -252,8 +325,42 @@ export default function CertificatesPage() {
               Try Again
             </button>
           </div>
-        ) : (
+        )}
+
+        {/* Certificates Grid/List - Only show if there are certificates */}
+        {!hasNoCertificates && !error && (
           <>
+            {/* View toggle and results count */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <p className="text-sm text-gray-600">
+                Showing {certificates.length} of {pagination.total} certificates
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 border transition-colors ${
+                    viewMode === "grid"
+                      ? "border-[#CC0000] bg-[#CC0000] text-white"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                  aria-label="Grid view"
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                {/* <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 border transition-colors ${
+                    viewMode === "list"
+                      ? "border-[#CC0000] bg-[#CC0000] text-white"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                  aria-label="List view"
+                >
+                  <List className="w-4 h-4" />
+                </button> */}
+              </div>
+            </div>
+
             <div
               className={
                 viewMode === "grid"
@@ -274,14 +381,13 @@ export default function CertificatesPage() {
             {pagination.totalPages > 1 && (
               <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-sm text-gray-600">
-                  Showing {certificates.length} of {pagination.total}{" "}
-                  certificates
+                  Showing {certificates.length} of {pagination.total} certificates
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="px-4 py-2 border border-gray-200  hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    className="px-4 py-2 border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     Previous

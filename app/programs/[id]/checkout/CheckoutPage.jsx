@@ -439,7 +439,7 @@ const CheckoutPage = () => {
   if (error || !program) {
     return (
       <div className="min-h-screen bg-red-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+        <div className="text-center max-w-md mx-auto p-6 bg-white shadow-lg">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4">
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
@@ -480,7 +480,7 @@ const CheckoutPage = () => {
                 Complete your enrollment in <span className="font-semibold">{program.title}</span>
               </p>
             </div>
-            <div className="bg-red-50 px-4 py-2 rounded-lg border border-red-200">
+            <div className="bg-red-50 px-4 py-2 border border-red-200">
               <p className="text-xs text-gray-600">Total Amount</p>
               <p className="text-xl font-bold text-[#CC0000]">₹{totalAmount.toFixed(2)}</p>
             </div>
@@ -489,7 +489,7 @@ const CheckoutPage = () => {
 
         {/* User Info Banner */}
         {userDetails && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <div className="bg-green-50 border border-green-200 p-4 mb-6">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <User className="w-5 h-5 text-green-600" />
@@ -548,7 +548,7 @@ const CheckoutPage = () => {
           {/* Main Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit}>
-              <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+              <div className="bg-white shadow-lg p-6 md:p-8">
                 {/* Step 1: Review Order */}
                 {step === 1 && (
                   <div className="space-y-5">
@@ -558,7 +558,7 @@ const CheckoutPage = () => {
                     </h2>
 
                     {/* Program Details */}
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                    <div className="bg-gray-50 p-4 space-y-3">
                       <div className="flex justify-between items-center pb-2 border-b border-gray-200">
                         <span className="text-sm text-gray-600">Program</span>
                         <span className="text-sm font-semibold text-gray-900">
@@ -637,7 +637,7 @@ const CheckoutPage = () => {
                     </div> */}
 
                     {/* User Info Summary */}
-                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div className="bg-blue-50 p-4 border border-blue-200">
                       <h4 className="text-sm font-semibold text-blue-800 mb-2">Enrolled As</h4>
                       <div className="space-y-1 text-sm">
                         <p className="text-blue-700">
@@ -654,7 +654,7 @@ const CheckoutPage = () => {
                       </div>
                     </div>
 
-                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <div className="bg-green-50 p-4 border border-green-200">
                       <div className="flex items-start gap-3">
                         <Shield className="w-5 h-5 text-green-600 mt-0.5" />
                         <div>
@@ -665,23 +665,7 @@ const CheckoutPage = () => {
                         </div>
                       </div>
                     </div>
-
-                    {/* Navigation to Payment */}
-                    <div className="flex justify-end pt-4">
-                      <button
-                        type="button"
-                        onClick={handleNext}
-                        disabled={!formData.agreeTerms || program.status !== 'published'}
-                        className={`px-6 py-2.5 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
-                          (!formData.agreeTerms || program.status !== 'published') && 'opacity-50 cursor-not-allowed'
-                        }`}
-                      >
-                        Proceed to Payment
-                        <ChevronRight size={18} />
-                      </button>
-                    </div>
-
-                    {/* Terms Checkbox */}
+ {/* Terms Checkbox */}
                     <div className="pt-4 border-t border-gray-200">
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input
@@ -699,6 +683,22 @@ const CheckoutPage = () => {
                         </span>
                       </label>
                     </div>
+                    {/* Navigation to Payment */}
+                    <div className="flex justify-end pt-4">
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={!formData.agreeTerms || program.status !== 'published'}
+                        className={`px-6 py-2.5 bg-[#CC0000] text-white hover:bg-[#B30000] transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
+                          (!formData.agreeTerms || program.status !== 'published') && 'opacity-50 cursor-not-allowed'
+                        }`}
+                      >
+                        Proceed to Payment
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
+
+                   
                   </div>
                 )}
 
@@ -711,7 +711,7 @@ const CheckoutPage = () => {
                     </h2>
 
                     <div className="space-y-3">
-                      <div className={`border-2 rounded-lg p-4 transition cursor-pointer ${
+                      <div className={`border-2 p-4 transition cursor-pointer ${
                         formData.paymentMethod === 'razorpay' ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-red-300'
                       }`}>
                         <label className="flex items-start gap-3 cursor-pointer">
@@ -735,7 +735,7 @@ const CheckoutPage = () => {
                       </div>
                     </div>
 
-                    <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                    <div className="bg-amber-50 p-4 border border-amber-200">
                       <div className="flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
                         <div>
@@ -752,7 +752,7 @@ const CheckoutPage = () => {
                       <button
                         type="button"
                         onClick={handlePrevious}
-                        className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
+                        className="px-6 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-medium text-sm"
                       >
                         Previous
                       </button>
@@ -760,7 +760,7 @@ const CheckoutPage = () => {
                       <button
                         type="submit"
                         disabled={isProcessing || !formData.agreeTerms || program.status !== 'published'}
-                        className={`px-8 py-2.5 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
+                        className={`px-8 py-2.5 bg-[#CC0000] text-white hover:bg-[#B30000] transition font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg ${
                           (isProcessing || !formData.agreeTerms || program.status !== 'published') && 'opacity-70 cursor-not-allowed'
                         }`}
                       >
@@ -779,7 +779,7 @@ const CheckoutPage = () => {
                     </div>
 
                     {program.status !== 'published' && (
-                      <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                      <div className="p-3 bg-red-50 border border-red-200">
                         <div className="flex items-center gap-2 text-xs text-[#B30000]">
                           <AlertCircle size={14} className="text-[#CC0000]" />
                           <span>This course is not yet published and cannot be enrolled.</span>
@@ -794,7 +794,7 @@ const CheckoutPage = () => {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+            <div className="bg-white shadow-lg p-6 sticky top-24">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Order Summary
               </h3>
@@ -802,7 +802,7 @@ const CheckoutPage = () => {
               <div className="space-y-3">
                 <div className="flex items-start gap-3 pb-3 border-b border-gray-200">
                   {program.thumbnail_url ? (
-                    <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                    <div className="w-16 h-16 overflow-hidden shrink-0">
                       <img 
                         src={program.thumbnail_url} 
                         alt={program.title}
@@ -810,7 +810,7 @@ const CheckoutPage = () => {
                       />
                     </div>
                   ) : (
-                    <div className="w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
+                    <div className="w-16 h-16 bg-red-50 flex items-center justify-center shrink-0">
                       <GraduationCap className="w-8 h-8 text-[#CC0000]" />
                     </div>
                   )}
@@ -878,13 +878,13 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="mt-4 space-y-2">
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="p-3 bg-green-50 border border-green-200">
                     <div className="flex items-center gap-2 text-xs text-green-700">
                       <Shield size={14} className="text-green-600" />
                       <span>100% Secure Payment</span>
                     </div>
                   </div>
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="p-3 bg-blue-50 border border-blue-200">
                     <div className="flex items-center gap-2 text-xs text-blue-700">
                       <CheckCircle size={14} className="text-blue-600" />
                       <span>Instant enrollment after payment</span>

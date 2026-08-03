@@ -610,7 +610,7 @@ const PDFTaskAssessment = ({
 
             {/* View Submitted File */}
             {(isSubmitted || isSuccess) && attemptData?.submitted_file_url && (
-              <div className="mt-6 p-4 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+              <div className="mt-6 p-4 bg-[#FDF8F0] border border-[#D4A574]/20">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
                     <FileText className="w-5 h-5 text-[#CC0000]" />
@@ -625,7 +625,7 @@ const PDFTaskAssessment = ({
                     href={attemptData.submitted_file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-white border border-[#D4A574]/20 text-gray-700 text-sm rounded-lg hover:bg-[#FDF8F0] transition-colors inline-flex items-center gap-2"
+                    className="px-4 py-2 bg-white border border-[#D4A574]/20 text-gray-700 text-sm hover:bg-[#FDF8F0] transition-colors inline-flex items-center gap-2"
                   >
                     <Eye className="w-4 h-4" />
                     View Submission
@@ -639,7 +639,7 @@ const PDFTaskAssessment = ({
               <div className="text-center py-4 mt-4">
                 <Link
                   href={`/programs/${programId}`}
-                  className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+                  className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
                 >
                   <ArrowLeft size={20} className="mr-2" />
                   Back to Program
@@ -653,7 +653,7 @@ const PDFTaskAssessment = ({
       {/* Reattempt Modal */}
       {showReattemptModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white max-w-md w-full p-6 shadow-2xl border border-[#D4A574]/20 animate-in fade-in zoom-in duration-200">
             <div className="text-center mb-4">
               <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <RefreshCw className="w-8 h-8 text-amber-600" />
@@ -672,7 +672,7 @@ const PDFTaskAssessment = ({
                 value={reattemptReason}
                 onChange={(e) => setReattemptReason(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#CC0000] focus:border-transparent text-sm"
                 placeholder="Explain why you need a reattempt..."
               />
             </div>
@@ -680,14 +680,14 @@ const PDFTaskAssessment = ({
             <div className="flex gap-3">
               <button
                 onClick={() => setShowReattemptModal(false)}
-                className="flex-1 px-4 py-2.5 border-2 border-[#D4A574]/20 text-gray-700 rounded-xl hover:bg-[#FDF8F0] transition-all font-medium"
+                className="flex-1 px-4 py-2.5 border-2 border-[#D4A574]/20 text-gray-700 hover:bg-[#FDF8F0] transition-all font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitReattempt}
                 disabled={!reattemptReason.trim()}
-                className="flex-1 px-4 py-2.5 bg-[#CC0000] text-white rounded-xl hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-[#CC0000] text-white hover:bg-[#B30000] transition-all font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 Submit Request
               </button>

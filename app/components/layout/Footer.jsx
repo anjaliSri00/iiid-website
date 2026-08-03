@@ -286,10 +286,14 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { logo, logo2 } from '@/public/img'
-import Image from 'next/image'
+import Image from 'next/image';
+import { useSession } from 'next-auth/react'
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear()
+  const { data: session } = useSession()
+  const isLoggedIn = !!session?.user;
+  const isDesigner = session?.user?.role === "admin";
 
   return (
     <footer className="max-w-screen-3xl w-full bg-[#0A0A0A] border-t border-[#CC0000]/20">
@@ -376,12 +380,14 @@ export default function Footer() {
                   About IIID
                 </Link>
               </li>
-              <li>
-                <Link href="/certificates" className="text-gray-400 hover:text-[#CC0000] transition-colors flex items-center group">
-                  <ChevronRight size={16} className="mr-2 text-[#CC0000] group-hover:translate-x-1 transition-transform" />
-                  Certification
-                </Link>
-              </li>
+              {isLoggedIn && !isDesigner && (
+                <li>
+                  <Link href="/certificates" className="text-gray-400 hover:text-[#CC0000] transition-colors flex items-center group">
+                    <ChevronRight size={16} className="mr-2 text-[#CC0000] group-hover:translate-x-1 transition-transform" />
+                    Certification
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/contact-us" className="text-gray-400 hover:text-[#CC0000] transition-colors flex items-center group">
                   <ChevronRight size={16} className="mr-2 text-[#CC0000] group-hover:translate-x-1 transition-transform" />

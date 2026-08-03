@@ -1162,7 +1162,7 @@ const handleShareCertificate = async () => {
   if (error || !program) {
     return (
       <div className="min-h-screen bg-[#FDF8F0] flex items-center justify-center px-4">
-        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg border border-[#D4A574]/30">
+        <div className="text-center max-w-md mx-auto p-6 bg-white shadow-lg border border-[#D4A574]/30">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#CC0000]/10 rounded-full mb-4">
             <BookOpen className="w-8 h-8 text-[#CC0000]" />
           </div>
@@ -1174,7 +1174,7 @@ const handleShareCertificate = async () => {
           </p>
           <Link
             href="/#programs"
-            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
           >
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Programs
@@ -1246,20 +1246,20 @@ const handleShareCertificate = async () => {
                 {!isAuthenticated ? (
                   <button
                     onClick={handleLoginClick}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm hover:bg-[#B30000] transition-colors"
                   >
                     <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="hidden xs:inline">Login</span>
                   </button>
                 ) : isLessonPurchased ? (
-                  <span className="text-xs sm:text-sm bg-green-100 text-green-700 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full flex items-center gap-1">
+                  <span className="text-xs sm:text-sm bg-green-100 text-green-700 px-2 py-1 sm:px-3 sm:py-1.5 flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden xs:inline">Enrolled</span>
                   </span>
                 ) : (
                   <button
                     onClick={handleEnrollClick}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm hover:bg-[#B30000] transition-colors"
                   >
                     <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="hidden xs:inline">Enroll Now</span>
@@ -1267,7 +1267,7 @@ const handleShareCertificate = async () => {
                 )}
                 <button
                   onClick={toggleSidebar}
-                  className="p-2 hover:bg-[#FDF8F0] rounded-lg transition-colors lg:hidden"
+                  className="p-2 hover:bg-[#FDF8F0] transition-colors lg:hidden"
                   aria-label="Toggle sidebar"
                 >
                   <List className="w-5 h-5" />
@@ -1301,14 +1301,14 @@ const handleShareCertificate = async () => {
                   </h2>
                   <button
                     onClick={() => setIsSidebarOpen(false)}
-                    className="p-1 hover:bg-[#FDF8F0] rounded"
+                    className="p-1 hover:bg-[#FDF8F0]"
                     aria-label="Close sidebar"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-20 max-h-[calc(100vh-120px)] flex flex-col">
+                <div className="bg-white shadow-lg overflow-hidden sticky top-20 max-h-[calc(100vh-120px)] flex flex-col">
                   <div className="p-3 sm:p-4 border-b border-[#D4A574]/20 bg-gradient-to-r from-[#FDF8F0] to-white shrink-0">
                     <div className="flex items-center justify-between">
                       <h2 className="font-semibold text-gray-900 text-sm sm:text-base">
@@ -1325,7 +1325,7 @@ const handleShareCertificate = async () => {
                       </div>
                     )}
                     {!isAuthenticated && (
-                      <div className="mt-2 flex items-center gap-2 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                      <div className="mt-2 flex items-center gap-2 text-xs text-amber-600 bg-amber-50 px-2 py-1 ">
                         <Lock className="w-3 h-3" />
                         Login to access course content
                       </div>
@@ -1362,7 +1362,7 @@ const handleShareCertificate = async () => {
                                   setIsSidebarOpen(false);
                                 }
                               }}
-                              className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all cursor-pointer ${
+                              className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 transition-all cursor-pointer ${
                                 !showLock || isFreePreview
                                   ? "hover:bg-[#FDF8F0]"
                                   : "cursor-not-allowed opacity-60"
@@ -1406,7 +1406,7 @@ const handleShareCertificate = async () => {
                                     {lesson.title}
                                   </h4>
                                   {isFreePreview && (
-                                    <span className="text-[8px] sm:text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">
+                                    <span className="text-[8px] sm:text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5">
                                       Preview
                                     </span>
                                   )}
@@ -1459,7 +1459,7 @@ const handleShareCertificate = async () => {
                                     </span>
                                   )}
                                   {isCompleted && (
-                                    <span className="text-green-600 bg-green-50 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium">
+                                    <span className="text-green-600 bg-green-50 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium">
                                       Completed
                                     </span>
                                   )}
@@ -1557,7 +1557,7 @@ const handleShareCertificate = async () => {
                         </div>
                         <button
                           onClick={handleLoginClick}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors whitespace-nowrap"
+                          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm hover:bg-[#B30000] transition-colors whitespace-nowrap"
                         >
                           Login Now
                         </button>
@@ -1571,7 +1571,7 @@ const handleShareCertificate = async () => {
             {/* Right Content Area */}
             <div className="flex-1 min-w-0">
               {isLessonPurchased && isAuthenticated ? (
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
+                <div className="bg-white shadow-lg overflow-hidden border border-[#D4A574]/20">
                   {/* Tab Navigation */}
                   <div className="flex border-b border-[#D4A574]/20 bg-[#FDF8F0]/50">
                     <button
@@ -1600,14 +1600,14 @@ const handleShareCertificate = async () => {
                       <ClipboardCheck className="w-4 h-4" />
                       Assessment
                       {!allLessonsCompleted && (
-                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full ml-1">
+                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 ml-1">
                           Locked
                         </span>
                       )}
                       {allLessonsCompleted &&
                         assessmentData &&
                         assessmentData.length > 0 && (
-                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full ml-1">
+                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 ml-1">
                             {
                               assessmentData.filter(
                                 (a) => a.attempt?.passed === true,
@@ -1633,15 +1633,15 @@ const handleShareCertificate = async () => {
                           <Award className="w-4 h-4" />
                           Certificate
                           {certificateData ? (
-                            <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full ml-1">
+                            <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 ml-1">
                               ✓ Ready
                             </span>
                           ) : isEligibleForCertificate ? (
-                            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full ml-1">
+                            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 ml-1">
                               Available
                             </span>
                           ) : (
-                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full ml-1">
+                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 ml-1">
                               Locked
                             </span>
                           )}
@@ -1655,7 +1655,7 @@ const handleShareCertificate = async () => {
                         <div className="flex items-center gap-2 p-2 bg-[#FDF8F0] border-b border-[#D4A574]/20 overflow-x-auto">
                           <button
                             onClick={() => switchContentView("video")}
-                            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                               contentViewMode === "video"
                                 ? "bg-[#CC0000] text-white"
                                 : "bg-white text-gray-600 hover:bg-gray-100"
@@ -1666,7 +1666,7 @@ const handleShareCertificate = async () => {
                           </button>
                           <button
                             onClick={() => switchContentView("pdf")}
-                            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                               contentViewMode === "pdf"
                                 ? "bg-[#CC0000] text-white"
                                 : "bg-white text-gray-600 hover:bg-gray-100"
@@ -1732,7 +1732,7 @@ const handleShareCertificate = async () => {
 
                               {/* Progress overlay */}
                               {lessonProgress[selectedLesson?.id] && (
-                                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/70 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
+                                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/70 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1">
                                   {Math.min(
                                     (lessonProgress[selectedLesson.id]
                                       .watched_seconds /
@@ -1746,7 +1746,7 @@ const handleShareCertificate = async () => {
 
                               {/* Speed indicator */}
                               {playbackRate !== 1 && (
-                                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-black/70 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
+                                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-black/70 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 ">
                                   {playbackRate}x
                                 </div>
                               )}
@@ -1811,7 +1811,7 @@ const handleShareCertificate = async () => {
                                     max={duration || 100}
                                     value={currentTime}
                                     onChange={handleSeek}
-                                    className="flex-1 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer hover:h-1.5 transition-all
+                                    className="flex-1 h-1 bg-white/30 appearance-none cursor-pointer hover:h-1.5 transition-all
                                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 sm:[&::-webkit-slider-thumb]:w-3 sm:[&::-webkit-slider-thumb]:h-3 
                                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#CC0000]"
                                     aria-label="Video progress"
@@ -1868,7 +1868,7 @@ const handleShareCertificate = async () => {
                                         step="0.1"
                                         value={volume}
                                         onChange={handleVolumeChange}
-                                        className="w-12 sm:w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer
+                                        className="w-12 sm:w-20 h-1 bg-white/30 appearance-none cursor-pointer
                                         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 
                                         [&::-webkit-slider-thumb]:h-2.5 sm:[&::-webkit-slider-thumb]:w-3 sm:[&::-webkit-slider-thumb]:h-3 
                                         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#CC0000]"
@@ -1894,14 +1894,14 @@ const handleShareCertificate = async () => {
                                       </button>
 
                                       {showSpeedMenu && (
-                                        <div className="absolute bottom-full right-0 mb-2 bg-gray-800 rounded-lg shadow-lg p-1 min-w-[100px] sm:min-w-[120px] z-50">
+                                        <div className="absolute bottom-full right-0 mb-2 bg-gray-800 shadow-lg p-1 min-w-[100px] sm:min-w-[120px] z-50">
                                           {speedOptions.map((speed) => (
                                             <button
                                               key={speed}
                                               onClick={() =>
                                                 changePlaybackSpeed(speed)
                                               }
-                                              className={`w-full text-left px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm rounded transition-colors ${
+                                              className={`w-full text-left px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm transition-colors ${
                                                 playbackRate === speed
                                                   ? "bg-[#CC0000] text-white"
                                                   : "text-white hover:bg-gray-700"
@@ -1987,19 +1987,19 @@ const handleShareCertificate = async () => {
                                   {selectedLesson.title}
                                 </h3>
                                 {selectedLesson.video_url && (
-                                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full">
+                                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 sm:px-2 sm:py-0.5">
                                     <Video className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                     Video
                                   </span>
                                 )}
                                 {selectedLesson.pdf_url && (
-                                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs bg-green-50 text-green-600 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full">
+                                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs bg-green-50 text-green-600 px-1.5 py-0.5 sm:px-2 sm:py-0.5">
                                     <FileText className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                     PDF
                                   </span>
                                 )}
                                 {isLessonCompleted && (
-                                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs bg-green-100 text-green-700 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-full">
+                                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs bg-green-100 text-green-700 px-1.5 py-0.5 sm:px-2 sm:py-0.5">
                                     <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                     Completed
                                   </span>
@@ -2094,7 +2094,7 @@ const handleShareCertificate = async () => {
                                 contentViewMode === "video" && (
                                   <button
                                     onClick={() => switchContentView("pdf")}
-                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-[#D4A574] text-[#CC0000] text-xs sm:text-sm rounded-lg hover:bg-[#C4955A] transition-colors flex items-center gap-1"
+                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-[#fdf2e6] text-[#CC0000] text-xs sm:text-sm hover:bg-[#f7e4cd] transition-colors flex items-center gap-1"
                                   >
                                     <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span className="hidden xs:inline">
@@ -2107,7 +2107,7 @@ const handleShareCertificate = async () => {
                                 contentViewMode === "pdf" && (
                                   <button
                                     onClick={() => switchContentView("video")}
-                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors flex items-center gap-1"
+                                    className="px-2 sm:px-3 py-1 sm:py-1.5 bg-[#CC0000] text-white text-xs sm:text-sm hover:bg-[#B30000] transition-colors flex items-center gap-1"
                                   >
                                     <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span className="hidden xs:inline">
@@ -2124,7 +2124,7 @@ const handleShareCertificate = async () => {
                                     disabled={
                                       isMarkingComplete || isUpdatingProgress
                                     }
-                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white text-xs sm:text-sm rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white text-xs sm:text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                                   >
                                     {isMarkingComplete ? (
                                       <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
@@ -2136,7 +2136,7 @@ const handleShareCertificate = async () => {
                                 ) : (
                                   <button
                                     disabled
-                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-400 text-white text-xs sm:text-sm rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-400 text-white text-xs sm:text-sm cursor-not-allowed flex items-center gap-1.5"
                                   >
                                     <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span>Completed</span>
@@ -2170,7 +2170,7 @@ const handleShareCertificate = async () => {
                                     ) ===
                                     program.lessons.length - 1
                                   }
-                                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm rounded-lg hover:bg-[#B30000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#CC0000] text-white text-xs sm:text-sm hover:bg-[#B30000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                 >
                                   Next →
                                 </button>
@@ -2231,7 +2231,7 @@ const handleShareCertificate = async () => {
                                 return (
                                   <div
                                     key={assessment.id}
-                                    className="bg-[#FDF8F0] rounded-lg p-4 sm:p-6 border border-[#D4A574]/30 hover:shadow-md transition-shadow"
+                                    className="bg-[#FDF8F0] p-4 sm:p-6 border border-[#D4A574]/30 hover:shadow-md transition-shadow"
                                   >
                                     <div className="flex items-start gap-3">
                                       {assessment.type === "mcq" ? (
@@ -2245,7 +2245,7 @@ const handleShareCertificate = async () => {
                                             {assessment.title}
                                           </h4>
                                           <span
-                                            className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                            className={`text-[10px] px-2 py-0.5 font-medium ${
                                               assessment.type === "mcq"
                                                 ? "bg-blue-100 text-blue-700"
                                                 : "bg-purple-100 text-purple-700"
@@ -2259,7 +2259,7 @@ const handleShareCertificate = async () => {
                                           {isCompleted &&
                                             (isGraded ? (
                                               <span
-                                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                                className={`text-[10px] px-2 py-0.5 font-medium ${
                                                   passed
                                                     ? "bg-green-100 text-green-700"
                                                     : "bg-red-100 text-red-700"
@@ -2270,11 +2270,11 @@ const handleShareCertificate = async () => {
                                                   : "✗ Failed"}
                                               </span>
                                             ) : isPending ? (
-                                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-700">
+                                              <span className="text-[10px] px-2 py-0.5 font-medium bg-yellow-100 text-yellow-700">
                                                 ⏳ Pending Review
                                               </span>
                                             ) : (
-                                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
+                                              <span className="text-[10px] px-2 py-0.5 font-medium bg-blue-100 text-blue-700">
                                                 Submitted
                                               </span>
                                             ))}
@@ -2358,7 +2358,7 @@ const handleShareCertificate = async () => {
                                               </span>
                                             )}
                                             {isPending && (
-                                              <span className="text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full text-[10px]">
+                                              <span className="text-yellow-600 bg-yellow-50 px-2 py-0.5 text-[10px]">
                                                 Awaiting instructor review
                                               </span>
                                             )}
@@ -2374,7 +2374,7 @@ const handleShareCertificate = async () => {
                                                 }
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="px-3 py-1.5 bg-[#FDF8F0] border border-[#D4A574]/30 text-gray-700 text-xs sm:text-sm rounded-lg hover:bg-[#F5E6D3] transition-colors flex items-center gap-1.5"
+                                                className="px-3 py-1.5 bg-[#FDF8F0] border border-[#D4A574]/30 text-gray-700 text-xs sm:text-sm hover:bg-[#F5E6D3] transition-colors flex items-center gap-1.5"
                                               >
                                                 <FileText className="w-3.5 h-3.5" />
                                                 Download Template
@@ -2413,7 +2413,7 @@ const handleShareCertificate = async () => {
 
                                               router.push(url);
                                             }}
-                                            className={`px-4 py-1.5 text-sm rounded-lg font-medium transition-colors inline-flex items-center gap-2 ${
+                                            className={`px-4 py-1.5 text-sm font-medium transition-colors inline-flex items-center gap-2 ${
                                               isCompleted && isGraded
                                                 ? "bg-green-600 text-white hover:bg-green-700"
                                                 : isCompleted && isPending
@@ -2519,7 +2519,7 @@ const handleShareCertificate = async () => {
           </div>
         ) : certificateData ? (
           // Certificate Already Exists
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 border-2 border-green-200">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-green-500 rounded-full">
@@ -2550,14 +2550,14 @@ const handleShareCertificate = async () => {
                 <Link
                   href={`/certificates/${certificateData.certificate_code}`}
                   // target="_blank"
-                  className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white rounded-lg hover:bg-[#B30000] transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
                 >
                   <Eye className="w-4 h-4" />
                   View Certificate
                 </Link>
                 <button
                   onClick={handleShareCertificate}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-100 text-black hover:bg-red-200 transition-colors"
                 >
                   <Share2 className="w-4 h-4" />
                   Share
@@ -2571,7 +2571,7 @@ const handleShareCertificate = async () => {
                 <p className="text-sm text-gray-600 mb-2">
                   Shareable Link:
                 </p>
-                <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-green-200">
+                <div className="flex items-center gap-2 bg-white p-2 border border-green-200">
                   <code className="flex-1 text-xs text-gray-700 truncate">
                     {`${window.location.origin}/certificates/${certificateData.certificate_code}`}
                   </code>
@@ -2582,7 +2582,7 @@ const handleShareCertificate = async () => {
                       setProgressSaveStatus("link_copied");
                       setTimeout(() => setProgressSaveStatus(""), 2000);
                     }}
-                    className="px-3 py-1 text-sm text-[#CC0000] hover:bg-[#FDF8F0] rounded transition-colors whitespace-nowrap"
+                    className="px-3 py-1 text-sm text-[#CC0000] hover:bg-[#FDF8F0] transition-colors whitespace-nowrap"
                   >
                     Copy Link
                   </button>
@@ -2597,7 +2597,7 @@ const handleShareCertificate = async () => {
           </div>
         ) : isEligibleForCertificate ? (
           // Eligible but no certificate yet
-          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-6 border-2 border-yellow-200">
+          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 border-2 border-yellow-200">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-yellow-500 rounded-full">
@@ -2626,7 +2626,7 @@ const handleShareCertificate = async () => {
               <button
                 onClick={generateCertificate}
                 disabled={isGeneratingCertificate}
-                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#CC0000] to-[#E60000] text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#CC0000] to-[#E60000] text-white hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 {isGeneratingCertificate ? (
                   <>
@@ -2644,7 +2644,7 @@ const handleShareCertificate = async () => {
           </div>
         ) : (
           // Not eligible
-          <div className="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+          <div className="bg-gray-50 p-6 border-2 border-gray-200">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-gray-300 rounded-full">
                 <Lock className="w-8 h-8 text-gray-500" />
@@ -2701,7 +2701,7 @@ const handleShareCertificate = async () => {
                 </div>
               ) : (
                 // Not Enrolled or Not Authenticated - Show Program Details
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#D4A574]/20">
+                <div className="bg-white shadow-lg overflow-hidden border border-[#D4A574]/20">
                   <div className="relative">
                     {program.thumbnail_url ? (
                       <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden">
@@ -2721,7 +2721,7 @@ const handleShareCertificate = async () => {
                         </div> */}
                         {hasDiscount && (
                           <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
-                            <span className="px-2 sm:px-4 py-1 sm:py-2 bg-[#CC0000] text-white text-[10px] sm:text-sm font-semibold rounded-full shadow-lg flex items-center gap-1 sm:gap-2">
+                            <span className="px-2 sm:px-4 py-1 sm:py-2 bg-[#CC0000] text-white text-[10px] sm:text-sm font-semibold shadow-lg flex items-center gap-1 sm:gap-2">
                               <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" />
                               {program.discount} Rs. OFF
                             </span>
@@ -2729,7 +2729,7 @@ const handleShareCertificate = async () => {
                         )}
                         {!isAuthenticated && (
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <div className="bg-white/95 backdrop-blur-sm p-4 sm:p-6 rounded-xl text-center max-w-sm mx-4">
+                            <div className="bg-white/95 backdrop-blur-sm p-4 sm:p-6 text-center max-w-sm mx-4">
                               <Lock className="w-8 h-8 sm:w-12 sm:h-12 text-amber-600 mx-auto mb-2" />
                               <p className="text-sm sm:text-base font-semibold text-gray-900">
                                 Login to access this course
@@ -2740,7 +2740,7 @@ const handleShareCertificate = async () => {
                               </p>
                               <button
                                 onClick={handleLoginClick}
-                                className="mt-3 px-4 sm:px-6 py-2 bg-[#CC0000] text-white text-sm sm:text-base rounded-lg hover:bg-[#B30000] transition-colors font-medium inline-flex items-center gap-2"
+                                className="mt-3 px-4 sm:px-6 py-2 bg-[#CC0000] text-white text-sm sm:text-base hover:bg-[#B30000] transition-colors font-medium inline-flex items-center gap-2"
                               >
                                 <LogIn className="w-4 h-4" />
                                 Login Now
@@ -2767,7 +2767,7 @@ const handleShareCertificate = async () => {
                     </h1>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                         <Calendar className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
@@ -2779,7 +2779,7 @@ const handleShareCertificate = async () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                         <Clock className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
@@ -2791,7 +2791,7 @@ const handleShareCertificate = async () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                         <GraduationCap className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
@@ -2803,7 +2803,7 @@ const handleShareCertificate = async () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] rounded-lg border border-[#D4A574]/20">
+                      <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#FDF8F0] border border-[#D4A574]/20">
                         <Award className="text-[#CC0000] w-4 h-4 sm:w-5 sm:h-5" />
                         <div>
                           <p className="text-[10px] sm:text-xs text-gray-500">
@@ -2857,7 +2857,7 @@ const handleShareCertificate = async () => {
                               ? handleEnrollClick
                               : handleLoginClick
                           }
-                          className="w-full sm:w-auto bg-[#CC0000] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg hover:bg-[#B30000] transition-colors font-semibold shadow-md hover:shadow-lg text-sm sm:text-base flex items-center justify-center gap-2"
+                          className="w-full sm:w-auto bg-[#CC0000] text-white px-6 sm:px-8 py-2.5 sm:py-3 hover:bg-[#B30000] transition-colors font-semibold shadow-md hover:shadow-lg text-sm sm:text-base flex items-center justify-center gap-2"
                         >
                           {isAuthenticated ? (
                             <>
@@ -2880,86 +2880,7 @@ const handleShareCertificate = async () => {
           </div>
         </div>
       </div>
-      {/* Certificate Viewer Modal */}
-      {showCertificateModal && certificateData && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[#D4A574]/20 bg-gradient-to-r from-amber-50 to-white flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#8B1A1A]/10 rounded-lg">
-                  <Award className="w-6 h-6 text-[#8B1A1A]" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">
-                    Certificate of Completion
-                  </h2>
-                  <p className="text-xs text-gray-500">
-                    {certificateData?.course_title || program?.title}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleDownloadCertificate}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8B1A1A] text-white text-sm rounded-lg hover:bg-[#6B1212] transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Download
-                </button>
-                <button
-                  onClick={handleShareCertificate}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share
-                </button>
-                <button
-                  onClick={() => setShowCertificateModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  aria-label="Close modal"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Certificate Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(95vh-80px)] bg-gray-50">
-              <div className="max-w-3xl mx-auto">
-                <CertificateTemplate
-                  certificateData={certificateData}
-                  program={program}
-                />
-
-                {/* Additional Info */}
-                <div className="mt-4 text-center text-xs text-gray-400 space-y-1">
-                  <p>
-                    This certificate is issued to{" "}
-                    <span className="font-medium text-gray-600">
-                      {certificateData.full_name}
-                    </span>{" "}
-                    for successfully completing{" "}
-                    <span className="font-medium text-gray-600">
-                      {certificateData.course_title || program?.title}
-                    </span>
-                    .
-                  </p>
-                  {certificateData.certificate_code && (
-                    <p>
-                      Verify this certificate at{" "}
-                      <span className="text-[#8B1A1A] font-medium">
-                        {window.location.origin}/certificates/verify/
-                        {certificateData.certificate_code}
-                      </span>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+     
     </>
   );
 };

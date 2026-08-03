@@ -2323,11 +2323,11 @@ instructions: assessment.instructions || "",
                                     {adminStats.totalUsers}
                                   </p>
                                   <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 whitespace-nowrap">
                                       <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full"></span>
                                       {adminStats.activeUsers} Active
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-gray-500 bg-gray-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-gray-500 bg-gray-50 px-1.5 sm:px-2 py-0.5 whitespace-nowrap">
                                       {adminStats.inactiveUsers} Inactive
                                     </span>
                                   </div>
@@ -2359,7 +2359,7 @@ instructions: assessment.instructions || "",
                             </div>
 
                             {/* Total Courses */}
-                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-emerald-200 hover:-translate-y-1 overflow-hidden">
+                            <div className="group bg-white p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-emerald-200 hover:-translate-y-1 overflow-hidden">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
@@ -2369,10 +2369,10 @@ instructions: assessment.instructions || "",
                                     {adminStats.totalCourses}
                                   </p>
                                   <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 whitespace-nowrap">
                                       {adminStats.publishedCourses} Published
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 whitespace-nowrap">
                                       {adminStats.draftCourses} Draft
                                     </span>
                                   </div>
@@ -2407,7 +2407,7 @@ instructions: assessment.instructions || "",
                             </div>
 
                             {/* Enrollments Card */}
-                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1 overflow-hidden">
+                            <div className="group bg-white p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1 overflow-hidden">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
@@ -2417,13 +2417,13 @@ instructions: assessment.instructions || "",
                                     {adminStats.totalEnrollments}
                                   </p>
                                   <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 whitespace-nowrap">
                                       {adminStats.activeEnrollments} Active
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 whitespace-nowrap">
                                       {adminStats.pendingEnrollments} Pending
                                     </span>
-                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 whitespace-nowrap">
                                       {adminStats.completedEnrollments}{" "}
                                       Completed
                                     </span>
@@ -2456,7 +2456,7 @@ instructions: assessment.instructions || "",
                             </div>
 
                             {/* Revenue Card */}
-                            <div className="group bg-white rounded-xl md:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1 overflow-hidden">
+                            <div className="group bg-white p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-amber-200 hover:-translate-y-1 overflow-hidden">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">

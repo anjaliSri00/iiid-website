@@ -202,7 +202,7 @@ const PaymentSuccess = () => {
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-8 md:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Success/Partial Status Card */}
-        <div className={`bg-white rounded-2xl shadow-xl overflow-hidden border-t-4 ${
+        <div className={`bg-white  shadow-xl overflow-hidden border-t-4 ${
           isPaymentSuccess ? 'border-green-500' : 'border-yellow-500'
         }`}>
           {/* Header */}
@@ -231,7 +231,7 @@ const PaymentSuccess = () => {
             
             {/* Status Badge */}
             <div className="mt-4">
-              <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusBadge(enrollmentData?.status || paymentData?.status)}`}>
+              <span className={`px-4 py-2 text-sm font-semibold ${getStatusBadge(enrollmentData?.status || paymentData?.status)}`}>
                 {enrollmentData?.status || paymentData?.status || 'Processing'}
               </span>
             </div>
@@ -343,17 +343,17 @@ const PaymentSuccess = () => {
             <div className="border-t border-gray-200 px-6 md:px-8 py-6 bg-gray-50">
               <h3 className="text-sm font-semibold text-gray-700 mb-4">Enrollment Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="bg-white p-4 shadow-sm">
                   <p className="text-xs text-gray-500">Enrollment ID</p>
                   <p className="font-semibold text-gray-900">#{enrollmentData.id}</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="bg-white p-4 shadow-sm">
                   <p className="text-xs text-gray-500">Enrolled At</p>
                   <p className="font-semibold text-gray-900">{formatDate(enrollmentData.enrolled_at)}</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="bg-white p-4 shadow-sm">
                   <p className="text-xs text-gray-500">Status</p>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(enrollmentData.status)}`}>
+                  <span className={`inline-block px-3 py-1 text-xs font-semibold ${getStatusBadge(enrollmentData.status)}`}>
                     {enrollmentData.status}
                   </span>
                 </div>
@@ -426,7 +426,7 @@ const PaymentSuccess = () => {
               {isPaymentSuccess && (
                 <Link
                   href="/dashboard?tab=my-courses"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
                 >
                   <BookOpen className="w-4 h-4" />
                   Go to My Courses
@@ -436,7 +436,7 @@ const PaymentSuccess = () => {
               
               <Link
                 href={`/programs/${programId}`}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
               >
                 <GraduationCap className="w-4 h-4" />
                 View Course Details
@@ -444,7 +444,7 @@ const PaymentSuccess = () => {
 
               <button
                 onClick={handleShare}
-                className="inline-flex items-center gap-2 px-6 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-2.5 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Share2 className="w-4 h-4" />
                 Share
@@ -452,7 +452,7 @@ const PaymentSuccess = () => {
 
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 px-6 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-2.5 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Home className="w-4 h-4" />
                 Home
