@@ -212,7 +212,7 @@ export default function Header() {
                   About
                 </Link>
                 <Link 
-                  href="/#programs" 
+                  href="/programs" 
                   className="text-gray-600 hover:text-[#CC0000] transition-colors px-3 py-2  hover:bg-[#FDF8F0]"
                   onClick={() => setIsOpen(false)}
                 >

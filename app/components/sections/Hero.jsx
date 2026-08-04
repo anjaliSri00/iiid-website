@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import SwiperCard from "../ui/SwiperCard";
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, Award } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function Hero() {
+  const router = useRouter();
   const [activeSlide, setActiveSlide] = useState({
     mainTitle: "Certification that recognizes your professional experience",
     mainDescription: "Advance your career with internationally recognized interior design certifications",
@@ -101,6 +103,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.5 }}
             whileHover={{ scale: 1.05, backgroundColor: "#CC0000", borderColor: "#CC0000", color: "#ffffff" }}
             whileTap={{ scale: 0.95 }}
+            onClick ={()=> router.push("/programs")}
             className="border-2 border-[#CC0000] text-[#CC0000] px-6 md:px-8 py-3 transition-all duration-300 font-medium inline-flex items-center gap-2 group"
           >
             {activeSlide.ctaText}

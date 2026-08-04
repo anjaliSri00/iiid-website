@@ -445,7 +445,7 @@ const CheckoutPage = () => {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Program not found</h2>
           <p className="text-gray-600 mb-6">{error || "The program you're looking for doesn't exist."}</p>
-          <Link href="/#programs" className="text-red-600 hover:text-red-700 inline-flex items-center">
+          <Link href={`programs/${program.id}`} className="text-red-600 hover:text-red-700 inline-flex items-center">
             <ArrowLeft className="inline mr-2" size={20} />
             Back to Programs
           </Link>

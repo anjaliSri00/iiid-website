@@ -275,7 +275,7 @@ export default function BenefitsSection() {
                 <p className="text-xs text-gray-500">Join our live online courses today</p>
               </div>
             </div>
-            <Link href="/#programs">
+            <Link href="/programs">
               <button className="bg-[#CC0000] text-white px-8 py-3  hover:bg-[#B30000] hover:shadow-lg transition-all duration-300 text-sm font-semibold inline-flex items-center gap-2 whitespace-nowrap">
                 Explore Programs
                 <ArrowRight className="w-4 h-4" />

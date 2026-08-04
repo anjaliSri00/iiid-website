@@ -1173,7 +1173,7 @@ const handleShareCertificate = async () => {
             {error || "The program you're looking for doesn't exist."}
           </p>
           <Link
-            href="/#programs"
+            href="/programs"
             className="inline-flex items-center px-6 py-3 bg-[#CC0000] text-white hover:bg-[#B30000] transition-colors"
           >
             <ArrowLeft className="inline mr-2" size={20} />

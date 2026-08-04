@@ -184,7 +184,7 @@ export default function CertificateSection() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Link href="/#programs">
+              <Link href="/programs">
                 <button className="w-full bg-[#CC0000] text-white py-3  font-semibold flex items-center justify-center gap-2 hover:bg-[#B30000] transition-all duration-300 shadow-lg shadow-[#CC0000]/20 hover:shadow-xl">
                   Get Certified Now
                   <ArrowRight className="w-5 h-5" />

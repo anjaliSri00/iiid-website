@@ -2954,7 +2954,7 @@ instructions: assessment.instructions || "",
                               Start exploring programs to see your activity here
                             </p>
                             <Link
-                              href="/#programs"
+                              href="/programs"
                               className="inline-block mt-4 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
                             >
                               Browse Programs →
@@ -2981,7 +2981,7 @@ instructions: assessment.instructions || "",
                         </p>
                       </div>
                       <Link
-                        href="/#programs"
+                        href="/programs"
                         className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-200 text-sm font-medium"
                       >
                         <Plus className="w-4 h-4" />
@@ -3016,7 +3016,7 @@ instructions: assessment.instructions || "",
                         for you.
                       </p>
                       <Link
-                        href="/#programs"
+                        href="/programs"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-200 font-medium"
                       >
                         Explore Programs
