@@ -322,7 +322,7 @@ const ProgramGrid = ({ programs = [] }) => {
       <div
         ref={scrollContainerRef}
         onScroll={checkScrollPosition}
-        className="flex gap-6 overflow-x-auto scroll-smooth hide-scrollbar pb-4 px-1"
+        className="flex gap-6 overflow-x-auto justify-center scroll-smooth hide-scrollbar pb-4 px-1"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',

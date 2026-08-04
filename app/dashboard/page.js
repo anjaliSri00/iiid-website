@@ -3157,7 +3157,7 @@ instructions: assessment.instructions || "",
                                                   ₹{course.original_price}
                                                 </span>
                                                 <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold">
-                                                  {Math.round(course.discount)}%
+                                                  {Math.round(course.discount)} RS.
                                                   OFF
                                                 </span>
                                               </>

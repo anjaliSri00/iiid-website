@@ -275,14 +275,14 @@ const ProgramCard = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div 
-        className={`bg-linear-to-br ${getGradient(program.id?.length || 0)} rounded-2xl border-2 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden`}
+        className={`bg-linear-to-br ${getGradient(program.id?.length || 0)} border-2 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden`}
       >
         {/* Top Status Bar */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
             {program.is_active && (
               <motion.div 
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-emerald-50 border border-emerald-200 rounded-full flex-shrink-0"
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-emerald-50 border border-emerald-200 shrink-0"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
               >
@@ -294,17 +294,17 @@ const ProgramCard = ({
                 <span className="text-[9px] sm:text-xs uppercase tracking-[1.36px] font-medium text-emerald-700">Active</span>
               </motion.div>
             )}
-            <span className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 uppercase tracking-[1.36px] rounded-full text-[9px] sm:text-xs font-medium border ${getStatusColor(program.status)} flex-shrink-0`}>
+            <span className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 uppercase tracking-[1.36px] text-[9px] sm:text-xs font-medium border ${getStatusColor(program.status)} flex-shrink-0`}>
               {program.status}
             </span>
             {program.course_code && (
-              <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-white/80 border border-gray-200 rounded-full text-[9px] sm:text-xs font-medium text-gray-600 truncate max-w-[80px] sm:max-w-none flex-shrink-0">
+              <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-white/80 border border-gray-200 text-[9px] sm:text-xs font-medium text-gray-600 truncate max-w-[80px] sm:max-w-none flex-shrink-0">
                 {program.course_code}
               </span>
             )}
             {/* Assessment count badge */}
             {assessments.length > 0 && (
-              <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-red-50 border border-red-200 rounded-full text-[9px] sm:text-xs font-medium text-red-600 flex-shrink-0">
+              <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-red-50 border border-red-200 text-[9px] sm:text-xs font-medium text-red-600 flex-shrink-0">
                 {assessments.length} Assessment{assessments.length > 1 ? 's' : ''}
               </span>
             )}
@@ -320,7 +320,7 @@ const ProgramCard = ({
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
-              className="p-1.5 sm:p-2 hover:bg-white/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400/50"
+              className="p-1.5 sm:p-2 hover:bg-white/80 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400/50"
               aria-label="More options"
               aria-expanded={showMenu}
             >
@@ -335,7 +335,7 @@ const ProgramCard = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.15 }}
-                  className={`absolute max-sm:-left-26.5 ${getDropdownPosition()} mt-2 ${getDropdownWidth()} bg-white rounded-xl shadow-2xl border border-gray-100/80 py-1.5 z-50 overflow-hidden max-h-[80vh] overflow-y-auto`}
+                  className={`absolute max-sm:-left-26.5 ${getDropdownPosition()} mt-2 ${getDropdownWidth()} bg-white shadow-2xl border border-gray-100/80 py-1.5 z-50 overflow-hidden max-h-[80vh] overflow-y-auto`}
                   style={{
                     boxShadow: '0 20px 60px -12px rgba(0,0,0,0.25), 0 8px 24px -6px rgba(0,0,0,0.1)',
                   }}
@@ -352,7 +352,7 @@ const ProgramCard = ({
                     }}
                     className="w-full px-3 sm:px-4 py-2.5 sm:py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center gap-2.5 sm:gap-2 transition-colors"
                   >
-                    <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     <span className="truncate">Edit Program</span>
                   </button>
                   
@@ -363,7 +363,7 @@ const ProgramCard = ({
                     }}
                     className="w-full px-3 sm:px-4 py-2.5 sm:py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2.5 sm:gap-2 transition-colors"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     <span className="truncate">View Details</span>
                   </button>
 
@@ -441,7 +441,7 @@ const ProgramCard = ({
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-5 mt-2">
             {/* Thumbnail */}
             <div className="relative group/image shrink-0 w-full sm:w-20 md:w-24">
-              <div className="w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl overflow-hidden shadow-md ring-2 ring-white/50 mx-auto sm:mx-0">
+              <div className="w-20 h-20 sm:w-20 sm:h-20 md:w-24 md:h-24 overflow-hidden shadow-md ring-2 ring-white/50 mx-auto sm:mx-0">
                 {program.thumbnail_url ? (
                   <Image
                     src={program.thumbnail_url}
@@ -459,7 +459,7 @@ const ProgramCard = ({
               <div className="absolute -bottom-1 -right-1 sm:right-0">
                 <button
                   onClick={() => router.push(`/programs/${program.id}`)}
-                  className="p-1 sm:p-1.5 bg-red-500 text-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105"
+                  className="p-1 sm:p-1.5 bg-red-500 text-white shadow-md hover:shadow-lg transition-all hover:scale-105"
                 >
                   <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </button>
@@ -482,24 +482,24 @@ const ProgramCard = ({
                   
                   {/* Tags */}
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
-                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 border border-gray-200/50">
                       <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-400 shrink-0" />
                       <span className="truncate max-w-[60px] sm:max-w-none">{program.category || "General"}</span>
                     </div>
-                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 border border-gray-200/50">
                       <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400 shrink-0" />
                       {program.duration || "N/A"}
                     </div>
-                    <div className="flex items-center gap-0.5 sm:gap-1 uppercase tracking-[1.36px] text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                    <div className="flex items-center gap-0.5 sm:gap-1 uppercase tracking-[1.36px] text-[9px] sm:text-xs text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 border border-gray-200/50">
                       <GraduationCap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-purple-400 shrink-0" />
                       <span className="truncate max-w-[50px] sm:max-w-none">{program.level || "Beginner"}</span>
                     </div>
-                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs uppercase tracking-[1.36px] text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-gray-200/50">
+                    <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs uppercase tracking-[1.36px] text-gray-500 bg-white/70 px-1.5 sm:px-2.5 py-0.5 sm:py-1 border border-gray-200/50">
                       <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400 shrink-0" />
                       {program.mode || "Online"}
                     </div>
                     {program.final_price && (
-                      <div className="flex items-center gap-0.5 sm:gap-1 bg-linear-to-r from-red-50 to-rose-50 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-red-200/50">
+                      <div className="flex items-center gap-0.5 sm:gap-1 bg-linear-to-r from-red-50 to-rose-50 px-1.5 sm:px-2.5 py-0.5 sm:py-1 border border-red-200/50">
                         <span className="text-[9px] sm:text-xs font-bold text-red-600">₹{program.final_price}</span>
                         {program.original_price && program.discount > 0 && (
                           <>
@@ -510,7 +510,7 @@ const ProgramCard = ({
                       </div>
                     )}
                     <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-xs text-gray-400">
-                      <span className="w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-gray-300" />
+                      <span className="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-gray-300" />
                       <span>{program.lessons?.length || 0} lessons</span>
                     </div>
                   </div>
@@ -522,11 +522,11 @@ const ProgramCard = ({
 
         {/* Assessment Section - Multiple Assessments */}
         <div className="px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6">
-          <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm overflow-hidden">
+          <div className="bg-white/70 backdrop-blur-sm border border-white/50 shadow-sm overflow-hidden">
             {/* Assessment Header */}
             <div className="px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 flex-1 min-w-0">
-                <div className="p-1 sm:p-1.5 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg text-white flex-shrink-0">
+                <div className="p-1 sm:p-1.5 bg-gradient-to-br from-red-500 to-rose-500 text-white flex-shrink-0">
                   <FileCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">
@@ -535,7 +535,7 @@ const ProgramCard = ({
               </div>
               <button
                 onClick={() => onCreateAssessment(program.id)}
-                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 rounded-lg transition-colors shadow-sm whitespace-nowrap"
+                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 transition-colors shadow-sm whitespace-nowrap"
               >
                 <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span className="hidden xs:inline">Add Assessment</span>
@@ -555,7 +555,7 @@ const ProgramCard = ({
                   return (
                     <div
                       key={assessment.id || index}
-                      className="bg-white/80 rounded-lg border border-gray-200/60 hover:border-red-200 transition-colors overflow-hidden"
+                      className="bg-white/80 border border-gray-200/60 hover:border-red-200 transition-colors overflow-hidden"
                     >
                       {/* Assessment Item Header */}
                       <div 
@@ -563,16 +563,16 @@ const ProgramCard = ({
                         onClick={() => toggleAssessment(assessment.id)}
                       >
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 flex-1 min-w-0">
-                          <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-red-50 text-red-600 text-[9px] sm:text-xs font-bold rounded-full flex-shrink-0">
+                          <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-red-50 text-red-600 text-[9px] sm:text-xs font-bold shrink-0">
                             {index + 1}
                           </span>
                           <span className="text-xs sm:text-sm font-medium text-gray-800 truncate">
                             {assessment.title || `Assessment ${index + 1}`}
                           </span>
-                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium border ${getStatusColor(assessment.status)} whitespace-nowrap`}>
+                          <span className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium border ${getStatusColor(assessment.status)} whitespace-nowrap`}>
                             {assessment.status || "draft"}
                           </span>
-                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium border ${typeInfo.className} whitespace-nowrap`}>
+                          <span className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium border ${typeInfo.className} whitespace-nowrap`}>
                             {typeInfo.label}
                           </span>
                           {/* {assessment.is_active && (
@@ -625,7 +625,7 @@ const ProgramCard = ({
                               e.stopPropagation(); 
                               onEditAssessment(program.id, assessment, index); 
                             }}
-                            className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                             title="Edit Assessment"
                           >
                             <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -638,7 +638,7 @@ const ProgramCard = ({
                                 onDeleteAssessment(program.id, assessment.id);
                               }
                             }}
-                            className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                             title="Delete Assessment"
                           >
                             <Trash2Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -649,7 +649,7 @@ const ProgramCard = ({
                               e.stopPropagation(); 
                               toggleAssessment(assessment.id); 
                             }}
-                            className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                           >
                             <motion.div
                               animate={{ rotate: expanded ? 180 : 0 }} 
@@ -673,21 +673,21 @@ const ProgramCard = ({
                           >
                             {/* Assessment Stats */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5 mb-2 sm:mb-3">
-                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                              <div className="bg-white/60 p-1.5 sm:p-2.5 text-center">
                                 <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Type</p>
                                 <p className="text-[10px] sm:text-xs font-semibold text-gray-800 capitalize">
                                   {isPdfTask ? 'PDF Task' : 'MCQ'}
                                 </p>
                               </div>
-                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                              <div className="bg-white/60 p-1.5 sm:p-2.5 text-center">
                                 <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Passing</p>
                                 <p className="text-[10px] sm:text-xs font-bold text-emerald-600">{assessment.passing_score || 60}%</p>
                               </div>
-                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                              <div className="bg-white/60 p-1.5 sm:p-2.5 text-center">
                                 <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Duration</p>
                                 <p className="text-[10px] sm:text-xs font-bold text-blue-600">{assessment.duration_minutes || 30}m</p>
                               </div>
-                              <div className="bg-white/60 rounded-lg p-1.5 sm:p-2.5 text-center">
+                              <div className="bg-white/60 p-1.5 sm:p-2.5 text-center">
                                 <p className="text-[7px] sm:text-[9px] text-gray-400 font-medium uppercase tracking-wider">Created</p>
                                 <p className="text-[10px] sm:text-xs font-medium text-gray-700">
                                   {assessment.created_at 
@@ -703,7 +703,7 @@ const ProgramCard = ({
 
                             {/* PDF Task Specific Details */}
                             {isPdfTask && (
-                              <div className="mb-3 p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
+                              <div className="mb-3 p-2 sm:p-3 bg-orange-50 border border-orange-200">
                                 <div className="space-y-1.5 sm:space-y-2">
                                   {assessment.instructions && (
                                     <div>
@@ -728,7 +728,7 @@ const ProgramCard = ({
                                           href={assessment.pdf_template_url}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                                          className="px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
                                         >
                                           Download
                                         </a>
@@ -756,7 +756,7 @@ const ProgramCard = ({
                                       setEditingQuestion(null);
                                       resetQuestionForm();
                                     }}
-                                    className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors whitespace-nowrap"
+                                    className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 transition-colors whitespace-nowrap"
                                   >
                                     <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                     <span className="hidden xs:inline">Add Question</span>
@@ -769,10 +769,10 @@ const ProgramCard = ({
                                     {assessment.questions.map((question, idx) => (
                                       <div
                                         key={question.id || idx}
-                                        className="group/question bg-white rounded-lg p-1.5 sm:p-2.5 border border-gray-200/60 hover:border-red-200 transition-colors"
+                                        className="group/question bg-white p-1.5 sm:p-2.5 border border-gray-200/60 hover:border-red-200 transition-colors"
                                       >
                                         <div className="flex flex-col xs:flex-row items-start gap-1.5 sm:gap-2.5">
-                                          <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-full text-white text-[8px] sm:text-[10px] font-bold flex-shrink-0">
+                                          <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-red-500 to-rose-500 text-white text-[8px] sm:text-[10px] font-bold flex-shrink-0">
                                             {idx + 1}
                                           </span>
                                           <div className="flex-1 min-w-0 w-full">
@@ -787,7 +787,7 @@ const ProgramCard = ({
                                                 return (
                                                   <span
                                                     key={letter}
-                                                    className={`inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.5 rounded text-[7px] sm:text-[9px] font-medium ${
+                                                    className={`inline-flex items-center gap-0.5 px-1 sm:px-1.5 py-0.5 text-[7px] sm:text-[9px] font-medium ${
                                                       isCorrect
                                                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                                         : 'bg-gray-50 text-gray-600 border border-gray-200'
@@ -798,7 +798,7 @@ const ProgramCard = ({
                                                   </span>
                                                 );
                                               })}
-                                              <span className="px-1 sm:px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[7px] sm:text-[9px] font-medium border border-blue-200 whitespace-nowrap">
+                                              <span className="px-1 sm:px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[7px] sm:text-[9px] font-medium border border-blue-200 whitespace-nowrap">
                                                 {question.marks || 1}m
                                               </span>
                                             </div>
@@ -821,13 +821,13 @@ const ProgramCard = ({
                                                 setSelectedAssessmentId(program.id);
                                                 setShowAddQuestion(true);
                                               }}
-                                              className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                              className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                                             >
                                               <Edit className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                             </button>
                                             <button
                                               onClick={() => handleDeleteQuestion(program.id, question.id)}
-                                              className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                              className="p-0.5 sm:p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                                             >
                                               <Trash2Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                             </button>
@@ -837,7 +837,7 @@ const ProgramCard = ({
                                     ))}
                                   </div>
                                 ) : (
-                                  <div className="text-center py-2 sm:py-3 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                  <div className="text-center py-2 sm:py-3 bg-gray-50 border border-dashed border-gray-200">
                                     <p className="text-[9px] sm:text-xs text-gray-400">No questions added yet</p>
                                     <p className="text-[8px] sm:text-[10px] text-gray-300 mt-0.5">Click "Add Question" to get started</p>
                                   </div>
@@ -848,7 +848,7 @@ const ProgramCard = ({
                             {/* PDF Task Message */}
                             {isPdfTask && (
                               <div className="mt-2 pt-2 border-t border-gray-200/50">
-                                <div className="bg-gray-50 p-2 sm:p-3 rounded-lg border border-gray-200 text-center">
+                                <div className="bg-gray-50 p-2 sm:p-3 border border-gray-200 text-center">
                                   <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mx-auto mb-1 sm:mb-2" />
                                   <p className="text-[10px] sm:text-sm text-gray-600">
                                     This is a PDF task assessment
@@ -858,7 +858,7 @@ const ProgramCard = ({
                                       href={assessment.pdf_template_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1 sm:gap-2 mt-1.5 sm:mt-2 px-3 sm:px-4 py-1 sm:py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-[10px] sm:text-sm"
+                                      className="inline-flex items-center gap-1 sm:gap-2 mt-1.5 sm:mt-2 px-3 sm:px-4 py-1 sm:py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-[10px] sm:text-sm"
                                     >
                                       <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
                                       View PDF Template

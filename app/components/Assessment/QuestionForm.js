@@ -29,7 +29,7 @@ export const QuestionForm = ({
   };
 
   return (
-    <div className="mb-4 p-4 bg-white rounded-lg border border-gray-200">
+    <div className="mb-4 p-4 bg-white border border-gray-200">
       <div className="flex items-center justify-between mb-3">
         <h6 className="text-sm font-medium text-gray-900">
           {editingQuestion ? "Edit Question" : "Add New Question"}
@@ -59,7 +59,7 @@ export const QuestionForm = ({
             rows="2"
             className={`w-full px-3 py-1.5 border ${
               questionErrors.question_text ? "border-red-300" : "border-gray-300"
-            } rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
+            } text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
             placeholder="Enter question"
           />
           {questionErrors.question_text && (
@@ -80,7 +80,7 @@ export const QuestionForm = ({
               onChange={handleQuestionFormChange}
               className={`w-full px-3 py-1.5 border ${
                 questionErrors.option_a ? "border-red-300" : "border-gray-300"
-              } rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
+              } text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
               placeholder="Option A"
             />
             {questionErrors.option_a && (
@@ -98,7 +98,7 @@ export const QuestionForm = ({
               onChange={handleQuestionFormChange}
               className={`w-full px-3 py-1.5 border ${
                 questionErrors.option_b ? "border-red-300" : "border-gray-300"
-              } rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
+              } text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
               placeholder="Option B"
             />
             {questionErrors.option_b && (
@@ -114,7 +114,7 @@ export const QuestionForm = ({
               name="option_c"
               value={questionFormData.option_c}
               onChange={handleQuestionFormChange}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
               placeholder="Option C"
             />
           </div>
@@ -127,7 +127,7 @@ export const QuestionForm = ({
               name="option_d"
               value={questionFormData.option_d}
               onChange={handleQuestionFormChange}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
               placeholder="Option D"
             />
           </div>
@@ -145,7 +145,7 @@ export const QuestionForm = ({
               onChange={handleQuestionFormChange}
               className={`w-full px-3 py-1.5 border ${
                 questionErrors.correct_option ? "border-red-300" : "border-gray-300"
-              } rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
+              } text-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
             >
               <option value="">Select</option>
               <option value="A">A</option>
@@ -166,7 +166,7 @@ export const QuestionForm = ({
               name="marks"
               value={questionFormData.marks}
               onChange={handleQuestionFormChange}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
               placeholder="1"
               min="1"
             />
@@ -183,7 +183,7 @@ export const QuestionForm = ({
             name="order_number"
             value={questionFormData.order_number || 1}
             onChange={handleQuestionFormChange}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+            className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
             placeholder="1"
             min="1"
           />
@@ -198,7 +198,7 @@ export const QuestionForm = ({
             name="status"
             value={questionFormData.status}
             onChange={handleQuestionFormChange}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+            className="w-full px-3 py-1.5 border border-gray-300 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
@@ -211,7 +211,7 @@ export const QuestionForm = ({
             type="submit"
             disabled={questionSaving}
             onClick={handleSubmit}
-            className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
           >
             {questionSaving ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -227,7 +227,7 @@ export const QuestionForm = ({
               setEditingQuestion(null);
               resetQuestionForm();
             }}
-            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
+            className="px-3 py-1.5 border border-gray-300 text-sm hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>

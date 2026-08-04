@@ -103,7 +103,7 @@ const AssessmentForm = ({
   return (
     <div>
       {assessmentSuccess && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-green-600" />
           <p className="text-sm text-green-700">
             {editingAssessment ? "Assessment updated successfully!" : "Assessment created successfully!"}
@@ -112,7 +112,7 @@ const AssessmentForm = ({
       )}
 
       {assessmentErrors.general && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-red-600" />
           <p className="text-sm text-red-700">{assessmentErrors.general}</p>
         </div>
@@ -138,7 +138,7 @@ const AssessmentForm = ({
               onChange={handleAssessmentFormChange}
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.title ? "border-red-300" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              } focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
               placeholder="e.g., Final Exam"
             />
             {assessmentErrors.title && (
@@ -156,7 +156,7 @@ const AssessmentForm = ({
               onChange={handleAssessmentFormChange}
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.type ? "border-red-300" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              } focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
             >
               <option value="mcq">MCQ (Multiple Choice Questions)</option>
               <option value="pdf_task">PDF Task</option>
@@ -174,7 +174,7 @@ const AssessmentForm = ({
               name="status"
               value={assessmentFormData.status || "draft"}
               onChange={handleAssessmentFormChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
@@ -192,7 +192,7 @@ const AssessmentForm = ({
               onChange={handleAssessmentFormChange}
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.passing_score ? "border-red-300" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              } focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
               placeholder="60"
               min="0"
               max="100"
@@ -213,7 +213,7 @@ const AssessmentForm = ({
               onChange={handleAssessmentFormChange}
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.duration_minutes ? "border-red-300" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              } focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
               placeholder="30"
               min="1"
             />
@@ -225,7 +225,7 @@ const AssessmentForm = ({
           {/* Set as Default Checkbox - Only show when editing existing assessment */}
           {editingAssessment.is_default && (
             <div className="md:col-span-2">
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200 hover:border-yellow-300 transition-colors">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 hover:border-yellow-300 transition-colors">
                 <div className="flex items-center h-5 mt-0.5">
                   <input
                     type="checkbox"
@@ -233,7 +233,7 @@ const AssessmentForm = ({
                     name="is_default"
                     checked={assessmentFormData.is_default || false}
                     onChange={handleDefaultCheckboxChange}
-                    className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500 focus:ring-offset-2 cursor-pointer"
+                    className="w-4 h-4 text-yellow-600 border-gray-300 focus:ring-yellow-500 focus:ring-offset-2 cursor-pointer"
                     disabled={assessmentSaving}
                   />
                 </div>
@@ -256,7 +256,7 @@ const AssessmentForm = ({
                       )}
                     </label>
                     {assessmentFormData.is_default && (
-                      <span className="px-2.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full border border-yellow-200">
+                      <span className="px-2.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
                         Default
                       </span>
                     )}
@@ -286,7 +286,7 @@ const AssessmentForm = ({
               rows="2"
               className={`w-full px-3 py-2 border ${
                 assessmentErrors.description ? "border-red-300" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              } focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
               placeholder="Describe the assessment..."
             />
             {assessmentErrors.description && (
@@ -308,7 +308,7 @@ const AssessmentForm = ({
                   rows="3"
                   className={`w-full px-3 py-2 border ${
                     assessmentErrors.instructions ? "border-red-300" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+                  } focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
                   placeholder="Provide detailed instructions for the PDF task..."
                 />
                 {assessmentErrors.instructions && (
@@ -324,7 +324,7 @@ const AssessmentForm = ({
                 {/* PDF Upload Area */}
                 <div className="mt-1">
                   {!assessmentFormData.pdf_template_url ? (
-                    <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-red-400 transition-colors">
+                    <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed hover:border-red-400 transition-colors">
                       <div className="space-y-1 text-center">
                         {!isUploading ? (
                           <>
@@ -332,7 +332,7 @@ const AssessmentForm = ({
                             <div className="flex text-sm text-gray-600">
                               <label
                                 htmlFor="pdf-upload"
-                                className="relative cursor-pointer bg-white rounded-md font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500"
+                                className="relative cursor-pointer bg-white font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500"
                               >
                                 <span>Upload a PDF file</span>
                                 <input
@@ -375,7 +375,7 @@ const AssessmentForm = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between p-3 bg-gray-50  border border-gray-200">
                       <div className="flex items-center gap-3">
                         <FileText className="w-8 h-8 text-red-500" />
                         <div className="text-left">
@@ -393,7 +393,7 @@ const AssessmentForm = ({
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <label className="cursor-pointer px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors text-sm border border-blue-200">
+                        <label className="cursor-pointer px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-sm border border-blue-200">
                           <Upload className="w-4 h-4 inline mr-1" />
                           Replace
                           <input
@@ -407,7 +407,7 @@ const AssessmentForm = ({
                         <button
                           type="button"
                           onClick={removeFile}
-                          className="px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors text-sm border border-red-200"
+                          className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-sm border border-red-200"
                           disabled={isUploading}
                         >
                           <X className="w-4 h-4" />
@@ -418,7 +418,7 @@ const AssessmentForm = ({
 
                   {/* Show existing file if editing and no new file uploaded */}
                   {editingAssessment && editingAssessment.pdf_template_url && !assessmentFormData.pdf_template_url && !uploadedFile && (
-                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-blue-500" />
                         <span className="text-sm text-blue-700">
@@ -444,7 +444,7 @@ const AssessmentForm = ({
           <button
             type="submit"
             disabled={assessmentSaving || isUploading}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {assessmentSaving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -461,7 +461,7 @@ const AssessmentForm = ({
               resetAssessmentForm();
               setAssessmentSuccess(false);
             })}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
