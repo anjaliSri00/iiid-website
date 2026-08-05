@@ -51,8 +51,10 @@ export const metadata = {
   },
 };
 
-export default async function ApplyOnline({ faqs, error }) {
-  const result = await getFAQs(1);
+export default async function ApplyOnline() {
+  const result = await getFAQs(3);
+  const faqs = result?.props?.faqs || [];
+
   return (
     <div className="min-h-screen bg-white">
       {/* JSON-LD Structured Data */}
@@ -103,11 +105,12 @@ export default async function ApplyOnline({ faqs, error }) {
       
 
       <Suspense fallback={<div className="h-96 bg-white animate-pulse"></div>}>
+       {faqs && faqs.length > 0 && (
         <FaqList 
-        faqs={result.props.faqs}
-          pageId={1}
-          error={result.props.error}
+        faqs={faqs}
+        loading={false}
         />
+       )}
       </Suspense>
 
      

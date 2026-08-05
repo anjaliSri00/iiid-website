@@ -39,6 +39,18 @@ const AssessmentModal = ({
     }
   }, [editingAssessment]);
 
+useEffect(() => {
+  if (isOpen || editingAssessment) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'unset';
+  }
+
+  return () => {
+    document.body.style.overflow = 'unset';
+  };
+}, [isOpen, editingAssessment]);
+
   // Fetch current default assessment for the course
   useEffect(() => {
     if (isOpen && courseId) {
@@ -218,8 +230,8 @@ const AssessmentModal = ({
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Modal Header */}
-        <div className="sticky top-0 bg-white z-10 border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-          <div className="flex items-center gap-3">
+        <div className="sticky top-0 bg-white z-10 border-b border-gray-200 px-6 py-4 flex flex-wrap items-center justify-between rounded-t-2xl">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="p-2 bg-red-100 rounded-lg">
               <FileCheck className="w-5 h-5 text-red-600" />
             </div>
@@ -238,14 +250,14 @@ const AssessmentModal = ({
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Default Assessment Toggle - Only show when editing existing assessment */}
             {editingAssessment && editingAssessment.id && (
-              <div className="flex items-center gap-2 mr-2">
+              <div className="flex flex-wrap items-center gap-2 mr-2">
                 <button
                   onClick={isDefaultAssessment ? handleRemoveDefault : handleSetDefault}
                   disabled={loadingDefault || assessmentSaving}
-                  className={`flex items-center gap-1.5 px-3 py-1.5  text-sm font-medium transition-all ${
+                  className={`flex flex-wrap items-center gap-1.5 px-3 py-1.5  text-sm font-medium transition-all ${
                     isDefaultAssessment
                       ? "bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100"
                       : "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"
@@ -271,7 +283,7 @@ const AssessmentModal = ({
             
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 transition-colors"
+              className="p-2 hidden hover:bg-gray-100 transition-colors"
             >
               <X className="w-5 h-5 text-gray-500" />
             </button>

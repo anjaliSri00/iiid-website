@@ -63,7 +63,7 @@ const FaqList = ({ faqs, loading = false, hideContactCta = false }) => {
   };
 
   // Check if ANY FAQ has page_id !== 2 (not on contact page)
-  const showContactCta = !hideContactCta && faqs && faqs.length > 0 && !faqs.some(faq => faq.page_id === 2);
+  const showContactCta = !hideContactCta && faqs && faqs.length > 0 && !faqs.some(faq => faq.page_id === 2 || faq.page_id ===1);
 
   return (
     <section className="py-10 md:py-24 ">

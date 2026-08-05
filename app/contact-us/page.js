@@ -8,7 +8,7 @@ import AnimatedHeroSection from "./components/AnimatedHeroSection";
 
 // Server Component with SSR
 export default async function ContactPage() {
-  const result = await getFAQs(2);
+  const result = await getFAQs(4);
   const faqs = result?.props?.faqs || [];
 
   return (
@@ -32,11 +32,13 @@ export default async function ContactPage() {
       </div>
 
       {/* FAQ Section */}
+       {faqs && faqs.length > 0 && (
       <section className="pt-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <FaqList faqs={faqs} loading={false} />
         </div>
       </section>
+       )}
 
       <TrustBadges />
     </div>

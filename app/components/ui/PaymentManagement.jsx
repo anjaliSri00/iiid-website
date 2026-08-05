@@ -150,6 +150,19 @@ const PaymentManagement = () => {
     }
   }, [searchTerm, payments]);
 
+
+  useEffect(() => {
+  if (showPaymentDetail) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'unset';
+  }
+
+  return () => {
+    document.body.style.overflow = 'unset';
+  };
+}, [showPaymentDetail]);
+
   // Copy to clipboard
   const copyToClipboard = (text) => {
     if (!text) return;
