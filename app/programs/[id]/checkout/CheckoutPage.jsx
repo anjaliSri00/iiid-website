@@ -589,15 +589,7 @@ const CheckoutPage = () => {
                           {program.level || 'Beginner'}
                         </span>
                       </div>
-                      /* {program.assessment && (
-                        <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                          <span className="text-sm text-gray-600">Assessment</span>
-                          <span className="text-sm font-semibold text-gray-900">
-                            {program.assessment.slice(0, 2).join(', ')}
-                            {program.assessment.length > 2 && ' + more'}
-                          </span>
-                        </div>
-                      )} */
+
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Total Amount</span>
                         <span className="text-lg font-bold text-[#CC0000]">
