@@ -225,7 +225,7 @@ export default function Programs() {
   };
 
   return (
-    <section id="programs" className="py-16 md:py-20 bg-[#FDF8F0]">
+    <section id="programs" className="py-16 md:py-20 bg-pink-50">
       <div className="max-w-screen-3xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">

@@ -9,7 +9,7 @@ export default function HeroSection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="relative bg-gradient-to-br from-[#8B0000] via-[#CC0000] to-[#B30000] text-white py-16 md:py-24 overflow-hidden"
+      className="relative bg-pink-50 py-16 md:py-24 overflow-hidden"
     >
       {/* Decorative elements */}
       <div className="absolute inset-0 opacity-10">
@@ -22,7 +22,7 @@ export default function HeroSection() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 border-2 border-white/5 rounded-full animate-pulse delay-500"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl bg-white py-16 md:py-24 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto">
          
           <motion.h1 
@@ -31,7 +31,7 @@ export default function HeroSection() {
             transition={{ delay: 0.2 }}
             className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 "
           >
-            Apply Online for Live Interior Design Courses
+Live Online Courses
           </motion.h1>
           
           <motion.p 
@@ -40,10 +40,11 @@ export default function HeroSection() {
             transition={{ delay: 0.3 }}
             className="text-lg md:text-xl text-[#fffff] mb-6"
           >
-            Get internationally recognized certification through our live online programs
+I'm a paragraph. Click here to add your own text and edit me. It’s easy. Just click “Edit Text” or double click me to add your own content and make changes to the font.
+
           </motion.p>
           
-          <motion.div 
+          {/* <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -53,7 +54,7 @@ export default function HeroSection() {
               <Calendar className="w-5 h-5 text-[#fffff]" />
               <span className="font-semibold text-[#ffff]">Next batch: June 15, 2026</span>
             </div>
-          </motion.div>
+          </motion.div> */}
         </div>
       </div>
     </motion.section>

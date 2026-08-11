@@ -67,16 +67,16 @@ export default function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 lg:space-x-10">
-              <Link href="/" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+            <nav className="hidden md:flex items-center  space-x-8 lg:space-x-10">
+              <Link href="/" className="text-gray-600 text-base hover:text-[#CC0000] transition-colors font-medium relative group">
                 Home
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="/about-us" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+              <Link href="/about-us" className="text-gray-600 text-base hover:text-[#CC0000] transition-colors font-medium relative group">
                 About
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="/apply-online" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+              <Link href="/apply-online" className="text-gray-600 text-base hover:text-[#CC0000] transition-colors font-medium relative group">
                 Apply Online
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
@@ -85,7 +85,7 @@ export default function Header() {
                 Programs
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link> */}
-              <Link href="/contact-us" className="text-gray-600 hover:text-[#CC0000] transition-colors font-medium relative group">
+              <Link href="/contact-us" className="text-gray-600 text-base hover:text-[#CC0000] transition-colors font-medium relative group">
               Contact Us
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CC0000] transition-all duration-300 group-hover:w-full"></span>
               </Link>
@@ -97,7 +97,7 @@ export default function Header() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-[#CC0000] transition-colors font-medium px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
+                  className="flex items-center space-x-2 text-base text-gray-600 hover:text-[#CC0000] transition-colors font-medium px-3 py-2 rounded-lg hover:bg-[#FDF8F0]"
                 >
                   {isAuthenticated ? (
                     <>
@@ -287,10 +287,10 @@ export default function Header() {
       {/* Cream Banner Below Header */}
       <div className="bg-[#bd0707] border-b border-[#D4A574]/20 py-2.5 w-full text-center overflow-hidden">
         <div className="container-custom px-4">
-          <p className="text-xs font-medium text-white/90 flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#ffff]/50" />
+          <p className="text-base font-medium text-white/90 flex items-center tracking-wider justify-center gap-2">
+            {/* <Sparkles className="w-4 h-4 text-[#ffff]/50" /> */}
             Certification through assessment of professional experience and industry expertise.
-            <Sparkles className="w-4 h-4 text-[#ffff]/50" />
+            {/* <Sparkles className="w-4 h-4 text-[#ffff]/50" /> */}
           </p>
         </div>
       </div>
