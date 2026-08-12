@@ -12,9 +12,9 @@ export default async function ContactPage() {
   const faqs = result?.props?.faqs || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-pink-50">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#8B0000] via-[#CC0000] to-[#B30000] pt-24 pb-16 md:pt-32 md:pb-20 overflow-hidden">
+      <section className="relative pt-24 bg-white mx-auto max-w-3xl pb-16 md:pt-32 md:pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
         <AnimatedHeroSection />
       </section>

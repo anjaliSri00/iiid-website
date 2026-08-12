@@ -189,7 +189,7 @@ export default function HowItWorksSection() {
     {
       icon: <FileText className="w-7 h-7" />,
       title: "Apply Online",
-      description: "Complete our simple online application form",
+      description: "Complete our simple online application form.",
       time: "5 minutes",
       color: "#CC0000",
       bg: "bg-[#CC0000]",
@@ -207,7 +207,7 @@ export default function HowItWorksSection() {
     {
       icon: <PlayCircle className="w-7 h-7" />,
       title: "Access Course Content",
-      description: "Watch high-quality video lessons at your pace",
+      description: "Watch high-quality video lessons learning resources anytime, anywhere.",
       time: "Self-paced",
       color: "#CC0000",
       bg: "bg-[#CC0000]",
@@ -216,7 +216,7 @@ export default function HowItWorksSection() {
     {
       icon: <BookOpen className="w-7 h-7" />,
       title: "Track Your Progress",
-      description: "Mark lessons complete and monitor your advancement",
+      description: "Mark lessons complete and monitor your advancement.",
       time: "Ongoing",
       color: "#DC2626",
       bg: "bg-[#DC2626]",

@@ -475,7 +475,7 @@ const ProgramGrid = ({ programs = [] }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 h-full">
         {programs.map((program, index) => {
           const isHovered = hoveredId === program.id;
-
+          const isLastCard = index === programs.length - 1;
           return (
             <motion.div 
               key={program.id}
@@ -488,13 +488,16 @@ const ProgramGrid = ({ programs = [] }) => {
               onMouseLeave={() => setHoveredId(null)}
             >
               <div className={`
-              pt-6 pb-15
+                pt-10 pb-20
                 bg-white overflow-hidden transition-all duration-300 h-full flex flex-col
                 ${isHovered ? 'shadow-xl shadow-gray-200/50' : 'shadow-sm shadow-gray-100'}
-                border border-gray-200
+                ${!isLastCard ? 'border-r border-gray-500' : ''}
+                [&:nth-child(4n)]:border-r-0
+                [&:nth-child(3n)]:lg:border-r-0
+                [&:nth-child(2n)]:sm:border-r-0
               `}>
                 {/* Header - "Certificate Program" Tag - Full Width */}
-                <div className="bg-[#CC0000] w-[300px] mx-auto px-2 py-3 shrink-0">
+                <div className="bg-[#CC0000] w-70 mx-auto px-2 py-2 shrink-0">
                   <span className="text-base font-medium text-white tracking-widest text-center flex justify-center items-center gap-2">
                     {/* <Award className="w-4 h-4" /> */}
                     Certificate Program
@@ -535,8 +538,8 @@ const ProgramGrid = ({ programs = [] }) => {
                     <div className="text-center mx-auto flex flex-col justify-center items-center ">
                       <p className="text-xs text-gray-400  tracking-wider underline capitalize font-medium mb-1.5">Course Fee</p>
                       <div className="flex items-center justify-center gap-2 mb-4">
-                        <span className="text-2xl font-light text-gray-800">
-                          Rs. {program.final_price || program.original_price || '79.00'}
+                        <span className="text-xl font-light text-gray-800">
+                          Rs. {parseInt(program.final_price || program.original_price) || '79.00'}
                         </span>
                       </div>
                       

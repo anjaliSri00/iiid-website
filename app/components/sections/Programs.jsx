@@ -229,18 +229,6 @@ export default function Programs() {
       <div className="max-w-screen-3xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          {/* Badge with animation */}
-          {/* <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <div className="inline-flex items-center gap-2 bg-[#CC0000]/10 px-4 py-2 rounded-full mb-4">
-              <Sparkles className="w-4 h-4 text-[#CC0000]" />
-              <span className="text-sm font-medium text-[#CC0000]">Our Programs</span>
-            </div>
-          </motion.div> */}
           
           {/* Title with animation */}
           <motion.h2

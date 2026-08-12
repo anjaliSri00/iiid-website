@@ -7,6 +7,7 @@ import HowItWorksSection from './components/HowItWorksSection';
 import FaqList from '../components/ui/FaqList';
 import ContactForm from './components/ContactForm';
 import Faq, { getFAQs } from '@/helper/lib/faq';
+import Programscard from './components/Programscard';
 
 // SEO Metadata
 export const metadata = {
@@ -95,10 +96,10 @@ export default async function ApplyOnline() {
         <HeroSection />
       </Suspense>
       <Suspense fallback ={<Loading/>}>
-     <Programs />
+     <Programscard />
       </Suspense>
 
-      <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
+      <Suspense fallback={<div className="h-64 bg-pink-50 animate-pulse"></div>}>
         <BenefitsSection />
       </Suspense>
 

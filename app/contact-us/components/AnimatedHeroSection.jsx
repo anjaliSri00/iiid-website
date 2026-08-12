@@ -34,7 +34,7 @@ export default function AnimatedHeroSection() {
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center text-white">
+        <div className="text-center">
          
 
           <motion.h1 
@@ -42,7 +42,7 @@ export default function AnimatedHeroSection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+            className="text-4xl md:text-5xl lg:text-6xl font-light mb-4"
           >
             Let's Connect
           </motion.h1>
@@ -52,7 +52,7 @@ export default function AnimatedHeroSection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             viewport={{ once: true }}
-            className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto"
+            className="text-lg md:text-xl max-w-2xl mx-auto"
           >
             Have questions about our programs, partnerships, or anything else? 
             We're here to help and would love to hear from you.
