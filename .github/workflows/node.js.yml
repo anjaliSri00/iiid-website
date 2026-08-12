@@ -49,7 +49,7 @@ jobs:
           echo "✅ Build completed"
       - name: Fix permissions
         run: |
-          sudo chown -R ubuntu2:ubuntu2
+          sudo chown -R ubuntu2:ubuntu2 . 2>/dev/null || true
           chmod -R 755 .next/
           mkdir -p .next/chache/images
           chmod -R 755 .next/chache/
