@@ -47,6 +47,13 @@ jobs:
           export NEXT_TELEMETRY_DISABLED=1
           npm run build
           echo "✅ Build completed"
+      - name: Fix permissions
+        run: |
+          sudo chown -R ubuntu2:ubuntu2 . 2>/dev/null || true
+          chmod -R 755 .next/
+          mkdir -p .next/chache/images
+          chmod -R 755 .next/chache/
+          echo " Permissions fixed"
 
       - name: Restart Next.js with PM2
         run: |
