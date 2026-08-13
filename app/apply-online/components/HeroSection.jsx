@@ -11,8 +11,6 @@ export default function HeroSection() {
       transition={{ duration: 0.5 }}
       className="relative bg-pink-50 pb-2 pt-10 overflow-hidden"
     >
-      
-
       <div className="relative z-10 max-w-4xl bg-white py-16 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto">
           <motion.h1

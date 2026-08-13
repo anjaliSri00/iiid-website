@@ -198,7 +198,7 @@ export default function HowItWorksSection() {
     {
       icon: <Mail className="w-7 h-7" />,
       title: "Get Confirmed",
-      description: "Receive your confirmation and login credentials",
+      description: "Receive your confirmation and login credentials.",
       time: "24 hours",
       color: "#DC2626",
       bg: "bg-[#DC2626]",
@@ -225,7 +225,7 @@ export default function HowItWorksSection() {
     {
       icon: <ClipboardCheck className="w-7 h-7" />,
       title: "Final Assessment",
-      description: "Complete the comprehensive course assessment",
+      description: "Complete the comprehensive course assessment.",
       time: "1 hour",
       color: "#CC0000",
       bg: "bg-[#CC0000]",
@@ -234,7 +234,7 @@ export default function HowItWorksSection() {
     {
       icon: <Trophy className="w-7 h-7" />,
       title: "Earn Your Certificate",
-      description: "Receive your professional certification instantly",
+      description: "Receive your professional certification instantly.",
       time: "Instant",
       color: "#CC0000",
       bg: "bg-gradient-to-r from-[#CC0000] to-[#DC2626]",
