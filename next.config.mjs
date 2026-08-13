@@ -28,7 +28,7 @@ const nextConfig = {
       "iiid-web-production.s3.ap-south-1.amazonaws.com",
       "iiid-website-local-bucket.s3.ap-south-1.amazonaws.com",
     ],
-        qualities: [25, 50, 75, 85],  // Add 85 here
+        qualities: [25, 50, 75, 85], 
 
   },
 

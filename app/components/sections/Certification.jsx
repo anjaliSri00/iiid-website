@@ -90,7 +90,7 @@ export default function CertificateSection() {
           </motion.p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid max-lg:grid-cols-1 grid-cols-2 gap-12 items-center">
           {/* Left Side - Certificate Image */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}

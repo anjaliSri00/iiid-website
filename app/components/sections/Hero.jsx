@@ -135,16 +135,15 @@ export default function Hero() {
 
   // Get position classes based on slide
   const getPositionClasses = () => {
-    switch(activeSlide.position) {
+     switch(activeSlide.position) {
       case "center":
         return "left-1/2 -translate-x-1/2";
       case "right":
-        return "right-40";
+        return "left-1/2 sm:left-1/2 md:right-10 lg:right-40 xl:right-40 translate-x-[-50%] sm:translate-x-[-50%] md:translate-x-0";
       default: // left
-        return "left-50";
+        return "left-1/2 sm:left-1/2 md:left-10 lg:left-50 xl:left-50 translate-x-[-50%] sm:translate-x-[-50%] md:translate-x-0";
     }
   };
-
   // Get animation direction based on position
   const getAnimationDirection = () => {
     switch(activeSlide.position) {
@@ -158,28 +157,28 @@ export default function Hero() {
   };
 
   const getPaddingClasses = () => {
-    switch(activeSlide.position) {
+   switch(activeSlide.position) {
       case "left":
-        return "pl-2 pr-0";
+        return "pl-4 sm:pl-6 md:pl-2 lg:pl-12";
       case "center":
-        return "pl-8 pr-0";
+        return "pl-4 sm:pl-6 md:pl-4 lg:pl-10";
       case "right":
-        return "pl-12 "; // More padding on left when box is on right side
+        return "pl-4 sm:pl-6 md:pl-4 lg:pl-12";
       default:
-        return "pl-8 pr-4";
+        return "pl-4 sm:pl-6 md:pl-8 ";
     }
   };
 
     const getWidthClasses = () => {
     switch(activeSlide.position) {
       case "left":
-        return "w-[730px] max-w-[90vw]";
+        return "w-[95vw] sm:w-[90vw] md:w-[600px] lg:w-[730px] xl:w-[800px] max-w-[95vw] sm:max-w-[90vw] md:max-w-[700px] lg:max-w-[800px]";
       case "center":
-        return "w-[700px] max-w-3xl";
+        return "w-[95vw] sm:w-[90vw] md:w-[600px] lg:w-[700px] xl:w-[750px] max-w-[95vw] sm:max-w-[90vw] md:max-w-[700px]";
       case "right":
-        return "w-[600px] max-w-[85vw]"; // Slightly smaller when on right
+        return "w-[95vw] sm:w-[90vw] md:w-[500px] lg:w-[600px] xl:w-[650px] max-w-[95vw] sm:max-w-[90vw] md:max-w-[600px]";
       default:
-        return "w-[500px] max-w-[90vw]";
+        return "w-[95vw] sm:w-[90vw] md:w-[550px] lg:w-[650px] max-w-[95vw] sm:max-w-[90vw]";
     }
   };
 
@@ -223,7 +222,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-5xl max-sm:text-xl font-bold text-left tracking-tight text-gray-900"
+            className="text-5xl max-sm:text-xl max-lg:text-3xl font-bold text-left tracking-tight text-gray-900"
           >
             {activeSlide.title}
           </motion.h1>
@@ -232,7 +231,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="max-sm:text-xl text-5xl font-bold mb-4 tracking-tight pr-10 text-gray-900"
+            className="max-sm:text-xl max-lg:text-3xl text-5xl font-bold mb-4 tracking-tight pr-10 text-gray-900"
           >
             {activeSlide.title2}
           </motion.h1>

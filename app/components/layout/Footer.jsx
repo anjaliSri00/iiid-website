@@ -111,7 +111,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 md:gap-12">
           
           {/* Column 1 - Brand & Quick Links */}
-          <div className="lg:col-span-3 grid grid-cols-2 border-r border-red-600">
+          <div className="lg:col-span-3 max-sm:grid-cols-1 max-sm:gap-10 max-sm:border-0 grid grid-cols-2 border-r border-red-600">
             <div className="space-y-4">
               <Link href="/" className="flex items-center group">
                 <div className="relative h-20 md:h-15 flex items-center justify-center group-hover:opacity-80 transition-opacity">
@@ -347,7 +347,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <p className="text-gray-400 text-sm text-center">
             &copy; {currentYear} by IIID.
-                            <span className="hidden sm:inline"> All rights reserved.</span>
+          <span className="hidden sm:inline"> All rights reserved.</span>
           </p>
         </div>
       </div>
