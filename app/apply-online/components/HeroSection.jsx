@@ -30,9 +30,7 @@ export default function HeroSection() {
             transition={{ delay: 0.3 }}
             className="text-base text-[#fffff] mb-6"
           >
-            I&apos;m a paragraph. Click here to add your own text and edit me. It&apos;s
-            easy. Just click “Edit Text” or double click me to add your own
-            content and make changes to the font.
+            Learn at your own pace with professionally recorded video lectures and comprehensive written study material. Every module is designed for flexible, self-paced learning — so you can revisit lessons, review key concepts, and progress on your own schedule, from anywhere.
           </motion.p>
 
       
