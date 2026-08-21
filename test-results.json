@@ -1,0 +1,3859 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\node_modules\\@playwright\\test\\cli.js",
+      "test"
+    ],
+    "configFile": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\playwright.config.js",
+    "rootDir": "C:/Users/muska/OneDrive/Desktop/iiid-website/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/muska/OneDrive/Desktop/iiid-website/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/muska/OneDrive/Desktop/iiid-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.js"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/muska/OneDrive/Desktop/iiid-website/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/muska/OneDrive/Desktop/iiid-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.js"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/muska/OneDrive/Desktop/iiid-website/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/muska/OneDrive/Desktop/iiid-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.js"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 2,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 180000
+    }
+  },
+  "suites": [
+    {
+      "title": "api\\users.spec.js",
+      "file": "api/users.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "API Tests for Registration System",
+          "file": "api/users.spec.js",
+          "line": 64,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should send email OTP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1052,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking API availability...\n"
+                        },
+                        {
+                          "text": "✅ API is running\n"
+                        },
+                        {
+                          "text": "Email OTP request status: 200\n"
+                        },
+                        {
+                          "text": "✅ Email OTP sent. Session ID: email_otp_1787300746007_0f404881\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:45.658Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-7559c4738ce0d410f6db",
+              "file": "api/users.spec.js",
+              "line": 66,
+              "column": 3
+            },
+            {
+              "title": "should send mobile OTP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 687,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Mobile OTP request status: 200\n"
+                        },
+                        {
+                          "text": "✅ Mobile OTP sent. Session ID: 19229a06-03d1-4d59-a46f-6e9b38555948\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:47.051Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-f210619fa996147a8565",
+              "file": "api/users.spec.js",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "should upload a file",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\api\\users.spec.js",
+                        "line": 136,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 26,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚠️ File upload testing requires multipart/form-data\n"
+                        },
+                        {
+                          "text": "💡 This test needs special handling for file uploads\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:47.787Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\api\\users.spec.js",
+                            "line": 136,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "31386b57804678bd0bed-8144c7264a5749e4bf74",
+              "file": "api/users.spec.js",
+              "line": 124,
+              "column": 3
+            },
+            {
+              "title": "should complete full user registration flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1020,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Starting full registration flow...\n"
+                        },
+                        {
+                          "text": "✅ Email OTP sent: email_otp_1787300747957_92f42282\n"
+                        },
+                        {
+                          "text": "✅ Mobile OTP sent: 3b6ff891-986a-4387-9837-ab6e25367eb8\n"
+                        },
+                        {
+                          "text": "⚠️ Email verification failed: 500\n"
+                        },
+                        {
+                          "text": "⚠️ Mobile verification failed: 500\n"
+                        },
+                        {
+                          "text": "ℹ️ Full registration requires valid OTPs from test environment\n"
+                        },
+                        {
+                          "text": "💡 This test verifies the API endpoints exist and are reachable\n"
+                        },
+                        {
+                          "text": "Signup endpoint test: 200\n"
+                        },
+                        {
+                          "text": "✅ Signup endpoint exists (returned validation error)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:47.873Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-1ea46573a28990a42efb",
+              "file": "api/users.spec.js",
+              "line": 139,
+              "column": 3
+            },
+            {
+              "title": "should test API connectivity",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 42,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking API availability...\n"
+                        },
+                        {
+                          "text": "✅ API is running\n"
+                        },
+                        {
+                          "text": "API Base URL response: 200\n"
+                        },
+                        {
+                          "text": "✅ API is reachable\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:45.720Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-8f7cd8d7d76d5e31332a",
+              "file": "api/users.spec.js",
+              "line": 255,
+              "column": 3
+            },
+            {
+              "title": "should find registration endpoints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 85,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🔍 Checking registration endpoints...\n\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/email: 200\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/mobile: 200\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/upload-image: 400\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/users/signup: 200\n"
+                        },
+                        {
+                          "text": "\n📊 4/4 endpoints are accessible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:46.094Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-0cd486f780847923fb75",
+              "file": "api/users.spec.js",
+              "line": 270,
+              "column": 3
+            },
+            {
+              "title": "should send email OTP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 906,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking API availability...\n"
+                        },
+                        {
+                          "text": "✅ API is running\n"
+                        },
+                        {
+                          "text": "Email OTP request status: 200\n"
+                        },
+                        {
+                          "text": "✅ Email OTP sent. Session ID: email_otp_1787300938277_29b5c707\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:28:57.774Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-b0997da9ae46f4ab7b81",
+              "file": "api/users.spec.js",
+              "line": 66,
+              "column": 3
+            },
+            {
+              "title": "should send mobile OTP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 761,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Mobile OTP request status: 200\n"
+                        },
+                        {
+                          "text": "✅ Mobile OTP sent. Session ID: 6e43b95a-49bd-4d7d-9b63-df33b8687fd5\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:28:59.159Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-f98bb66f3ed5afdaffd0",
+              "file": "api/users.spec.js",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "should upload a file",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\api\\users.spec.js",
+                        "line": 136,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 1,
+                      "status": "skipped",
+                      "duration": 39,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚠️ File upload testing requires multipart/form-data\n"
+                        },
+                        {
+                          "text": "💡 This test needs special handling for file uploads\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:28:59.987Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\api\\users.spec.js",
+                            "line": 136,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "31386b57804678bd0bed-9ff06cb86478899bf3c7",
+              "file": "api/users.spec.js",
+              "line": 124,
+              "column": 3
+            },
+            {
+              "title": "should complete full user registration flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 940,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Starting full registration flow...\n"
+                        },
+                        {
+                          "text": "✅ Email OTP sent: email_otp_1787300940198_c3c590ea\n"
+                        },
+                        {
+                          "text": "✅ Mobile OTP sent: 7f197a41-967e-4ee6-b376-84506c9a2985\n"
+                        },
+                        {
+                          "text": "⚠️ Email verification failed: 500\n"
+                        },
+                        {
+                          "text": "⚠️ Mobile verification failed: 500\n"
+                        },
+                        {
+                          "text": "ℹ️ Full registration requires valid OTPs from test environment\n"
+                        },
+                        {
+                          "text": "💡 This test verifies the API endpoints exist and are reachable\n"
+                        },
+                        {
+                          "text": "Signup endpoint test: 200\n"
+                        },
+                        {
+                          "text": "✅ Signup endpoint exists (returned validation error)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:29:00.105Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-d472495b168ed60b8784",
+              "file": "api/users.spec.js",
+              "line": 139,
+              "column": 3
+            },
+            {
+              "title": "should test API connectivity",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 80,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking API availability...\n"
+                        },
+                        {
+                          "text": "✅ API is running\n"
+                        },
+                        {
+                          "text": "API Base URL response: 200\n"
+                        },
+                        {
+                          "text": "✅ API is reachable\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:28:58.807Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-b8f2546e801140887518",
+              "file": "api/users.spec.js",
+              "line": 255,
+              "column": 3
+            },
+            {
+              "title": "should find registration endpoints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 138,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🔍 Checking registration endpoints...\n\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/email: 200\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/mobile: 200\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/upload-image: 400\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/users/signup: 200\n"
+                        },
+                        {
+                          "text": "\n📊 4/4 endpoints are accessible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:28:59.465Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-3071d2eac97f756a864c",
+              "file": "api/users.spec.js",
+              "line": 270,
+              "column": 3
+            },
+            {
+              "title": "should send email OTP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 889,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking API availability...\n"
+                        },
+                        {
+                          "text": "✅ API is running\n"
+                        },
+                        {
+                          "text": "Email OTP request status: 200\n"
+                        },
+                        {
+                          "text": "✅ Email OTP sent. Session ID: email_otp_1787301084464_18c8b7bb\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:23.891Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-d5b1461b1f30fc408fb0",
+              "file": "api/users.spec.js",
+              "line": 66,
+              "column": 3
+            },
+            {
+              "title": "should send mobile OTP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 640,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Mobile OTP request status: 200\n"
+                        },
+                        {
+                          "text": "✅ Mobile OTP sent. Session ID: ac67332c-880c-4b96-9e15-3ad09a42193c\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:25.300Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-462557bb08e2f6e88556",
+              "file": "api/users.spec.js",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "should upload a file",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\api\\users.spec.js",
+                        "line": 136,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "skipped",
+                      "duration": 24,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚠️ File upload testing requires multipart/form-data\n"
+                        },
+                        {
+                          "text": "💡 This test needs special handling for file uploads\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:25.992Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\api\\users.spec.js",
+                            "line": 136,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "31386b57804678bd0bed-b566aa4148e7119020c7",
+              "file": "api/users.spec.js",
+              "line": 124,
+              "column": 3
+            },
+            {
+              "title": "should complete full user registration flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 957,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Starting full registration flow...\n"
+                        },
+                        {
+                          "text": "✅ Email OTP sent: email_otp_1787301086132_dab3a1b7\n"
+                        },
+                        {
+                          "text": "✅ Mobile OTP sent: 6601f1cc-6597-4657-99d1-34e3a09493ad\n"
+                        },
+                        {
+                          "text": "⚠️ Email verification failed: 500\n"
+                        },
+                        {
+                          "text": "⚠️ Mobile verification failed: 500\n"
+                        },
+                        {
+                          "text": "ℹ️ Full registration requires valid OTPs from test environment\n"
+                        },
+                        {
+                          "text": "💡 This test verifies the API endpoints exist and are reachable\n"
+                        },
+                        {
+                          "text": "Signup endpoint test: 200\n"
+                        },
+                        {
+                          "text": "✅ Signup endpoint exists (returned validation error)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:26.063Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-7acab52f13808f932f57",
+              "file": "api/users.spec.js",
+              "line": 139,
+              "column": 3
+            },
+            {
+              "title": "should test API connectivity",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 88,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking API availability...\n"
+                        },
+                        {
+                          "text": "✅ API is running\n"
+                        },
+                        {
+                          "text": "API Base URL response: 200\n"
+                        },
+                        {
+                          "text": "✅ API is reachable\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:29.123Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-a22bcbdd0c57a0ebd8c0",
+              "file": "api/users.spec.js",
+              "line": 255,
+              "column": 3
+            },
+            {
+              "title": "should find registration endpoints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 150,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🔍 Checking registration endpoints...\n\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/email: 200\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/mobile: 200\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/common/upload-image: 400\n"
+                        },
+                        {
+                          "text": "  ✅ /api/v1/users/signup: 200\n"
+                        },
+                        {
+                          "text": "\n📊 4/4 endpoints are accessible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:29.904Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-720cacded9d61c218971",
+              "file": "api/users.spec.js",
+              "line": 270,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "API Health Check",
+          "file": "api/users.spec.js",
+          "line": 321,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should check API health",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 28,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Health endpoint found: /health\n"
+                        },
+                        {
+                          "text": "   Status: 200\n"
+                        },
+                        {
+                          "text": "   Response: {\"status\":\"ok\",\"message\":\"All systems operational\"}...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:46.217Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-f6f2cddc8a1c106038b4",
+              "file": "api/users.spec.js",
+              "line": 322,
+              "column": 3
+            },
+            {
+              "title": "should check API health",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 112,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Health endpoint found: /health\n"
+                        },
+                        {
+                          "text": "   Status: 200\n"
+                        },
+                        {
+                          "text": "   Response: {\"status\":\"ok\",\"message\":\"All systems operational\"}...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:28:59.665Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-51a2f68d57ffafa83a32",
+              "file": "api/users.spec.js",
+              "line": 322,
+              "column": 3
+            },
+            {
+              "title": "should check API health",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 91,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Health endpoint found: /health\n"
+                        },
+                        {
+                          "text": "   Status: 200\n"
+                        },
+                        {
+                          "text": "   Response: {\"status\":\"ok\",\"message\":\"All systems operational\"}...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:30.140Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "31386b57804678bd0bed-20e68fe4fd225fac92b1",
+              "file": "api/users.spec.js",
+              "line": 322,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "homepage.spec.js",
+      "file": "homepage.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Homepage Tests",
+          "file": "homepage.spec.js",
+          "line": 47,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load homepage successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 11857,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Loading homepage...\n"
+                        },
+                        {
+                          "text": "📄 Page title: IIID - International Institute of Interior Designers\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:46.309Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-ae318bca089079a6eebb",
+              "file": "homepage.spec.js",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should handle responsive design",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17931,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Loading homepage...\n"
+                        },
+                        {
+                          "text": "📄 Page title: IIID - International Institute of Interior Designers\n"
+                        },
+                        {
+                          "text": "📱 Mobile viewport tested\n"
+                        },
+                        {
+                          "text": "📱 Tablet viewport tested\n"
+                        },
+                        {
+                          "text": "📱 Desktop viewport tested\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:25:49.004Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-f339a98564fa0b776bf8",
+              "file": "homepage.spec.js",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "should load homepage successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 35584,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Loading homepage...\n"
+                        },
+                        {
+                          "text": "📄 Page title: IIID - International Institute of Interior Designers\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:28:59.978Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-22197d2dae0d528e921d",
+              "file": "homepage.spec.js",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should handle responsive design",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 34125,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Loading homepage...\n"
+                        },
+                        {
+                          "text": "📄 Page title: IIID - International Institute of Interior Designers\n"
+                        },
+                        {
+                          "text": "📱 Mobile viewport tested\n"
+                        },
+                        {
+                          "text": "📱 Tablet viewport tested\n"
+                        },
+                        {
+                          "text": "📱 Desktop viewport tested\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:29:01.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-d4be91b055280bdbca34",
+              "file": "homepage.spec.js",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "should load homepage successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 15263,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Loading homepage...\n"
+                        },
+                        {
+                          "text": "📄 Page title: IIID - International Institute of Interior Designers\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:27.099Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-c52fd681e5f2bae5f945",
+              "file": "homepage.spec.js",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should handle responsive design",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 22043,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 Loading homepage...\n"
+                        },
+                        {
+                          "text": "📄 Page title: IIID - International Institute of Interior Designers\n"
+                        },
+                        {
+                          "text": "📱 Mobile viewport tested\n"
+                        },
+                        {
+                          "text": "📱 Tablet viewport tested\n"
+                        },
+                        {
+                          "text": "📱 Desktop viewport tested\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-21T08:31:30.370Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-87a3b3b333ba12b238b4",
+              "file": "homepage.spec.js",
+              "line": 89,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "navigation.spec.js",
+      "file": "navigation.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Navigation Tests",
+          "file": "navigation.spec.js",
+          "line": 4,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Main Navigation",
+              "file": "navigation.spec.js",
+              "line": 12,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display main navigation bar",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 11263,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 4 navigation links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:25:58.678Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-f736ca7ae1f863872bf1",
+                  "file": "navigation.spec.js",
+                  "line": 14,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to homepage from logo click",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 9017,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ Logo navigation works\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:26:07.569Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-22893c57f942a28660ec",
+                  "file": "navigation.spec.js",
+                  "line": 27,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to About page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 21003,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ About page loaded successfully\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:26:10.033Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-c1122f2092d530a1a245",
+                  "file": "navigation.spec.js",
+                  "line": 40,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to apply-online page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 22690,
+                          "error": {
+                            "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a[href*=\"apply-online\"], nav a:has-text(\"apply-online\")').first()\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"/apply-online\" class=\"text-gray-600 text-base hover:text-[#CC0000] transition-colors font-medium relative group\">…</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\u001b[2m    - click action done\u001b[22m\n\u001b[2m    - waiting for scheduled navigations to finish\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/\"\u001b[22m\n",
+                            "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a[href*=\"apply-online\"], nav a:has-text(\"apply-online\")').first()\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"/apply-online\" class=\"text-gray-600 text-base hover:text-[#CC0000] transition-colors font-medium relative group\">…</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\u001b[2m    - click action done\u001b[22m\n\u001b[2m    - waiting for scheduled navigations to finish\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/\"\u001b[22m\n\n    at C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\navigation.spec.js:64:27",
+                            "location": {
+                              "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\navigation.spec.js",
+                              "column": 27,
+                              "line": 64
+                            },
+                            "snippet": "\u001b[0m \u001b[90m 62 |\u001b[39m       \n \u001b[90m 63 |\u001b[39m       \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m contactLink\u001b[33m.\u001b[39misVisible()) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 64 |\u001b[39m         \u001b[36mawait\u001b[39m contactLink\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 65 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'domcontentloaded'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 66 |\u001b[39m         \n \u001b[90m 67 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/.*apply-online/\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\navigation.spec.js",
+                                "column": 27,
+                                "line": 64
+                              },
+                              "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a[href*=\"apply-online\"], nav a:has-text(\"apply-online\")').first()\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"/apply-online\" class=\"text-gray-600 text-base hover:text-[#CC0000] transition-colors font-medium relative group\">…</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\u001b[2m    - click action done\u001b[22m\n\u001b[2m    - waiting for scheduled navigations to finish\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 62 |\u001b[39m       \n \u001b[90m 63 |\u001b[39m       \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m contactLink\u001b[33m.\u001b[39misVisible()) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 64 |\u001b[39m         \u001b[36mawait\u001b[39m contactLink\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 65 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'domcontentloaded'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 66 |\u001b[39m         \n \u001b[90m 67 |\u001b[39m         \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/.*apply-online/\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\navigation.spec.js:64:27\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:26:16.777Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\test-results\\navigation-Navigation-Test-44174-vigate-to-apply-online-page-chromium\\test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\test-results\\navigation-Navigation-Test-44174-vigate-to-apply-online-page-chromium\\video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\test-results\\navigation-Navigation-Test-44174-vigate-to-apply-online-page-chromium\\error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\tests\\e2e\\navigation.spec.js",
+                            "column": 27,
+                            "line": 64
+                          }
+                        },
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 31292,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ apply-online page loaded successfully\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 1,
+                          "startTime": "2026-08-21T08:26:43.401Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "trace",
+                              "contentType": "application/zip",
+                              "path": "C:\\Users\\muska\\OneDrive\\Desktop\\iiid-website\\test-results\\navigation-Navigation-Test-44174-vigate-to-apply-online-page-chromium-retry1\\trace.zip"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "flaky"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-880c476be87c4b58f3f9",
+                  "file": "navigation.spec.js",
+                  "line": 60,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Login page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 8892,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Login link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:26:31.237Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-b838b1c1fab8e6f720d3",
+                  "file": "navigation.spec.js",
+                  "line": 77,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Register page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 12711,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Register link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:26:40.215Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-081b7e19d38718eac02c",
+                  "file": "navigation.spec.js",
+                  "line": 94,
+                  "column": 5
+                },
+                {
+                  "title": "should display main navigation bar",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 3702,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 4 navigation links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:29:39.273Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-3a4e6a27de18ce5faa45",
+                  "file": "navigation.spec.js",
+                  "line": 14,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to homepage from logo click",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 13924,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ Logo navigation works\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:29:40.725Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-f16970e9402c4d086282",
+                  "file": "navigation.spec.js",
+                  "line": 27,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to About page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 12502,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ About page loaded successfully\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:29:43.120Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-5d46f5e16ab5e9d06536",
+                  "file": "navigation.spec.js",
+                  "line": 40,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to apply-online page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 10232,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ apply-online page loaded successfully\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:29:54.840Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-5546622188490a2d5fd9",
+                  "file": "navigation.spec.js",
+                  "line": 60,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Login page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 5624,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Login link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:29:55.711Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-088c3f9aa5baff2bdc60",
+                  "file": "navigation.spec.js",
+                  "line": 77,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Register page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 7012,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Register link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:01.450Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-ced4fe2ca59620b006a9",
+                  "file": "navigation.spec.js",
+                  "line": 94,
+                  "column": 5
+                },
+                {
+                  "title": "should display main navigation bar",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 11951,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 4 navigation links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:31:42.770Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-1e5b8e52a9e8b112ecc7",
+                  "file": "navigation.spec.js",
+                  "line": 14,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to homepage from logo click",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 22741,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ Logo navigation works\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:31:52.805Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-976e4892eb504a6082fc",
+                  "file": "navigation.spec.js",
+                  "line": 27,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to About page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 16344,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ About page loaded successfully\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:31:54.816Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-4cafcbaa948aed7c632b",
+                  "file": "navigation.spec.js",
+                  "line": 40,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to apply-online page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 13361,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ apply-online page loaded successfully\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:11.248Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-0edfc779964773fb0149",
+                  "file": "navigation.spec.js",
+                  "line": 60,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Login page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 11510,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Login link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:15.652Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-7c64c68e6251b8c1a0d8",
+                  "file": "navigation.spec.js",
+                  "line": 77,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Register page",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 10413,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Register link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:24.746Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-2b6f5f4bc4b8664d9d0b",
+                  "file": "navigation.spec.js",
+                  "line": 94,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Footer Navigation",
+              "file": "navigation.spec.js",
+              "line": 112,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display footer links",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 9881,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 9 footer links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:26:53.001Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-5c0767317879de119021",
+                  "file": "navigation.spec.js",
+                  "line": 114,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Terms page from footer",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 10537,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Terms link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:02.970Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-8cc998d34e73d6699077",
+                  "file": "navigation.spec.js",
+                  "line": 127,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Privacy page from footer",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 8809,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Privacy link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:13.586Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-aa335ee5510f62d3cd66",
+                  "file": "navigation.spec.js",
+                  "line": 141,
+                  "column": 5
+                },
+                {
+                  "title": "should display footer links",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 6897,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 9 footer links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:05.218Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-de8623ff474154514d8a",
+                  "file": "navigation.spec.js",
+                  "line": 114,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Terms page from footer",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 8030,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Terms link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:08.527Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-71803c233e5d506c070e",
+                  "file": "navigation.spec.js",
+                  "line": 127,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Privacy page from footer",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 8844,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Privacy link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:12.234Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-64f937e406546e5626c2",
+                  "file": "navigation.spec.js",
+                  "line": 141,
+                  "column": 5
+                },
+                {
+                  "title": "should display footer links",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 14484,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 9 footer links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:27.233Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-9419aa5ccc8deaf2b1a2",
+                  "file": "navigation.spec.js",
+                  "line": 114,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Terms page from footer",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 13191,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Terms link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:35.321Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-abb217ba2fbc892fa2d5",
+                  "file": "navigation.spec.js",
+                  "line": 127,
+                  "column": 5
+                },
+                {
+                  "title": "should navigate to Privacy page from footer",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 10421,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Privacy link not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:41.789Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-dab19c0d28dbc7ed5037",
+                  "file": "navigation.spec.js",
+                  "line": 141,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Mobile Navigation",
+              "file": "navigation.spec.js",
+              "line": 156,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should show mobile menu on small screens",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 11503,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Hamburger menu not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:22.485Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-eb15790558ed5b163f65",
+                  "file": "navigation.spec.js",
+                  "line": 158,
+                  "column": 5
+                },
+                {
+                  "title": "should close mobile menu on link click",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 10541,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Mobile menu test skipped\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:34.350Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-8db9d387aa43f99a3252",
+                  "file": "navigation.spec.js",
+                  "line": 179,
+                  "column": 5
+                },
+                {
+                  "title": "should show mobile menu on small screens",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 15357,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Hamburger menu not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:16.699Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-8dc5c56b616082020a97",
+                  "file": "navigation.spec.js",
+                  "line": 158,
+                  "column": 5
+                },
+                {
+                  "title": "should close mobile menu on link click",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 12942,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Mobile menu test skipped\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:21.165Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-d34b18fd1a9e61639703",
+                  "file": "navigation.spec.js",
+                  "line": 179,
+                  "column": 5
+                },
+                {
+                  "title": "should show mobile menu on small screens",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 8328,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Hamburger menu not found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:48.597Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-dabd19a6cd929a76a956",
+                  "file": "navigation.spec.js",
+                  "line": 158,
+                  "column": 5
+                },
+                {
+                  "title": "should close mobile menu on link click",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 8361,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ Mobile menu test skipped\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:52.299Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-3e07eba027aeb2a53802",
+                  "file": "navigation.spec.js",
+                  "line": 179,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Dropdown Navigation",
+              "file": "navigation.spec.js",
+              "line": 207,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle dropdown menus",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 10356,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No dropdown menus found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:41.653Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-e3b25e8ba128b3204d36",
+                  "file": "navigation.spec.js",
+                  "line": 209,
+                  "column": 5
+                },
+                {
+                  "title": "should handle dropdown menus",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 4943,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No dropdown menus found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:32.388Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-f2418a926ef27619eed1",
+                  "file": "navigation.spec.js",
+                  "line": 209,
+                  "column": 5
+                },
+                {
+                  "title": "should handle dropdown menus",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 11289,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No dropdown menus found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:32:57.025Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-8a7657f64ac45a124e17",
+                  "file": "navigation.spec.js",
+                  "line": 209,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Social Media Links",
+              "file": "navigation.spec.js",
+              "line": 236,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should have social media links",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 10224,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 0 social media links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:45.001Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-4a4a89ef7405bd664106",
+                  "file": "navigation.spec.js",
+                  "line": 238,
+                  "column": 5
+                },
+                {
+                  "title": "should have social media links",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 5418,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 0 social media links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:34.193Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-f27d0507f2808f3e3448",
+                  "file": "navigation.spec.js",
+                  "line": 238,
+                  "column": 5
+                },
+                {
+                  "title": "should have social media links",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 9952,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📊 Found 0 social media links\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:33:00.763Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-acdadb78003db16de65f",
+                  "file": "navigation.spec.js",
+                  "line": 238,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Breadcrumb Navigation",
+              "file": "navigation.spec.js",
+              "line": 271,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should show breadcrumbs on inner pages",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 15794,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No breadcrumbs found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:52.226Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-bcdf8f571bb777c301c4",
+                  "file": "navigation.spec.js",
+                  "line": 273,
+                  "column": 5
+                },
+                {
+                  "title": "should show breadcrumbs on inner pages",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 10086,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No breadcrumbs found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:37.606Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-86bf873bd8b33cb96476",
+                  "file": "navigation.spec.js",
+                  "line": 273,
+                  "column": 5
+                },
+                {
+                  "title": "should show breadcrumbs on inner pages",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 7566,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No breadcrumbs found, skipping test\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:33:08.389Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-fd9685dc5cd9ad4eed20",
+                  "file": "navigation.spec.js",
+                  "line": 273,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Back/Forward Navigation",
+              "file": "navigation.spec.js",
+              "line": 298,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle browser back and forward",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 39002,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ Back navigation works\n"
+                            },
+                            {
+                              "text": "✅ Forward navigation works\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:27:55.358Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-16407cc2de4551cb53ac",
+                  "file": "navigation.spec.js",
+                  "line": 300,
+                  "column": 5
+                },
+                {
+                  "title": "should handle browser back and forward",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 23443,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ Back navigation works\n"
+                            },
+                            {
+                              "text": "✅ Forward navigation works\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:39.723Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-4d9f8f33a09443aa2d77",
+                  "file": "navigation.spec.js",
+                  "line": 300,
+                  "column": 5
+                },
+                {
+                  "title": "should handle browser back and forward",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 18084,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "✅ Back navigation works\n"
+                            },
+                            {
+                              "text": "✅ Forward navigation works\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:33:10.790Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-5dd5dff8de5efba53d01",
+                  "file": "navigation.spec.js",
+                  "line": 300,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Active Navigation States",
+              "file": "navigation.spec.js",
+              "line": 320,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should highlight active navigation link",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 16972,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No active navigation link found\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:28:08.331Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-84983ab40560cce1235b",
+                  "file": "navigation.spec.js",
+                  "line": 322,
+                  "column": 5
+                },
+                {
+                  "title": "should highlight active navigation link",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 15297,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No active navigation link found\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:30:47.814Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-c301d841b47eb9ba70fb",
+                  "file": "navigation.spec.js",
+                  "line": 322,
+                  "column": 5
+                },
+                {
+                  "title": "should highlight active navigation link",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 4375,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No active navigation link found\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:33:16.045Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-de5b761cbd3da4171a5b",
+                  "file": "navigation.spec.js",
+                  "line": 322,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Navigation Accessibility",
+              "file": "navigation.spec.js",
+              "line": 341,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should have proper ARIA attributes on navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 15693,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No ARIA navigation found\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:28:25.531Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-22fcca3fe24f27c932eb",
+                  "file": "navigation.spec.js",
+                  "line": 343,
+                  "column": 5
+                },
+                {
+                  "title": "should have proper ARIA attributes on navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 12188,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No ARIA navigation found\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:31:03.272Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-25ae2400143ca42403da",
+                  "file": "navigation.spec.js",
+                  "line": 343,
+                  "column": 5
+                },
+                {
+                  "title": "should have proper ARIA attributes on navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 13363,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⚠️ No ARIA navigation found\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:33:20.480Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-13313870e4cc1fed1e75",
+                  "file": "navigation.spec.js",
+                  "line": 343,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Error Navigation",
+              "file": "navigation.spec.js",
+              "line": 364,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle 404 page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 11596,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📍 Current URL: http://localhost:3000/non-existent-page-12345\n"
+                            },
+                            {
+                              "text": "✅ 404 page displayed correctly\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:28:34.454Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-9ba0b20d2e7cb3541629",
+                  "file": "navigation.spec.js",
+                  "line": 366,
+                  "column": 5
+                },
+                {
+                  "title": "should handle 404 page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 3,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 12834,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📍 Current URL: http://localhost:3000/non-existent-page-12345\n"
+                            },
+                            {
+                              "text": "✅ 404 page displayed correctly\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:31:03.347Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-82cab9db18b6a7f1ab15",
+                  "file": "navigation.spec.js",
+                  "line": 366,
+                  "column": 5
+                },
+                {
+                  "title": "should handle 404 page navigation",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 6830,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "📍 Current URL: http://localhost:3000/non-existent-page-12345\n"
+                            },
+                            {
+                              "text": "✅ 404 page displayed correctly\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:33:28.934Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-7fcdacb35866be6262e2",
+                  "file": "navigation.spec.js",
+                  "line": 366,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "Navigation Performance",
+              "file": "navigation.spec.js",
+              "line": 388,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should load pages within acceptable time",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 10518,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⏱️ / loaded in 3015ms\n"
+                            },
+                            {
+                              "text": "⏱️ /about-us loaded in 1605ms\n"
+                            },
+                            {
+                              "text": "⏱️ /apply-online loaded in 2028ms\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:28:41.338Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-96ab61a74e9d1a788e85",
+                  "file": "navigation.spec.js",
+                  "line": 390,
+                  "column": 5
+                },
+                {
+                  "title": "should load pages within acceptable time",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "firefox",
+                      "projectName": "firefox",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 8542,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⏱️ / loaded in 1910ms\n"
+                            },
+                            {
+                              "text": "⏱️ /about-us loaded in 1034ms\n"
+                            },
+                            {
+                              "text": "⏱️ /apply-online loaded in 1364ms\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:31:15.559Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-5fb329380240ee304816",
+                  "file": "navigation.spec.js",
+                  "line": 390,
+                  "column": 5
+                },
+                {
+                  "title": "should load pages within acceptable time",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "webkit",
+                      "projectName": "webkit",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 5268,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "⏱️ / loaded in 978ms\n"
+                            },
+                            {
+                              "text": "⏱️ /about-us loaded in 374ms\n"
+                            },
+                            {
+                              "text": "⏱️ /apply-online loaded in 521ms\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-08-21T08:33:33.976Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "ce7c070a851ea64285fd-85b6e2ab1ea6a21d2e89",
+                  "file": "navigation.spec.js",
+                  "line": 390,
+                  "column": 5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-08-21T08:25:25.193Z",
+    "duration": 495450.111,
+    "expected": 80,
+    "skipped": 3,
+    "unexpected": 0,
+    "flaky": 1
+  }
+}

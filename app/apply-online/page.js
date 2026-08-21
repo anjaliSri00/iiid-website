@@ -57,7 +57,7 @@ export default async function ApplyOnline() {
   const faqs = result?.props?.faqs || [];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white apply-online">
       {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"

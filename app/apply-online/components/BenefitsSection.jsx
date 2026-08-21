@@ -101,15 +101,15 @@
 
 'use client';
 
-import { Monitor, Clock, BookOpen, Users, Award, Headphones, Sparkles, Zap, Shield, Globe, CheckCircle, ArrowRight } from 'lucide-react';
+import { Monitor, Clock, BookOpen, Users, Award, Headphones, Sparkles, Zap, Shield, Globe, CheckCircle, ArrowRight, CalendarClock, PlayCircle, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 const benefits = [
   {
-    icon: <Monitor className="w-6 h-6" />,
-    title: "Live Interactive Classes",
-    description: "Learn from industry experts in real-time with Q&A sessions",
+    icon: <PlayCircle className="w-6 h-6" />,
+    title: "Recorded Course Videos",
+    description: "Learn from industry experts in real-time with Q&A sessionsLearn from industry experts through structured, high-quality video lectures.",
     gradient: "from-[#CC0000] to-[#DC2626]",
     bg: "bg-[#CC0000]/10",
     text: "text-[#CC0000]",
@@ -117,8 +117,8 @@ const benefits = [
   },
   {
     icon: <Clock className="w-6 h-6" />,
-    title: "Flexible Schedule",
-    description: "Evening and weekend batches available for working professionals",
+    title: "Self-Paced Learning",
+    description: "Study whenever it suits you — no fixed timings or deadlines.",
     gradient: "from-[#CC0000] to-[#DC2626]",
     bg: "bg-[#CC0000]/10",
     text: "text-[#CC0000]",
@@ -126,35 +126,35 @@ const benefits = [
   },
   {
     icon: <BookOpen className="w-6 h-6" />,
-    title: "Recorded Sessions",
-    description: "Access recorded lectures anytime for 6 months",
+    title: "Comprehensive Study Material",
+    description: "Access detailed study material to support your learning alongside the videos.",
     gradient: "from-[#CC0000] to-[#DC2626]",
     bg: "bg-[#CC0000]/10",
     text: "text-[#CC0000]",
     delay: 0.3
   },
   {
-    icon: <Users className="w-6 h-6" />,
-    title: "Peer Learning",
-    description: "Connect with fellow designers from around the world",
+    icon: <Headphones className="w-6 h-6" />,
+    title: "Online Support",
+    description: "Get help from our support team whenever you have questions during the course.",
     gradient: "from-[#CC0000] to-[#DC2626]",
     bg: "bg-[#CC0000]/10",
     text: "text-[#CC0000]",
     delay: 0.4
   },
   {
-    icon: <Award className="w-6 h-6" />,
-    title: "Industry Recognition",
-    description: "Globally recognized IIID certification",
+    icon: <GraduationCap className="w-6 h-6" />,
+    title: "Certificate of Completion",
+    description: "Receive an IIID certificate upon successful completion of your course.",
     gradient: "from-[#CC0000] to-[#DC2626]",
     bg: "bg-[#CC0000]/10",
     text: "text-[#CC0000]",
     delay: 0.5
   },
   {
-    icon: <Headphones className="w-6 h-6" />,
-    title: "24/7 Support",
-    description: "Dedicated student support team",
+    icon: <CalendarClock className="w-6 h-6" />,
+    title: "6-Month Access",
+    description: "Revisit your course videos and materials anytime within 6 months.",
     gradient: "from-[#CC0000] to-[#DC2626]",
     bg: "bg-[#CC0000]/10",
     text: "text-[#CC0000]",

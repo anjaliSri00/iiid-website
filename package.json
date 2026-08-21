@@ -9,7 +9,14 @@
     "clean": "rd /s /q .next",
     "start": "next start -p 3000",
     "start1": "next start -p 3002",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:playwright": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:ui": "npx playwright test --ui",
+    "test:smoke": "npx playwright test --grep '@smoke'",
+    "test:regression": "npx playwright test --grep '@regression'",
+    "playwright:report": "npx playwright show-report"
   },
   "dependencies": {
     "blueimp-md5": "^2.19.0",
@@ -28,7 +35,11 @@
     "swiper": "^12.1.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
+    "@types/node": "^26.2.0",
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4"

@@ -6,19 +6,14 @@ import Image from "next/image";
 import {
   Award,
   Shield,
-  Globe,
   CheckCircle,
-  Star,
-  Users,
-  Clock,
-  ExternalLink,
-  Sparkles,
-  Verified,
-  BadgeCheck,
-  Building,
   FileCheck,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  BookOpen,
+  GraduationCap,
+  PlayCircle,
+  Headphones
 } from "lucide-react";
 import Link from "next/link";
 import { certificate } from "@/public/img";
@@ -28,26 +23,26 @@ export default function CertificateSection() {
 
   const features = [
     {
-      icon: <Globe className="w-5 h-5" />,
-      text: "Internationally Recognized",
+      icon: <GraduationCap className="w-5 h-5" />,
+      text: "Certificate of Completion",
       color: "text-[#CC0000]",
       bg: "bg-[#CC0000]/10",
     },
     {
-      icon: <Verified className="w-5 h-5" />,
-      text: "Industry Validated",
+      icon: <PlayCircle className="w-5 h-5" />,
+      text: "Video Lectures",
       color: "text-[#CC0000]",
       bg: "bg-[#CC0000]/10",
     },
     {
-      icon: <BadgeCheck className="w-5 h-5" />,
-      text: "Globally Accepted",
+      icon: <BookOpen className="w-5 h-5" />,
+      text: "Study Materials",
       color: "text-[#CC0000]",
       bg: "bg-[#CC0000]/10",
     },
     {
-      icon: <Building className="w-5 h-5" />,
-      text: "Government Approved",
+      icon: <Headphones className="w-5 h-5" />,
+      text: "Online Support",
       color: "text-[#CC0000]",
       bg: "bg-[#CC0000]/10",
     },
@@ -57,14 +52,14 @@ export default function CertificateSection() {
     <section className="py-20 md:py-28 bg-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <span className="inline-block px-4 py-1.5 bg-[#CC0000] text-white text-sm font-medium  mb-4">
+            <span className="inline-block px-4 py-1.5 bg-[#CC0000] text-white text-sm font-medium  mb-8">
               Professional Certification
             </span>
           </motion.div>
@@ -132,8 +127,7 @@ export default function CertificateSection() {
                 Professional Certification in Interior Design
               </h3>
               <p className="text-gray-500 leading-relaxed">
-                Earn a globally recognized certification that validates your expertise 
-                in professional interior design standards and practices.
+                Gain the credentials employers trust. Our IIID-certified program equips you with industry-relevant skills and a certification that opens doors. 
               </p>
             </div>
 
@@ -157,24 +151,24 @@ export default function CertificateSection() {
             {/* Benefits List */}
             <div className="space-y-2 border-t border-gray-100 pt-6">
               <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-[#CC0000] mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-5 h-5 text-[#CC0000] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Career Advancement</p>
-                  <p className="text-xs text-gray-500">Boost your career prospects with professional certification</p>
+                  <p className="text-sm font-medium text-gray-800">Practical Skill-Building</p>
+                  <p className="text-xs text-gray-500"> Strengthen your knowledge of interior design fundamentals and practices through course videos and study material.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-[#CC0000] mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-5 h-5 text-[#CC0000] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Industry Recognition</p>
-                  <p className="text-xs text-gray-500">Gain recognition from leading industry professionals</p>
+                  <p className="text-sm font-medium text-gray-800">Course Completion Certificate</p>
+                  <p className="text-xs text-gray-500">Receive an IIID certificate upon successfully finishing your course.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-[#CC0000] mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-5 h-5 text-[#CC0000] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Global Opportunities</p>
-                  <p className="text-xs text-gray-500">Open doors to international career opportunities</p>
+                  <p className="text-sm font-medium text-gray-800">Flexible Learning</p>
+                  <p className="text-xs text-gray-500">Study at your own pace, on your own schedule.</p>
                 </div>
               </div>
             </div>

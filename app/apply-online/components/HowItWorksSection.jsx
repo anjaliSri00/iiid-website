@@ -36,7 +36,7 @@ export default function HowItWorksSection() {
     {
       icon: <PlayCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />,
       title: "Access Course Content",
-      description: "Watch high-quality video lessons learning resources anytime, anywhere.",
+      description: "Watch high-quality video lessons & learning resources anytime, anywhere.",
       time: "Self-paced",
       color: "#CC0000",
       bg: "bg-[#CC0000]",

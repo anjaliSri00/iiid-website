@@ -1,22 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Merienda:wght@300..900&display=swap');
 @import "tailwindcss";
 ;
-:root {
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
-}
+} */
 
-[data-theme="dark"] {
+/* [data-theme="dark"] {
   --background: #0a0a0a;
   --foreground: #ededed;
-}
+} */
 
-@theme inline {
+/* @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+} */
 .merienda-600 {
   font-family: "Merienda", cursive;
   font-optical-sizing: auto;
@@ -59,17 +59,17 @@
 }
 
 body {
-  background: #f3f4f6; /* bg-gray-50 */
-  color: #111827; /* text-gray-900 */
+  background: #f3f4f6 !important; /* bg-gray-50 */
+  color: #111827 !important; /* text-gray-900 */
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
 }
 
 /* Only apply dark mode to specific dark sections if needed */
-.dark-section {
+/* .dark-section {
   background: var(--background);
   color: var(--foreground);
-}
+} */
 
 .swiper {
   width: 100%;
@@ -103,9 +103,9 @@ textarea {
 }
 
 /* For dark mode form elements (if needed) */
-[data-theme="dark"] input,
+/* [data-theme="dark"] input,
 [data-theme="dark"] select,
 [data-theme="dark"] textarea {
   color: #ffffff !important;
   background-color: #1f2937 !important;
-}
+} */
