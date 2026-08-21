@@ -208,7 +208,7 @@ export default function Footer() {
               >
                 <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
                 <p className="text-green-400 font-medium">Message Sent! 🎉</p>
-                <p className="text-gray-400 text-sm">We'll get back to you soon.</p>
+                <p className="text-gray-400 text-sm">We&apos;ll get back to you soon.</p>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="mt-4">
@@ -353,7 +353,7 @@ export default function Footer() {
       </div>
 
       {/* Global styles for autofill */}
-     <style jsx global>{`
+     <style jsx >{`
         input[type="text"],
         input[type="email"],
         input[type="tel"],

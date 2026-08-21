@@ -787,7 +787,7 @@ function LoginPage() {
                       </h3>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Enter your email address and we'll send you an OTP to reset your password.
+                          Enter your email address and we&apos;ll send you an OTP to reset your password.
                         </p>
                       </div>
                     </div>
@@ -849,7 +849,7 @@ function LoginPage() {
                       </h3>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          We've sent a password reset OTP to <strong>{forgotEmail}</strong>
+                          We&apos;ve sent a password reset OTP to <strong>{forgotEmail}</strong>
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
                           Please check your email inbox (and spam folder)
