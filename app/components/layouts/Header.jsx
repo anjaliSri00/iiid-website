@@ -54,13 +54,14 @@ export default function Header() {
           <div className="flex justify-between items-center py-3 md:py-4">
             {/* Logo */}
              <Link href="/" className="flex items-center group">
-              <div className="relative h-10 md:h-12 flex items-center justify-center group-hover:opacity-80 transition-opacity">
+              <div className="relative w-[180px] md:w-[300px] h-[70px]  flex items-center justify-center transition-opacity">
                 <Image 
                   src={logo}
                   alt="IIID - International Institute of Interior Design" 
-                  width={180} 
-                  height={48}
-                  className="object-contain h-full w-auto"
+                  // width={250} 
+                  // height={48}
+                  fill
+                  className="object-contain"
                   priority
                 />
               </div>

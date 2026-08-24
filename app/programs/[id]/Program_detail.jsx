@@ -927,6 +927,7 @@ const Program_detail = () => {
         }
         await generateCertificate();
         return true;
+        
       }
 
       setIsEligibleForCertificate(false);
