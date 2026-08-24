@@ -4,7 +4,7 @@ import "./globals.css";
 import {Providers} from "./provider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import LayoutWrapper from "./components/layout/LayoutWrapper";
+import LayoutWrapper from "./components/layouts/LayoutWrapper";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 

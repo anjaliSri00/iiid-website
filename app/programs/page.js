@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import Programs from '../components/sections/Programs';
 
 const Programspage = () => {
   return (
-    <div>
+    <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse"></div>}>
       <Programs/>
-    </div>
+    </Suspense>
   );
 }
 

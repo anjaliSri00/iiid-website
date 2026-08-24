@@ -218,23 +218,23 @@ export default function Hero() {
         className={`${getWidthClasses()} bg-white/70 backdrop-blur-md ${getPaddingClasses()} flex flex-col pt-10 justify-center items-start shadow-2xl relative overflow-hidden`}   onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <motion.h1 
+          <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-5xl max-sm:text-xl max-lg:text-3xl font-bold text-left tracking-tight text-gray-900"
           >
             {activeSlide.title}
-          </motion.h1>
+          </motion.h2>
           
-          <motion.h1 
+          <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             className="max-sm:text-xl max-lg:text-3xl text-5xl font-bold mb-4 tracking-tight pr-10 text-gray-900"
           >
             {activeSlide.title2}
-          </motion.h1>
+          </motion.h2>
           
           <div className='w-full flex justify-end items-end'>
             <motion.button 

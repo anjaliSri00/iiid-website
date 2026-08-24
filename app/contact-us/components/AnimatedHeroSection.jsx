@@ -44,7 +44,7 @@ export default function AnimatedHeroSection() {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl lg:text-6xl font-light mb-4"
           >
-            Let's Connect
+            Let&apos;s Connect
           </motion.h1>
 
           <motion.p 
@@ -55,7 +55,7 @@ export default function AnimatedHeroSection() {
             className="text-lg md:text-xl max-w-2xl mx-auto"
           >
             Have questions about our programs, partnerships, or anything else? 
-            We're here to help and would love to hear from you.
+            We&apos;re here to help and would love to hear from you.
           </motion.p>
 
           <motion.div 

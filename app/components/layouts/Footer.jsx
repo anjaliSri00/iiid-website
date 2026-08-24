@@ -114,7 +114,7 @@ export default function Footer() {
           <div className="lg:col-span-3 max-sm:grid-cols-1 max-sm:gap-10 max-sm:border-0 grid grid-cols-2 border-r border-red-600">
             <div className="space-y-4">
               <Link href="/" className="flex items-center group">
-                <div className="relative h-20 md:h-15 flex items-center justify-center group-hover:opacity-80 transition-opacity">
+                <div className="relative h-20 md:h-15 flex items-center justify-center transition-opacity">
                   <Image
                     src={logo2}
                     alt="IIID - International Institute of Interior Design" 
