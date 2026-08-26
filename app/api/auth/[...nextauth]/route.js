@@ -1,3 +1,4 @@
+// app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -75,9 +76,6 @@ export const authOptions = {
             credentials.otp &&
             credentials.session_id
           ) {
-            // Mobile OTP Verification Login
-            // console.log("Attempting mobile OTP login for:", credentials.mobile);
-
             response = await serverFetch(`${baseUrl}/api/v1/users/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -88,8 +86,6 @@ export const authOptions = {
                 session_id: credentials.session_id,
               }),
             });
-
-            // console.log("Mobile OTP login response:", response);
 
             if (response.meta?.status === 200) {
               return {
@@ -106,9 +102,6 @@ export const authOptions = {
               throw new Error(errorMsg);
             }
           } else if (credentials.email && credentials.password) {
-            // Email/password login
-            // console.log("Attempting email/password login for:", credentials.email);
-
             response = await serverFetch(`${baseUrl}/api/v1/users/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -117,8 +110,6 @@ export const authOptions = {
                 password: credentials.password,
               }),
             });
-
-            // console.log("Email login response status:", response.data);
 
             if (response.meta?.status === 200) {
               return {
@@ -155,7 +146,7 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // console.log("JWT callback - new user:", user.id);
+        console.log("JWT callback - new user:", user.id);
         return {
           ...token,
           accessToken: user.accessToken,
@@ -166,7 +157,7 @@ export const authOptions = {
           email: user.email,
           mobile: user.mobile,
           role: user.role,
-          full_name:user.full_name
+          full_name: user.full_name,
         };
       }
 
@@ -187,7 +178,7 @@ export const authOptions = {
       }
     },
     async session({ session, token }) {
-      // console.log("Session callback - userId:", token.userId);
+      console.log("Session callback - userId:", token.userId);
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.user = {
@@ -195,21 +186,28 @@ export const authOptions = {
         email: token.email,
         mobile: token.mobile,
         role: token.role,
-        full_name:token.full_name
+        full_name: token.full_name,
       };
       return session;
     },
   },
   pages: {
     signIn: "/login",
-    error: "/login", // Redirect back to login on error
+    error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
   },
-  debug: process.env.NODE_ENV === "development",
+  
+  // 🔥 FIX: Add JWT configuration with proper encoding/decoding
+  jwt: {
+    // Set to false to disable encryption if you don't need it
+    // This will prevent the decryption error
+    encryption: false,
+  },
+   debug: process.env.NODE_ENV === "development",
 };
 
 const handler = NextAuth(authOptions);

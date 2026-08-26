@@ -43,8 +43,11 @@ import { useRouter } from "next/navigation";
 import { progressApi } from "@/helper/services/progressApi";
 import { useApi } from "@/helper/hooks/useApi";
 import { certificateApi } from "@/helper/services/certificateApi";
+import { useSuppressExtensionErrors } from "@/app/components/ErrorBoundary";
 
 const Program_detail = () => {
+   useSuppressExtensionErrors();
+
   const params = useParams();
   const { data: session, status, update } = useSession();
   const { apiCall } = useApi();
@@ -184,11 +187,88 @@ const Program_detail = () => {
     [isRouterReady, router],
   );
 
+  const fetchProgramDetails = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (status === "loading") {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      let currentSession = session;
+      if (!currentSession?.accessToken && isAuthenticated) {
+        currentSession = await update();
+      }
+
+      const headers = {};
+      if (currentSession?.accessToken) {
+        headers["Access-Token"] = currentSession.accessToken;
+        headers["Refresh-Token"] = currentSession.refreshToken;
+      }
+
+      const response = await fetchApiResponse(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${programId}`,
+        {
+          method: "GET",
+          headers: headers,
+        },
+      );
+
+      if (response.meta?.status === 200 && response.data) {
+        const course = response.data;
+
+        const formattedProgram = {
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          category: course.category,
+          duration: course.duration,
+          mode: course.mode || "Online",
+          level: course.level,
+          original_price: course.original_price,
+          discount: course.discount,
+          final_price: course.final_price,
+          fee: `₹${course.final_price || course.original_price}`,
+          thumbnail_url: course.thumbnail_url,
+          status: course.status,
+          course_code: course.course_code,
+          lessons: course.lessons || [],
+          created_at: course.created_at,
+          updated_at: course.updated_at,
+          instructor_id: course.instructor_id,
+          is_purchased: Boolean(course.is_purchased),
+          is_active: course.is_active,
+          assessment: course.assessment || null,
+        };
+        setProgram(formattedProgram);
+
+        if (course.assessment) {
+          setAssessmentData(course.assessment);
+        }
+      } else if (response.meta?.status === 401) {
+        if (isAuthenticated) {
+          const newSession = await update();
+          if (newSession?.accessToken) {
+            return fetchProgramDetails();
+          }
+        }
+        setError("Please login to access course content");
+      } else {
+        setError(response.meta?.message || "Failed to fetch program details");
+      }
+    } catch (error) {
+      console.error("Error fetching program details:", error);
+      setError("Failed to load program details. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (programId && isClient) {
       fetchProgramDetails();
     }
-  }, [programId, isClient, fetchProgramDetails]);
+  }, [programId, isClient]);
 
   useEffect(() => {
     if (selectedLesson) {
@@ -276,83 +356,7 @@ const Program_detail = () => {
     program?.lessons?.length > 0 &&
     program.lessons.every((lesson) => completedLessons.includes(lesson.id));
 
-  const fetchProgramDetails = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      if (status === "loading") {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-
-      let currentSession = session;
-      if (!currentSession?.accessToken && isAuthenticated) {
-        currentSession = await update();
-      }
-
-      const headers = {};
-      if (currentSession?.accessToken) {
-        headers["Access-Token"] = currentSession.accessToken;
-        headers["Refresh-Token"] = currentSession.refreshToken;
-      }
-
-      const response = await fetchApiResponse(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/details/${programId}`,
-        {
-          method: "GET",
-          headers: headers,
-        },
-      );
-
-      if (response.meta?.status === 200 && response.data) {
-        const course = response.data;
-
-        const formattedProgram = {
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          category: course.category,
-          duration: course.duration,
-          mode: course.mode || "Online",
-          level: course.level,
-          original_price: course.original_price,
-          discount: course.discount,
-          final_price: course.final_price,
-          fee: `₹${course.final_price || course.original_price}`,
-          thumbnail_url: course.thumbnail_url,
-          status: course.status,
-          course_code: course.course_code,
-          lessons: course.lessons || [],
-          created_at: course.created_at,
-          updated_at: course.updated_at,
-          instructor_id: course.instructor_id,
-          is_purchased: Boolean(course.is_purchased),
-          is_active: course.is_active,
-          assessment: course.assessment || null,
-        };
-        setProgram(formattedProgram);
-
-        if (course.assessment) {
-          setAssessmentData(course.assessment);
-        }
-      } else if (response.meta?.status === 401) {
-        if (isAuthenticated) {
-          const newSession = await update();
-          if (newSession?.accessToken) {
-            return fetchProgramDetails();
-          }
-        }
-        setError("Please login to access course content");
-      } else {
-        setError(response.meta?.message || "Failed to fetch program details");
-      }
-    } catch (error) {
-      console.error("Error fetching program details:", error);
-      setError("Failed to load program details. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   const loadLessonProgress = async (lessonId) => {
     if (
       !session?.accessToken ||
