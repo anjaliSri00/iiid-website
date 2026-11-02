@@ -3,8 +3,7 @@ name: Next.js CI/CD
 on:
   push:
     branches:
-      # - staging-1.1
-      - main
+      - staging-1.1
 
 jobs:
   build-and-deploy:
